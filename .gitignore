@@ -1,0 +1,7 @@
+Academica/*
+Expedientes/*
+Uniformes/*
+Assets/images/Perfiles/*
+!Assets/images/Perfiles/Usuario.png
+Config/Config.php
+Config/backup_diario.bat
