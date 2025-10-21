@@ -3,14 +3,14 @@ session_start();
 
 class Contraseñas extends Controllers
 {
-	public function __construct()
-	{
-		parent::__construct();
-		if (empty($_SESSION['login'])) {
-			header('Location: ' . base_url() . '/login');
-			die();
-		}
-	}
+    public function __construct()
+    {
+        parent::__construct();
+        if (empty($_SESSION['login'])) {
+            header('Location: ' . base_url() . '/login');
+            die();
+        }
+    }
 
     public function Contraseñas()
     {
@@ -34,6 +34,30 @@ class Contraseñas extends Controllers
         $this->views->getView($this, "Recepcion", $data);
     }
 
+    public function Facturas()
+    {
+        $data['page_id'] = DASHBOARD;
+        $data['page_tag'] = "Facturas";
+        $data['page_title'] = "Facturas";
+        $data['page_name'] = "Facturas";
+        $data['page_functions_js'] = "functions_facturas.js";
+
+        $this->views->getView($this, "Facturas", $data);
+    }
+
+    public function getDetalles()
+    {
+        $arrData = $this->model->selectDetalles();
+
+        if (empty($arrData)) {
+            $arrResponse = array('status' => false, 'msg' => 'No se encontraron datos.');
+        } else {
+            $arrResponse = array('status' => true, 'data' => $arrData);
+        }
+        echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+        die();
+    }
+
     public function Contabilidad()
     {
         $data['page_id'] = DASHBOARD;
@@ -48,8 +72,15 @@ class Contraseñas extends Controllers
     public function Detalles($contraseña)
     {
         $facturas = $this->model->getContraseña($contraseña);
+        $proveedor = $facturas["id_proveedor"];
+        $area = $facturas["id_area"];
+        $id_solicitud = $facturas["anticipo"];
+        $anticipo = $this->model->getAnticipo($proveedor, $area); // true o false
+        $anticipoinfo = $this->model->getAnticipoInfo($id_solicitud);
 
         $data['facturas'] = $facturas;
+        $data['anticipo'] = $anticipo; // booleano
+        $data['anticipoinfo'] = $anticipoinfo; // booleano
         $data['page_id'] = 'INFO';
         $data['page_tag'] = "Detalles";
         $data['page_title'] = "Detalles";
@@ -315,7 +346,8 @@ class Contraseñas extends Controllers
         if ($modo === 'digits') {
             $digits = preg_split('//u', $fraction, -1, PREG_SPLIT_NO_EMPTY);
             $words = array_map(function ($d) use ($digitMap) {
-                return $digitMap[$d] ?? $d; }, $digits);
+                return $digitMap[$d] ?? $d;
+            }, $digits);
             return ucfirst($sign . $intWords . ' punto ' . implode(' ', $words));
         }
 
@@ -324,7 +356,8 @@ class Contraseñas extends Controllers
             if (strlen($fraction) > 0 && $fraction[0] === '0') {
                 $digits = preg_split('//u', $fraction, -1, PREG_SPLIT_NO_EMPTY);
                 $words = array_map(function ($d) use ($digitMap) {
-                    return $digitMap[$d] ?? $d; }, $digits);
+                    return $digitMap[$d] ?? $d;
+                }, $digits);
                 return ucfirst($sign . $intWords . ' punto ' . implode(' ', $words));
             } else {
                 // Convertir la fracción como número (25 -> veinticinco)
@@ -343,9 +376,6 @@ class Contraseñas extends Controllers
         // Modo no reconocido -> devolver número tal cual
         return ucfirst($sign . $intWords . ' punto ' . $fraction);
     }
-
-
-
 
     public function guardarContraseña()
     {
@@ -439,7 +469,7 @@ class Contraseñas extends Controllers
             $valor_documento = $_POST['valor_documento'];
             $estado = "Validado";
 
-            if (empty($contraseña)) {
+            if (empty($no_factura) || empty($bien_servicio) || empty($valor_documento)) {
                 $arrResponse = ["status" => false, "msg" => "Todos los campos son obligatorios"];
             } else {
                 $requestInsert = $this->model->insertDetalleSolicitud(
@@ -459,22 +489,6 @@ class Contraseñas extends Controllers
 
             echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
         }
-        die();
-    }
-    public function getFacturaId($id)
-    {
-        $arrData = $this->model->FacturasbyID($id);
-
-        // Verificar y depurar datos
-        error_log(print_r($arrData, true));
-
-        if (empty($arrData)) {
-            $arrResponse = array('status' => false, 'msg' => 'No se encontraron datos.');
-        } else {
-            $arrResponse = array('status' => true, 'data' => $arrData);
-        }
-
-        echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
         die();
     }
 
@@ -628,7 +642,7 @@ class Contraseñas extends Controllers
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $contraseña = $_POST['contraseña'];
             $correciones = $_POST['correciones'];
-            $estado = "Correccion";
+            $estado = "Pendiente";
             $errores = [];
 
             if (empty($contraseña) || empty($correciones)) {
@@ -759,6 +773,7 @@ class Contraseñas extends Controllers
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $contraseña = $_POST['contraseña'];
             $estado = $_POST['respuesta'];
+            $anticipo = $_POST['anticipo'] ?? null;
             $errores = [];
             if (empty($contraseña) || empty($estado)) {
                 echo json_encode(["status" => false, "msg" => "Problemas al obtener datos."]);
@@ -776,6 +791,7 @@ class Contraseñas extends Controllers
             // Crear la contraseña
             $this->model->validacionContraseña(
                 $contraseña,
+                $anticipo,
                 $estado
             );
 
@@ -792,13 +808,13 @@ class Contraseñas extends Controllers
         }
     }
 
-
-        public function solicitudFondos()
+    public function solicitudFondos()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $contraseña = $_POST['contraseña'];
             $area = $_POST['area'];
             $categoria = $_POST['categoria'];
+            $estado = "Validado";
             $errores = [];
 
             if (empty($contraseña) || empty($area)) {
@@ -813,6 +829,11 @@ class Contraseñas extends Controllers
                 $categoria
             );
 
+            $this->model->validacionContraseñaSoli(
+                $contraseña,
+                $estado
+            );
+
             if (!empty($errores)) {
                 echo json_encode([
                     "status" => false,
@@ -824,33 +845,6 @@ class Contraseñas extends Controllers
 
             echo json_encode(["status" => true, "message" => "Contraseña registrada correctamente."]);
         }
-    }
-
-
-    //Vehiculos
-
-    public function Vehiculos()
-    {
-        $data['page_id'] = "Vehiculos";
-        $data['page_tag'] = "Vehiculos";
-        $data['page_title'] = "Vehiculos";
-        $data['page_name'] = "Vehiculos";
-        $data['page_functions_js'] = "functions_vehiculos.js";
-
-        $this->views->getView($this, "Vehiculos", $data);
-    }
-
-    public function registrosVehiculos()
-    {
-        $arrData = $this->model->selectVehiculos();
-
-        if (empty($arrData)) {
-            $arrResponse = array('status' => false, 'msg' => 'No se encontraron datos.');
-        } else {
-            $arrResponse = array('status' => true, 'data' => $arrData);
-        }
-        echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
-        die();
     }
 
     public function descartarContraseña()
@@ -892,6 +886,5 @@ class Contraseñas extends Controllers
             }
         }
     }
-
 
 }

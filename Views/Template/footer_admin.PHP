@@ -72,18 +72,13 @@
 </div>
 
 </div>
-
-
 </div>
-
-
 <!--   Core JS Files   -->
 <script src="<?= media(); ?>/js/core/jquery-3.7.1.min.js"></script>
 <script src="<?= media(); ?>/js/core/popper.min.js"></script>
 <script src="<?= media(); ?>/js/core/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-<!-- jQuery Scrollbar -->
-<script src="<?= media(); ?>/js/plugin/jquery-scrollbar/jquery.scrollbar.min.js"></script>
 
 <!-- Chart JS -->
 <script src="<?= media(); ?>/js/plugin/chart.js/chart.min.js"></script>
@@ -110,9 +105,24 @@
 <!-- SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<!-- Kaiadmin JS -->
+<!-- Plugins que usan jQuery -->
+<script src="<?= media(); ?>/js/plugin/jquery-scrollbar/jquery.scrollbar.min.js"></script>
+
+<!-- Kaiadmin -->
 <script src="<?= media(); ?>/js/kaiadmin.min.js"></script>
 
+<!-- DataTables y extensiones -->
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+<script src="https://cdn.datatables.net/colreorder/1.6.2/js/dataTables.colReorder.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.colVis.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+<!-- Librerías extra para exportar -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
 <script>
     $('#lineChart').sparkline([102, 109, 120, 99, 110, 105, 115], {
         type: 'line',
@@ -139,35 +149,6 @@
         lineWidth: '2',
         lineColor: '#ffa534',
         fillColor: 'rgba(255, 165, 52, .14)'
-    });
-</script>
-<script>
-    let id_area = document.querySelector("#area").value;
-    $(document).on("click", ".edit-btn", function () {
-        const Usuario = id_area
-
-        $.ajax({
-            url: `${base_url}/Configuracion/getAreabyID/${Usuario}`,
-            method: "GET",
-            dataType: "json",
-            success: function (response) {
-                if (response.status) {
-                    $("#edit_id_area").val(response.data.id_area);
-                    $("#edit_nombre").val(response.data.nombre_area);
-                    $("#edit_estado").val(response.data.estado);
-                } else {
-                    Swal.fire({
-                        title: "Error",
-                        text: "Hubo un problema al procesar la solicitud.",
-                        icon: "error",
-                        confirmButtonText: "Aceptar",
-                    });
-                }
-            },
-            error: function (error) {
-                console.log("Error:", error);
-            },
-        });
     });
 </script>
 <script>

@@ -4,49 +4,93 @@ document.addEventListener("DOMContentLoaded", function () {
   // Tabla principal con datos AJAX
   tableVehiculos = $("#tableVehiculos").DataTable({
     ajax: {
-      url: base_url + "/Contraseñas/registrosVehiculos",
+      url: base_url + "/Vehiculos/registrosVehiculos",
     },
+    autoWidth: false,
+    colReorder: true,
     columns: [
       {
         data: null,
+        title: "#",
         render: function (data, type, row, meta) {
-          // Mostrar el número de ítem (índice + 1)
-          return meta.row + 1;
+          return meta.row + 1; // contador
         },
       },
-      { data: "contraseña" },
-      { data: "area" },
-      { data: "fecha_registro" },
-      { data: "proveedor" },
-      { data: "monto_total" },
-      { data: "fecha_pago" },
+      { data: "contraseña", title: "Contraseña" },
+      { data: "area", title: "Área" },
+      { data: "fecha_registro", title: "Registro" },
+      { data: "proveedor", title: "Proveedor" },
+      { data: "monto_total", title: "Total" },
+      { data: "fecha_pago", title: "Fecha Pago" },
       {
         data: "estado",
+        title: "Estado",
         render: function (data, type, row, meta) {
           let html = "";
-          if (data == "Pendiente") {
-            html = '<span class="badge badge-warning">PENDIENTE</span>';
-          } else if (data == "Validado") {
+          data = data.toLowerCase();
+          if (data.includes("pendiente")) {
+            html = '<span class="badge badge-warning">' + data + "</span>";
+          } else if (data.includes("validado")) {
             html = '<span class="badge badge-success">VALIDADO</span>';
-          } else if (data == "Corregir") {
+          } else if (data.includes("corregir")) {
             html = '<span class="badge badge-danger">CORREGIR</span>';
-          } else if (data == "Descartado") {
+          } else if (data.includes("corregido")) {
+            html = '<span class="badge badge-success">CORREGIDO</span>';
+          }else if (data.includes("descartado")) {
             html = '<span class="badge badge-danger">DESCARTADO</span>';
           }
           return html;
         },
       },
       {
-        title: "Acciones",
-        data: "contraseña",
-        render: function (data) {
-          return `<button class="btn btn-info btn-sm" onclick="window.location.href='${base_url}/Contraseñas/Facturas/${data}'">
-                      <i class="fas fa-archive"></i>
-                    </button>`;
+        data: "estado",
+        title: "Estado",
+        render: function (data, type, row, meta) {
+          let html = "";
+          if (data && data.trim().includes("Corregir")) {
+            html = `
+          <button class="btn btn-danger correccion-btn" data-bs-toggle="modal" data-id="${row.contraseña}"
+          data-bs-target="#correccionContraseñaModal">
+            <i class="fas fa-chalkboard-teacher"></i>
+          </button>
+          <button class="btn btn-danger btn-pdf btn-round ms-auto" 
+                  onclick="window.open('${base_url}/Contraseñas/generarContraseña/${row.contraseña}', '_blank')">
+            <i class="far fa-file-pdf"></i>
+          </button>`;
+          } else if (data && data.trim().includes("Pendiente") || data.trim().includes("Corregido") || data.trim().includes("Validado") ) {
+            html = `
+          <button class="btn btn-info btn-sm" onclick="window.location.href='${base_url}/Vehiculos/Detalles/${row.contraseña}'">
+            <i class="fas fa-archive"></i>
+         </button>
+         <button class="btn btn-danger btn-pdf btn-round ms-auto" 
+                  onclick="window.open('${base_url}/Contraseñas/generarContraseña/${row.contraseña}', '_blank')">
+            <i class="far fa-file-pdf"></i>
+          </button>`;
+          }
+          return html;
         },
       },
     ],
     dom: "Bfrtip",
+    buttons: [
+      {
+        extend: "colvis",
+        text: '<i class="fas fa-eye me-1"></i> Columnas',
+        className: "btn btn-primary btn-sm me-1 rounded fw-bold text-white",
+        collectionLayout: "fixed two-column",
+        postfixButtons: ["colvisRestore"],
+      },
+      {
+        extend: "excel",
+        text: '<i class="fas fa-file-excel me-1"></i> Excel',
+        className: "btn btn-success btn-sm me-1 rounded fw-bold text-white",
+      },
+      {
+        extend: "print",
+        text: '<i class="fas fa-print me-1"></i> Imprimir',
+        className: "btn btn-secondary btn-sm rounded fw-bold text-white",
+      },
+    ],
   });
 
   $(document).on("click", ".btn-password", function () {
@@ -79,7 +123,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (request.readyState === 4 && request.status === 200) {
         document.querySelector("#proveedor_recibimiento").innerHTML =
           request.responseText;
-        $("#proveedor_recibimiento").selectpicker("refresh");
+        $("#proveedor_recibimiento");
       }
     };
   }
@@ -94,7 +138,7 @@ document.addEventListener("DOMContentLoaded", function () {
     request.onreadystatechange = function () {
       if (request.readyState === 4 && request.status === 200) {
         document.querySelector("#area").innerHTML = request.responseText;
-        $("#area").selectpicker("refresh");
+        $("#area");
       }
     };
   }
@@ -110,7 +154,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (request.readyState === 4 && request.status === 200) {
         document.querySelector("#edit_id_proveedor").innerHTML =
           request.responseText;
-        $("#edit_id_proveedor").selectpicker("refresh");
+        $("#edit_id_proveedor");
       }
     };
   }
@@ -126,7 +170,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (request.readyState === 4 && request.status === 200) {
         document.querySelector("#c_id_proveedor").innerHTML =
           request.responseText;
-        $("#c_id_proveedor").selectpicker("refresh");
+        $("#c_id_proveedor");
       }
     };
   }
@@ -141,7 +185,7 @@ document.addEventListener("DOMContentLoaded", function () {
     request.onreadystatechange = function () {
       if (request.readyState === 4 && request.status === 200) {
         document.querySelector("#edit_area").innerHTML = request.responseText;
-        $("#edit_area").selectpicker("refresh");
+        $("#edit_area");
       }
     };
   }
@@ -156,7 +200,7 @@ document.addEventListener("DOMContentLoaded", function () {
     request.onreadystatechange = function () {
       if (request.readyState === 4 && request.status === 200) {
         document.querySelector("#c_area").innerHTML = request.responseText;
-        $("#c_area").selectpicker("refresh");
+        $("#c_area");
       }
     };
   }
@@ -277,6 +321,276 @@ document.addEventListener("DOMContentLoaded", function () {
       .replace(/(,|\.){2,}/g, "$1") // Evita múltiples puntos/comas seguidos
       .replace(/^(\.|,)/g, ""); // No permitir punto/coma al principio
   });
+
+  //ACTUALIZAR CONTRASEÑA
+
+  $(document).on("click", ".update-btn", function () {
+    const contraseña = $(this).data("id");
+    $.ajax({
+      url: `${base_url}/Contraseñas/getAllContraseña/${contraseña}`,
+      method: "GET",
+      dataType: "json",
+      success: function (response) {
+        if (response.status) {
+          cargarDatosEdicion(response.data);
+          $("#setContraseñaEditModal").modal("show");
+        } else {
+          alert("No se encontraron datos.");
+        }
+      },
+      error: function (error) {
+        console.error("Error en AJAX:", error);
+      },
+    });
+  });
+
+  $(document).on("click", ".correccion-btn", function () {
+    const contraseña = $(this).data("id");
+    $.ajax({
+      url: `${base_url}/Contraseñas/getAllContraseña/${contraseña}`,
+      method: "GET",
+      dataType: "json",
+      success: function (response) {
+        if (response.status) {
+          cargarDatosCorreccion(response.data);
+          $("#correccionContraseñaModal").modal("show");
+        } else {
+          alert("No se encontraron datos.");
+        }
+      },
+      error: function (error) {
+        console.error("Error en AJAX:", error);
+      },
+    });
+  });
+
+  function cargarDatosCorreccion(data) {
+    // Llenar los campos de la solicitud principal
+    $("#c_id_contraseña").val(data.id_contraseña);
+    $("#c_contraseña").val(data.contraseña);
+    $("#c_contraseña_hidden").val(data.contraseña);
+    $("#c_fecha_registro").val(data.fecha_registro);
+    $("#c_id_proveedor").val(data.id_proveedor);
+    $("#c_area").val(data.area);
+    $("#c_fecha_pago").val(data.fecha_pago);
+    $("#c_correcciones").val(data.correcciones);
+
+    // Limpiar la tabla de fechas
+    const tablaFacturasCorreccion = $("#tablaFacturasCorreccion tbody");
+    tablaFacturasCorreccion.empty();
+
+    // Cargar las fechas, valores y días en la tabla
+    data.no_factura.forEach((factura, index) => {
+      const bien = data.bien_servicio[index];
+      const valor = data.valor_documento[index];
+      const observacion = data.observacion[index];
+      const estado = data.estado[index];
+
+      // IF según el estado
+      if (estado === "Corregir") {
+        // <-- Aquí defines el filtro
+        tablaFacturasCorreccion.append(`
+      <tr>
+          <td>
+              <input type="text" class="form-control" name="no_factura[]" value="${factura}" required>
+          </td>
+          <td>
+              <input type="text" class="form-control" name="bien[]" value="${bien}" required>
+          </td>
+          <td>
+              <input type="text" class="form-control" name="valor[]" value="${valor}" required>
+          </td>
+          <td>
+              <input type="text" class="form-control" name="observacion[]" value="${observacion}" disabled>
+          </td>
+          <td>
+              <input type="text" class="form-control" name="estado[]" value="${estado}" disabled>
+          </td>
+          <td>
+              <button type="button" class="btn btn-danger eliminarFacturaCorreccion">
+                  <i class="fas fa-trash-alt"></i>
+              </button>
+          </td>
+      </tr>
+    `);
+      }
+    });
+  }
+
+  $("#agregarFacturaEdit").on("click", function () {
+    $("#tablaFacturasEdit tbody").append(`
+          <tr>
+            <td><input type="text" class="form-control factura" name="no_factura[]" placeholder="123456789" required></td>
+            <td><input type="text" class="form-control bien" name="bien[]" required></td>
+            <td><input type="text" class="form-control valor" name="valor[]" placeholder="1000.00" required></td>
+            <td>
+                <button type="button" class="btn btn-danger eliminarFila">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </td>
+          </tr>
+      `);
+  });
+
+  $("#tablaFacturasEdit").on("click", ".eliminarFila", function () {
+    $(this).closest("tr").remove();
+  });
+
+  $("#agregarFacturaCorreccion").on("click", function () {
+    $("#tablaFacturasCorreccion tbody").append(`
+          <tr>
+            <td><input type="text" class="form-control factura" name="no_factura[]" placeholder="123456789" required></td>
+            <td><input type="text" class="form-control bien" name="bien[]" required></td>
+            <td><input type="text" class="form-control valor" name="valor[]" placeholder="1000.00" required></td>
+            <td><input type="text" class="form-control observacion" name="observacion[]" placeholder="N/A" disabled></td>
+            <td><input type="text" class="form-control estado" name="estado[]" placeholder="Nuevo" disabled></td>
+            <td>
+                <button type="button" class="btn btn-danger eliminarFila">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </td>
+          </tr>
+      `);
+  });
+
+  $("#tablaFacturasCorreccion").on("click", ".eliminarFila", function () {
+    $(this).closest("tr").remove();
+  });
+
+  $(document).on("click", ".eliminarFactura", function () {
+    const row = $(this).closest("tr"); // Fila actual
+    const contraseña = $("#edit_contraseña").val(); // ID de la solicitud
+    const factura = row.find("input[name='no_factura[]']").val(); // Fecha seleccionada
+
+    if (confirm(`¿Estás seguro de eliminar la factura ${factura}?`)) {
+      $.ajax({
+        url: `${base_url}/Contraseñas/eliminarFactura`,
+        method: "POST",
+        data: {
+          contraseña: contraseña,
+          factura: factura,
+        },
+        dataType: "json",
+        success: function (response) {
+          if (response.status) {
+            alert(response.message); // Mensaje de éxito
+            row.remove(); // Eliminar la fila de la tabla
+          } else {
+            alert(response.message); // Mensaje de error
+          }
+        },
+        error: function (error) {
+          console.error("Error al eliminar la factura:", error);
+          alert("Ocurrió un error al intentar eliminar la factura.");
+        },
+      });
+    }
+  });
+
+  $(document).on("click", ".eliminarFacturaCorreccion", function () {
+    const row = $(this).closest("tr"); // Fila actual
+    const contraseña = $("#c_contraseña").val(); // ID de la solicitud
+    const factura = row.find("input[name='no_factura[]']").val(); // Fecha seleccionada
+
+    if (confirm(`¿Estás seguro de eliminar la factura ${factura}?`)) {
+      $.ajax({
+        url: `${base_url}/Contraseñas/eliminarFactura`,
+        method: "POST",
+        data: {
+          contraseña: contraseña,
+          factura: factura,
+        },
+        dataType: "json",
+        success: function (response) {
+          if (response.status) {
+            alert(response.message); // Mensaje de éxito
+            row.remove(); // Eliminar la fila de la tabla
+          } else {
+            alert(response.message); // Mensaje de error
+          }
+        },
+        error: function (error) {
+          console.error("Error al eliminar la Factura:", error);
+          alert("Ocurrió un error al intentar eliminar la factura.");
+        },
+      });
+    }
+  });
+
+  document
+    .getElementById("correccionContraseña")
+    .addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      // Recoge los valores de las fechas, valores y días
+      const factura = Array.from(
+        document.querySelectorAll(
+          "#tablaFacturasCorreccion input[name='no_factura[]']"
+        )
+      ).map((input) => input.value);
+
+      const bien = Array.from(
+        document.querySelectorAll(
+          "#tablaFacturasCorreccion input[name='bien[]']"
+        )
+      ).map((select) => select.value);
+
+      const valor = Array.from(
+        document.querySelectorAll(
+          "#tablaFacturasCorreccion input[name='valor[]']"
+        )
+      ).map((select) => select.value);
+
+      // Envía la solicitud vía AJAX
+      const formData = new FormData(this);
+
+      factura.forEach((factura, index) => {
+        formData.append(`factura[${index}]`, factura);
+        formData.append(`bien[${index}]`, bien[index]);
+        formData.append(`valor[${index}]`, valor[index]);
+      });
+
+      fetch(base_url + "/Contraseñas/correccionContraseña", {
+        method: "POST",
+        body: formData,
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.status) {
+            Swal.fire({
+              title: "Éxito",
+              text: data.message,
+              icon: "success", // Icono de éxito
+              confirmButtonText: "OK",
+            }).then((result) => {
+              if (result.isConfirmed) {
+                // Recargar la página al presionar "Aceptar"
+                location.reload();
+              }
+            });
+          } else {
+            Swal.fire({
+              title: "Advertencia",
+              text: data.message,
+              icon: data.type === "warning" ? "warning" : "error", // Dependiendo del tipo
+              confirmButtonText: "Entendido",
+            }).then((result) => {
+              if (result.isConfirmed) {
+                location.reload();
+              }
+            });
+          }
+        })
+        .catch((error) => {
+          Swal.fire({
+            title: "Error",
+            text: "Ocurrió un problema al procesar la solicitud.",
+            icon: "error",
+            confirmButtonText: "Entendido",
+          });
+          console.error("Error:", error);
+        });
+    });
 
   // no pasarse
 });

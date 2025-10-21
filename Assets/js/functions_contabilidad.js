@@ -79,7 +79,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (request.readyState === 4 && request.status === 200) {
         document.querySelector("#proveedor_recibimiento").innerHTML =
           request.responseText;
-        $("#proveedor_recibimiento").selectpicker("refresh");
+        $("#proveedor_recibimiento");
       }
     };
   }
@@ -94,7 +94,7 @@ document.addEventListener("DOMContentLoaded", function () {
     request.onreadystatechange = function () {
       if (request.readyState === 4 && request.status === 200) {
         document.querySelector("#area").innerHTML = request.responseText;
-        $("#area").selectpicker("refresh");
+        $("#area");
       }
     };
   }

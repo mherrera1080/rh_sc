@@ -107,8 +107,6 @@ class PDF extends FPDF
         $this->SetLineWidth(0.2);
         $this->SetXY(10, 50);
         $this->SetFillColor(30, 55, 89);
-
-        // Encabezado de la tabla
         $this->RoundedRect(
             10,
             50,

@@ -5,7 +5,7 @@ class LoginModel extends Mysql
     private $id_user;
     private $usuario;
     private $password;
-    
+
 
     public function __construct()
     {
@@ -21,17 +21,17 @@ class LoginModel extends Mysql
         identificacion,
         no_empleado,
         correo,
-        area,
+        tu.area,
+        ta.nombre_area,
         rol,
         fecha_ingreso,
-        estado
-        FROM tb_usuarios 
-        WHERE correo = ? AND estado = 'Activo'";
+        tu.estado
+        FROM tb_usuarios tu
+        INNER JOIN tb_areas ta ON tu.area = ta.id_area
+        WHERE correo = ? AND tu.estado = 'Activo'";
         $arrData = array($correo_empresarial);
         return $this->select($sql, $arrData); // Devuelve los datos si existe
     }
-
-
 
     public function sessionLogin(int $id_user)
     {
@@ -93,15 +93,15 @@ class LoginModel extends Mysql
         return $this->insert($sql, $arrData);
     }
 
-    
+
     public function validarToken($correo_empresarial, $token)
     {
         // Definir la zona horaria en PHP (por seguridad)
         date_default_timezone_set('America/Guatemala'); // Ajusta según tu zona horaria
-    
+
         // Obtener la fecha y hora actual en la zona correcta
         $query = date("Y-m-d H:i:s");
-    
+
         $sql = "SELECT 
             e.id_empleado, 
             e.nombres,
@@ -114,9 +114,9 @@ class LoginModel extends Mysql
                 WHERE t.correo_empresarial = ? 
                 AND t.token = ? 
                 AND t.expires_at > ?";
-        
+
         $arrData = [$correo_empresarial, $token, $query];
-    
+
         return $this->select($sql, $arrData); // Retorna los datos del usuario si el token es válido
     }
 

@@ -10,7 +10,9 @@ document.addEventListener("DOMContentLoaded", function () {
       infoSubmitBtn.disabled = true;
       infoSpinner.classList.remove("d-none");
 
-      let correo_empresarial = document.querySelector("#correo_empresarial").value;
+      let correo_empresarial = document.querySelector(
+        "#correo_empresarial"
+      ).value;
 
       if (correo_empresarial === "") {
         Swal.fire("Por favor", "Escribe tu correo empresarial.", "error");

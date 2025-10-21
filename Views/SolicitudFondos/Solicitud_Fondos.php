@@ -68,9 +68,10 @@
                                 <tr>
                                     <th scope="col">ID</th>
                                     <th scope="col">Contraseña</th>
-                                    <th scope="col">Área</th>
-                                    <th scope="col">Registro</th>
+                                    <th scope="col">Tipo</th>
                                     <th scope="col">Fecha Pago</th>
+                                    <th scope="col">Area</th>
+                                    <th scope="col">Estado</th>
                                     <th scope="col" class="text-center">Acciones</th>
                                 </tr>
                             </thead>
@@ -86,33 +87,19 @@
 
 </div>
 
-
 <?php footerAdmin($data); ?>
 
-<!-- Modal -->
 <div class="modal fade" id="setContraseñaModal" tabindex="-1" aria-labelledby="setUserModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
-            <form id="setContraseña">
-                <input type="hidden" id="realizador" name="realizador" value="Prueba Administrador">
+            <form id="setSolicitud">
+                <input type="hidden" id="realizador" name="realizador"
+                    value="<?php echo $_SESSION['PersonalData']['id_usuario']; ?>">
                 <div class="modal-header ">
-                    <h5 class="modal-title" id="setUserModalLabel">Crear Contraseña</h5>
+                    <h5 class="modal-title" id="setUserModalLabel">Crear Solicitud de Fondos sin Contraseña</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="card mb-4">
-                        <div class="card-body">
-                            <div class="row align-items-center">
-                                <div class="col-md-2">
-                                    <label class="form-label fw-bold fs-4 mb-0">No. Contraseña:</label>
-                                </div>
-                                <div class="col-md-4">
-                                    <input type="text" class="form-control text-center fw-bold" id="contraseña"
-                                        name="contraseña" readonly>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                     <div class="row mb-4">
                         <div class="col-md-2">
                             <label for="fecha_registro" class="form-label">Fecha Registro</label>
@@ -124,17 +111,16 @@
                             <input type="date" class="form-control" id="fecha_pago" name="fecha_pago" required>
                         </div>
                         <div class="col-md-3">
-                            <label for="role_id" class="form-label">Area: <span class="text-danger">*</span></label>
-                            <select class="form-select" id="area" name="area" required>
-
-                            </select>
+                            <label for="area" class="form-label">Área</label>
+                            <input type="hidden" name="area" value="<?php echo $_SESSION['PersonalData']['area']; ?>"
+                                readonly>
+                            <input type="text" class="form-control"
+                                value="<?php echo $_SESSION['PersonalData']['nombre_area']; ?>">
                         </div>
                         <div class="col-md-4">
                             <label for="role_id" class="form-label">Recibimos de: <span
                                     class="text-danger">*</span></label>
-                            <select class="form-select" id="proveedor_recibimiento" name="proveedor_recibimiento"
-                                required>
-
+                            <select class="form-control selectpicker" id="proveedor" name="proveedor" required>
                             </select>
                         </div>
                     </div>
@@ -157,7 +143,7 @@
                                 id="tablaFacturas">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>No. Factura</th>
+                                        <th>Tipo</th>
                                         <th>Bien o Servicio</th>
                                         <th>Valor</th>
                                         <th>Acción</th>

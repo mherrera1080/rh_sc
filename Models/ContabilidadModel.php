@@ -29,27 +29,8 @@ class ContabilidadModel extends Mysql
         $request = $this->select($sql, array($contraseña));
         return $request;
     }
+    
 
-    public function getFacturasbyContra(int $contraseña)
-    {
-        $sql = "SELECT
-            id_detalle,
-            no_factura,
-            registro_ax,
-            bien_servicio,
-            valor_documento,
-            isr_valor,
-            iva_valor,
-            iva,
-            isr,
-            reten_iva,
-            fecha_registro,
-            total,
-            estado
-        FROM tb_detalles 
-        WHERE contraseña = ?";
-        $request = $this->select_multi($sql, array($contraseña));
-        return $request;
-    }
+
 
 }

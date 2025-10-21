@@ -1,9 +1,15 @@
 <?php
+session_start();
+
 class Contabilidad extends Controllers
 {
     public function __construct()
     {
         parent::__construct();
+        if (empty($_SESSION['login'])) {
+            header('Location: ' . base_url() . '/login');
+            die();
+        }
     }
 
     public function Contabilidad()
@@ -30,19 +36,6 @@ class Contabilidad extends Controllers
         $this->views->getView($this, "Revision", $data);
     }
 
-    public function getFacturas($contraseña)
-    {
-        $arrData = $this->model->getFacturasbyContra($contraseña);
-        error_log(print_r($arrData, true));
 
-        if (empty($arrData)) {
-            $arrResponse = array('status' => false, 'msg' => 'No se encontraron datos.');
-        } else {
-            $arrResponse = array('status' => true, 'data' => $arrData);
-        }
-
-        echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
-        die();
-    }
 
 }

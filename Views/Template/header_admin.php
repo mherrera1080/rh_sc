@@ -21,8 +21,14 @@
 
 	<!-- CSS Files -->
 	<link rel="stylesheet" href="<?= media(); ?>/css/bootstrap.min.css">
+
 	<link rel="stylesheet" href="<?= media(); ?>/css/plugins.min.css">
 	<link rel="stylesheet" href="<?= media(); ?>/css/kaiadmin.min.css">
+	<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
+	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+
+
 </head>
 
 <body>
@@ -85,7 +91,7 @@
 							</a>
 						</li>
 						<li class="nav-item">
-							<a href="<?= base_url(); ?>/Contraseñas">
+							<a href="<?= base_url(); ?>/Contraseñas/Facturas">
 								<i class="fas fa-file-contract"></i>
 								<p>Facturas</p>
 								<!-- <span class="badge badge-secondary">1</span> -->
@@ -97,7 +103,8 @@
 									<i class="fa fa-ellipsis-h"></i>
 								</span>
 								<h4 class="text-section">Contraseñas -
-									<?= $_SESSION['PersonalData']['nombre_area'] ?? "N/A" ?> </h4>
+									<?= $_SESSION['PersonalData']['nombre_area'] ?? "N/A" ?>
+								</h4>
 							</li>
 							<li class="nav-item">
 								<a href="<?= base_url(); ?>/Contraseñas">
@@ -127,7 +134,7 @@
 							<h4 class="text-section">Vehiculos</h4>
 						</li>
 						<li class="nav-item">
-							<a href="<?= base_url(); ?>/Contraseñas/Vehiculos">
+							<a href="<?= base_url(); ?>/Vehiculos">
 								<i class="fas fa-solid fa-car"></i>
 								<p>Contraseñas</p>
 							</a>
@@ -329,6 +336,7 @@
 									</li>
 								</ul>
 							</li>
+
 							<li class="nav-item topbar-icon dropdown hidden-caret">
 								<a class="nav-link" data-bs-toggle="dropdown" href="#" aria-expanded="false">
 									<i class="fas fa-cog"></i>
@@ -383,12 +391,13 @@
 														<span class="text">Invoice</span>
 													</div>
 												</a>
-												<a class="col-6 col-md-4 p-0" href="#">
+												<a class="col-6 col-md-4 p-0"
+													href="<?= base_url(); ?>/Configuracion/Firmas">
 													<div class="quick-actions-item">
 														<div class="avatar-item bg-secondary rounded-circle">
 															<i class="fas fa-credit-card"></i>
 														</div>
-														<span class="text">Payments</span>
+														<span class="text">Firmas </span>
 													</div>
 												</a>
 											</div>

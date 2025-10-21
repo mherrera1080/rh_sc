@@ -12,26 +12,56 @@ class ContraseñasModel extends Mysql
         $where = ($area == 4) ? "" : "WHERE tc.area = $area";
 
         $sql = "SELECT
-        tc.id_contraseña,
-        tc.contraseña,
-        tc.fecha_registro,
-        tp.nombre_proveedor AS proveedor,
-        tc.area as id_area,
-        ta.nombre_area AS area,
-        tc.valor_letras,
-        ROUND(SUM(td.valor_documento), 2) AS monto_total,
-        tc.fecha_pago,
-        tc.estado
-    FROM tb_contraseña tc
-    INNER JOIN tb_proveedor tp ON tc.id_proveedor = tp.id_proveedor
-    INNER JOIN tb_areas ta ON tc.area = ta.id_area
-    INNER JOIN tb_detalles td ON tc.contraseña = td.contraseña
-    $where
-    GROUP BY tc.id_contraseña";
+            tc.id_contraseña,
+            tc.contraseña,
+            tc.fecha_registro,
+            tp.nombre_proveedor AS proveedor,
+            tc.area as id_area,
+            ta.nombre_area AS area,
+            tc.valor_letras,
+            ROUND(SUM(td.valor_documento), 2) AS monto_total,
+            tc.fecha_pago,
+            tc.estado
+        FROM tb_contraseña tc
+        INNER JOIN tb_proveedor tp ON tc.id_proveedor = tp.id_proveedor
+        INNER JOIN tb_areas ta ON tc.area = ta.id_area
+        INNER JOIN tb_detalles td ON tc.contraseña = td.contraseña
+        $where
+        GROUP BY tc.id_contraseña";
 
         return $this->select_all($sql);
     }
 
+    public function selectDetalles()
+    {
+        $area = intval($_SESSION['PersonalData']['area']);
+        $where = ($area == 4) ? "" : "WHERE td.area = $area";
+
+        $sql = "SELECT 
+        tc.id_detalle,
+        tc.contraseña,
+        tc.no_factura,
+        tc.registro_ax,
+        tc.bien_servicio,
+        tc.valor_documento,
+        tc.isr_valor,
+        tc.iva_valor,
+        tc.iva,
+        tc.isr,
+        tc.reten_iva,
+        tc.base,
+        tc.total,
+        tc.fecha_registro,
+        tc.observacion,
+        tc.estado,
+        ta.nombre_area as area
+        FROM tb_detalles tc
+        INNER JOIN tb_contraseña td ON tc.contraseña = td.contraseña
+        INNER JOIN tb_areas ta ON td.area = ta.id_area
+        $where";
+
+        return $this->select_all($sql);
+    }
 
     public function contrasContabilidad()
     {
@@ -73,10 +103,13 @@ class ContraseñasModel extends Mysql
             tc.valor_letras,
             tc.monto_total AS monto_registrado,
             ta.id_area,
+            tc.id_proveedor,
             ta.nombre_area AS area,
             ROUND(SUM(td.valor_documento), 2) AS monto_total,
             tc.fecha_pago,
-            tc.estado
+            tc.estado,
+            tc.anticipo,
+            tc.correcciones
         FROM tb_contraseña tc
         INNER JOIN tb_proveedor tp ON tc.id_proveedor = tp.id_proveedor
         INNER JOIN tb_areas ta ON tc.area = ta.id_area
@@ -84,6 +117,45 @@ class ContraseñasModel extends Mysql
         LEFT JOIN tb_solicitud_fondos ts ON tc.contraseña = ts.contraseña
         WHERE tc.contraseña = ? 
         GROUP BY tc.id_contraseña;";
+        $request = $this->select($sql, array($contraseña));
+        return $request;
+    }
+
+    public function getAnticipo($proveedor, $area)
+    {
+        $sql = "SELECT 1
+            FROM tb_solicitud_fondos
+            WHERE proveedor = ? 
+              AND area = ? 
+              AND categoria = 'Anticipo' 
+              AND estado = 'Finalizado'
+            LIMIT 1";
+        $request = $this->select_multi_parameters($sql, [$proveedor, $area]);
+
+        return !empty($request);
+    }
+
+    public function getAnticipoInfo($contraseña)
+    {
+        $sql = "SELECT
+            tf.id_solicitud,
+            ta.nombre_area AS area,
+            tp.nombre_proveedor AS proveedor,
+            CONCAT(tu.nombres, ' ', tu.primer_apellido, ' ', tu.segundo_apellido) as usuario,
+            tf.categoria,
+            tf.fecha_creacion,
+            tf.estado,
+            tf.no_transferencia,
+            tf.fecha_transaccion,
+            tf.fecha_pago,
+            tf.observacion,
+            ROUND(SUM(td.valor_documento), 2) AS monto_total
+        FROM tb_solicitud_fondos tf
+        INNER JOIN tb_areas ta ON tf.area = ta.id_area
+        INNER JOIN tb_proveedor tp ON tf.proveedor = tp.id_proveedor
+        INNER JOIN tb_usuarios tu ON tf.usuario = tu.id_usuario
+        INNER JOIN tb_detalles td ON tf.id_solicitud = td.no_factura
+        WHERE tf.id_solicitud = ?";
         $request = $this->select($sql, array($contraseña));
         return $request;
     }
@@ -259,47 +331,15 @@ class ContraseñasModel extends Mysql
         return $request;
     }
 
-    public function FacturasbyID(int $id)
-    {
-        $sql = "SELECT
-            id_detalle,
-            no_factura,
-            registro_ax,
-            bien_servicio,
-            valor_documento,
-            isr_valor,
-            iva_valor,
-            iva,
-            isr,
-            reten_iva,
-            base,
-            observacion,
-            fecha_registro,
-            estado
-        FROM tb_detalles 
-        WHERE id_detalle = ?";
-        $request = $this->select($sql, array($id));
-        return $request;
-    }
-
-
     public function updateFactura($id_factura, $bien_servicio, $valor_documento, $estado)
     {
         $sql = "UPDATE tb_detalles SET
-                bien_servicio = ?,
-                valor_documento = ?,
-                estado = ?
-                WHERE id_detalle = ?
-            ";
-
-        $arrData = [
-            $bien_servicio,
-            $valor_documento,
-            $estado,
-            $id_factura
-        ];
-
-        $request = $this->insert($sql, $arrData);
+            bien_servicio = ?,
+            valor_documento = ?,
+            estado = ?
+            WHERE id_detalle = ?";
+        $arrData = [$bien_servicio, $valor_documento, $estado, $id_factura];
+        $request = $this->update($sql, $arrData); // <---- cambio aquí
         return $request;
     }
 
@@ -376,7 +416,18 @@ class ContraseñasModel extends Mysql
         return $this->update($sql, $arrData);
     }
 
-    public function validacionContraseña($contraseña, $estado)
+    public function validacionContraseña($contraseña, $anticipo, $estado)
+    {
+        $sql = "UPDATE tb_contraseña 
+                SET 
+                anticipo = ?,
+                estado = ?
+                WHERE contraseña = ?";
+        $arrData = [$anticipo, $estado, $contraseña];
+        return $this->update($sql, $arrData);
+    }
+
+    public function validacionContraseñaSoli($contraseña, $estado)
     {
         $sql = "UPDATE tb_contraseña 
                 SET 
@@ -389,44 +440,22 @@ class ContraseñasModel extends Mysql
     public function solicitudFondoVehiculos($contraseña, $area, $categoria)
     {
         $sql = "INSERT INTO tb_solicitud_fondos (
-                contraseña,
-                area,
-                categoria,
-                fecha_creacion
-            )
-            VALUES (?, ?, ?, CURDATE())";
+            contraseña,
+            area,
+            categoria,
+            fecha_creacion,
+            estado
+        )
+        VALUES (?, ?, ?, CURDATE(), ?)";
+
         $arrData = [
             $contraseña,
             $area,
-            $categoria
+            $categoria,
+            'Pendiente'
         ];
+
         $request = $this->insert($sql, $arrData);
-        return $request;
-    }
-
-
-    //Vehiculos
-
-    public function selectVehiculos()
-    {
-        $sql = "SELECT
-            tc.id_contraseña,
-            tc.contraseña,
-            tc.fecha_registro,
-            tp.nombre_proveedor AS proveedor,
-            tc.area as id_area,
-            ta.nombre_area AS area,
-            tc.valor_letras,
-            ROUND(SUM(td.valor_documento), 2) AS monto_total,
-            tc.fecha_pago,
-            tc.estado
-        FROM tb_contraseña tc
-        INNER JOIN tb_proveedor tp ON tc.id_proveedor = tp.id_proveedor
-        INNER JOIN tb_areas ta ON tc.area = ta.id_area
-        INNER JOIN tb_detalles td ON tc.contraseña = td.contraseña
-        WHERE tc.area = 2
-        GROUP BY tc.contraseña ";
-        $request = $this->select_all($sql);
         return $request;
     }
 
@@ -438,7 +467,5 @@ class ContraseñasModel extends Mysql
         $arrData = [$estado, $contraseña];
         return $this->deletebyid($sql, $arrData);
     }
-
-
 
 }

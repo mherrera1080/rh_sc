@@ -1,9 +1,15 @@
 <?php
+session_start();
+
 class SolicitudFondos extends Controllers
 {
     public function __construct()
     {
         parent::__construct();
+        if (empty($_SESSION['login'])) {
+            header('Location: ' . base_url() . '/login');
+            die();
+        }
     }
 
     public function SolicitudFondos()
@@ -32,8 +38,11 @@ class SolicitudFondos extends Controllers
     public function Revision($contraseña)
     {
         $facturas = $this->model->getContraseña($contraseña);
+        $id_anticipo = $facturas["anticipo"];
+        $anticipo = $this->model->getAnticipoInfo($id_anticipo);
 
         $data['facturas'] = $facturas;
+        $data['anticipoinfo'] = $anticipo;
         $data['page_id'] = 'Revision';
         $data['page_tag'] = "Revision";
         $data['page_title'] = "Revision";
@@ -41,5 +50,543 @@ class SolicitudFondos extends Controllers
         $data['page_functions_js'] = "functions_revision.js";
         $this->views->getView($this, "Revision", $data);
     }
+
+    public function RevisionSinContra($id_solicitud)
+    {
+        $facturas = $this->model->getSolicitud($id_solicitud);
+
+        $data['facturas'] = $facturas;
+        $data['page_id'] = 'Revision';
+        $data['page_tag'] = "Revision";
+        $data['page_title'] = "Revision";
+        $data['page_name'] = "Revision";
+        $data['page_functions_js'] = "functions_revision_sin.js";
+        $this->views->getView($this, "RevisionSinContra", $data);
+    }
+
+    public function getFacturas($contraseña)
+    {
+        $arrData = $this->model->getFacturasbyContra($contraseña);
+        error_log(print_r($arrData, true));
+
+        if (empty($arrData)) {
+            $arrResponse = array('status' => false, 'msg' => 'No se encontraron datos.');
+        } else {
+            $arrResponse = array('status' => true, 'data' => $arrData);
+        }
+
+        echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+        die();
+    }
+
+    public function getFacturasSolicitud($id_solicitud)
+    {
+        $arrData = $this->model->getFacturasbySoli($id_solicitud);
+        error_log(print_r($arrData, true));
+
+        if (empty($arrData)) {
+            $arrResponse = array('status' => false, 'msg' => 'No se encontraron datos.');
+        } else {
+            $arrResponse = array('status' => true, 'data' => $arrData);
+        }
+
+        echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+        die();
+    }
+
+    public function updateDetalle()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id_detalle = $_POST['edit_id'];
+            $cod_ax = $_POST['edit_codax'];
+            $base = $_POST['edit_base'];
+            $iva_base = $_POST['edit_base_iva'];
+            $iva = $_POST['input_iva'] ?? null;
+            $isr = $_POST['input_isr'] ?? null;
+            $reten_iva = $_POST['edit_reten_iva'];
+            $reten_isr = $_POST['edit_reten_isr'];
+            $total_iquido = $_POST['edit_total'];
+            $observacion = $_POST['edit_observacion'];
+
+            if (empty($id_detalle)) {
+                echo json_encode(["status" => false, "message" => "Datos incompletos."]);
+                exit;
+            }
+
+            $result = $this->model->UpdateDetalle($id_detalle, $cod_ax, $base, $iva_base, $iva, $isr, $reten_iva, $reten_isr, $total_iquido, $observacion);
+            if ($result) {
+                echo json_encode(["status" => true, "message" => "Factura actualizada correctamente."]);
+            } else {
+                echo json_encode(["status" => false, "message" => "Error al eliminar la factura."]);
+            }
+        }
+    }
+
+    public function guardarSolicitudFondos()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+            // 🔹 Datos del formulario
+            $realizador = trim($_POST['realizador'] ?? '');
+            $fecha_registro = $_POST['fecha_registro'] ?? date('Y-m-d');
+            $fecha_pago = $_POST['fecha_pago'] ?? null;
+            $proveedor = intval($_POST['proveedor'] ?? 0);
+            $area = intval($_POST['area'] ?? 0);
+            $tipo = $_POST['tipo'] ?? [];
+            $bien = $_POST['bien'] ?? [];
+            $valor = $_POST['valor'] ?? [];
+            $categoria = 'Anticipo';
+            $estado_solicitud = 'Anticipo';
+            $errores = [];
+
+            // 🔹 Validaciones básicas
+            if (empty($realizador) || empty($fecha_pago) || $area <= 0 || $proveedor <= 0) {
+                echo json_encode(["status" => false, "message" => "Datos incompletos en el formulario."]);
+                exit;
+            }
+
+            if (empty($bien) || empty($valor)) {
+                echo json_encode(["status" => false, "message" => "Debe agregar al menos un detalle."]);
+                exit;
+            }
+
+            // =====================================================
+            // 1️⃣ Crear la solicitud principal en tb_solicitud_fondos
+            // =====================================================
+            $solicitudCreada = $this->model->solicitudFondoVehiculosNueva(
+                $realizador,
+                $area,
+                $proveedor,
+                $categoria,
+                $fecha_pago,
+                $estado_solicitud
+            );
+
+
+            if (!$solicitudCreada) {
+                echo json_encode(["status" => false, "message" => "Error al crear la solicitud de fondos."]);
+                exit;
+            }
+
+            // 🔹 Recuperamos el ID o número de solicitud generado
+            $idSolicitud = $this->model->lastInsertId();
+
+            // =====================================================
+            // 2️⃣ Insertar los detalles (factura asociada)
+            // =====================================================
+            foreach ($bien as $index => $valorBien) {
+                $valorTipo = $tipo[$index] ?? 'Anticipo';
+                $valorValor = floatval($valor[$index] ?? 0);
+                $estadoDetalle = 'Anticipo';
+
+                if (!$valorBien || !$valorValor) {
+                    $errores[] = "Error: datos incompletos en el detalle #" . ($index + 1);
+                    continue;
+                }
+
+                $insertDetalle = $this->model->insertDetalleSolicitudFondosNueva(
+                    $idSolicitud,
+                    $valorTipo,
+                    $valorBien,
+                    $valorValor,
+                    $estadoDetalle,
+                    $fecha_registro
+                );
+
+                if (!$insertDetalle) {
+                    $errores[] = "Error al insertar el detalle #" . ($index + 1);
+                }
+            }
+
+            // =====================================================
+            // 3️⃣ Resultado final
+            // =====================================================
+            if (!empty($errores)) {
+                echo json_encode([
+                    "status" => false,
+                    "message" => "La solicitud se creó con algunos errores.",
+                    "errors" => $errores
+                ]);
+                exit;
+            }
+
+            echo json_encode([
+                "status" => true,
+                "message" => "Solicitud de fondos registrada correctamente bajo estado ANTICIPO."
+            ]);
+        }
+    }
+
+
+    public function generarSolicitud(int $contraseña)
+    {
+        if ($contraseña) {
+            $informe = $this->model->getContraseña($contraseña);
+            $id_anticipo = $informe["anticipo"];
+            $anticipo = $this->model->getAnticipoInfo($id_anticipo);
+            $facturas = $this->model->getDetallesbyContra($contraseña);
+            if (empty($informe)) {
+                $arrResponse = array('status' => false, 'msg' => 'Seleccione una solicitud válida.');
+                echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+                return;
+            }
+
+            if ($informe['regimen'] == 1) {
+                $inpuestos = $this->model->getImpuestosRegimen($contraseña);
+            } else {
+                $inpuestos = $this->model->getImpuestosPeqContribuyente($contraseña);
+            }
+
+            $monto_total = $inpuestos['total'];
+            $monto_letras = $this->numeroALetras($monto_total, 'asNumber', 2);
+
+            switch ($informe['mes_registro']) {
+                case '1':
+                    $mes = "Enero";
+                    break;
+                case '2':
+                    $mes = "Febrero";
+                    break;
+                case '3':
+                    $mes = "Marzo";
+                    break;
+                case '4':
+                    $mes = "Abril";
+                    break;
+                case '5':
+                    $mes = "Mayo";
+                    break;
+                case '6':
+                    $mes = "Junio";
+                    break;
+                case '7':
+                    $mes = "Julio";
+                    break;
+                case '8':
+                    $mes = "Agosto";
+                    break;
+                case '9':
+                    $mes = "Septiembre";
+                    break;
+                case '10':
+                    $mes = "Octubre";
+                    break;
+                case '11':
+                    $mes = "Noviembre";
+                    break;
+                case '12':
+                    $mes = "Diciembre";
+                    break;
+                default:
+                    $mes = "Mes no identificado";
+                    break;
+            }
+
+            $idArea = $informe['area_id'];
+            $grupo = $this->model->getGrupo($idArea);
+
+            if (empty($grupo)) {
+                $arrResponse = ['status' => false, 'msg' => 'No se encontró grupo de firmas.'];
+                echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+                return;
+            }
+
+            $id_grupo = is_array($grupo) ? $grupo['id_grupo'] : $grupo;
+
+            $firmas = $this->model->getFirmas($id_grupo);
+
+
+            $ruta_pdf = 'Views/Template/PDF/Solicitud_Fondos.php';
+            $arrData['contraseña'] = $informe;
+            $arrData['anticipo'] = $anticipo;
+            $arrData['facturas'] = $facturas;
+            $arrData['inpuestos'] = $inpuestos;
+            $arrData['mes'] = $mes;
+            $arrData['monto'] = $monto_total;
+            $arrData['monto_letras'] = $monto_letras;
+            $arrData['grupo'] = $grupo;
+            $arrData['firmas'] = $firmas;
+
+            if (empty($arrData)) {
+                $arrResponse = array('status' => false, 'msg' => 'Datos no encontrados.');
+            } else {
+                require_once $ruta_pdf;
+                exit();
+            }
+
+        } else {
+            $arrResponse = array('status' => false, 'msg' => 'Seleccione Uniforme');
+            echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+        }
+    }
+
+    private function numeroALetras($numero, $modo = 'asNumber', $maxFractionDigits = null)
+    {
+        // Requiere ext-intl (NumberFormatter)
+        if (!extension_loaded('intl')) {
+            // Fallback simple: devolver el número como string si intl no está disponible
+            return (string) $numero;
+        }
+
+        // Normalizar entrada: aceptar comas o puntos como separador decimal
+        $numeroStr = trim((string) $numero);
+        $numeroStr = str_replace(',', '.', $numeroStr);
+
+        // Manejo de signo
+        $sign = '';
+        if (substr($numeroStr, 0, 1) === '-') {
+            $sign = 'menos ';
+            $numeroStr = substr($numeroStr, 1);
+        }
+
+        if (!is_numeric($numeroStr)) {
+            return $sign . $numeroStr;
+        }
+
+        // Separar parte entera y decimal
+        $parts = explode('.', $numeroStr, 2);
+        $intPart = $parts[0] === '' ? '0' : $parts[0];
+        $origFraction = $parts[1] ?? '';
+
+        // Ajustar cantidad de decimales si se pide (ej. 2 para centavos)
+        if ($maxFractionDigits !== null && $maxFractionDigits >= 0) {
+            $fraction = substr(str_pad($origFraction, $maxFractionDigits, '0'), 0, $maxFractionDigits);
+            // si quedan todos ceros, tratar como ausencia de fracción
+            if (preg_match('/^0*$/', $fraction)) {
+                $fraction = '';
+            }
+        } else {
+            // eliminar ceros finales que no aportan (opcional)
+            $fraction = rtrim($origFraction, '0');
+            if ($fraction === '')
+                $fraction = $origFraction; // si todo eran ceros, conservar original
+        }
+
+        $fmt = new NumberFormatter('es', NumberFormatter::SPELLOUT);
+
+        // Convertir parte entera
+        // Usamos intval para evitar problemas con floats muy grandes; NumberFormatter maneja hasta cierto límite.
+        $intValue = (int) $intPart;
+        $intWords = $fmt->format($intValue);
+        $intWords = $intWords === '' ? 'cero' : trim($intWords);
+
+        // Si no hay decimales -> devolver solo la parte entera
+        if ($fraction === '' || $fraction === null) {
+            return ucfirst($sign . $intWords);
+        }
+
+        // Mapeo dígitos
+        $digitMap = ['0' => 'cero', '1' => 'uno', '2' => 'dos', '3' => 'tres', '4' => 'cuatro', '5' => 'cinco', '6' => 'seis', '7' => 'siete', '8' => 'ocho', '9' => 'nueve'];
+
+        if ($modo === 'digits') {
+            $digits = preg_split('//u', $fraction, -1, PREG_SPLIT_NO_EMPTY);
+            $words = array_map(function ($d) use ($digitMap) {
+                return $digitMap[$d] ?? $d;
+            }, $digits);
+            return ucfirst($sign . $intWords . ' punto ' . implode(' ', $words));
+        }
+
+        if ($modo === 'asNumber') {
+            // Si la fracción comienza con 0 (ej. 05) preservamos ceros usando modo dígitos
+            if (strlen($fraction) > 0 && $fraction[0] === '0') {
+                $digits = preg_split('//u', $fraction, -1, PREG_SPLIT_NO_EMPTY);
+                $words = array_map(function ($d) use ($digitMap) {
+                    return $digitMap[$d] ?? $d;
+                }, $digits);
+                return ucfirst($sign . $intWords . ' punto ' . implode(' ', $words));
+            } else {
+                // Convertir la fracción como número (25 -> veinticinco)
+                $fractionNumber = (int) $fraction;
+                $fractionWords = $fmt->format($fractionNumber);
+                return ucfirst($sign . $intWords . ' punto ' . trim($fractionWords));
+            }
+        }
+
+        if ($modo === 'currency') {
+            // Usar siempre 2 dígitos para centavos
+            $centavos = substr(str_pad($origFraction, 2, '0'), 0, 2);
+            return ucfirst($sign . $intWords . ' con ' . $centavos . '/100');
+        }
+
+        // Modo no reconocido -> devolver número tal cual
+        return ucfirst($sign . $intWords . ' punto ' . $fraction);
+    }
+
+    public function getFacturaId($id)
+    {
+        $arrData = $this->model->FacturasbyID($id);
+
+        // Verificar y depurar datos
+        error_log(print_r($arrData, true));
+
+        if (empty($arrData)) {
+            $arrResponse = array('status' => false, 'msg' => 'No se encontraron datos.');
+        } else {
+            $arrResponse = array('status' => true, 'data' => $arrData);
+        }
+
+        echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+        die();
+    }
+
+    public function validarSolicitud()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id_solicitud = $_POST['id_solicitud'];
+            $respuesta = $_POST['respuesta'];
+
+            if (empty($id_solicitud)) {
+                echo json_encode(["status" => false, "message" => "Datos incompletos."]);
+                exit;
+            }
+
+            $result = $this->model->udapteSolicitud($id_solicitud, $respuesta);
+            if ($result) {
+                echo json_encode(["status" => true, "message" => "Factura eliminada correctamente."]);
+            } else {
+                echo json_encode(["status" => false, "message" => "Error al eliminar la factura."]);
+            }
+        }
+    }
+
+    public function finalizarSolicitud()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id_solicitud = $_POST['id_solicitud'];
+            $respuesta = $_POST['respuesta'];
+            $no_transferencia = $_POST['no_transferencia'] ?? null;
+            $fecha_pago = $_POST['fecha_pago'] ?? null;
+            $observacion = $_POST['observacion'] ?? null;
+
+            if (empty($id_solicitud)) {
+                echo json_encode(["status" => false, "message" => "Datos incompletos."]);
+                exit;
+            }
+
+            $result = $this->model->endSolicitud($id_solicitud, $respuesta, $no_transferencia, $fecha_pago, $observacion);
+            if ($result) {
+                echo json_encode(["status" => true, "message" => "Factura eliminada correctamente."]);
+            } else {
+                echo json_encode(["status" => false, "message" => "Error al eliminar la factura."]);
+            }
+        }
+    }
+
+    public function finalizarSolicitudSinContra()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id_solicitud = $_POST['id_solicitud'];
+            $respuesta = $_POST['respuesta'];
+            $no_transferencia = $_POST['no_transferencia'] ?? null;
+            $fecha_pago = $_POST['fecha_pago'] ?? null;
+            $observacion = $_POST['observacion'] ?? null;
+
+            if (empty($id_solicitud)) {
+                echo json_encode(["status" => false, "message" => "Datos incompletos."]);
+                exit;
+            }
+
+            $result = $this->model->endSolicitudSinContra($id_solicitud, $respuesta, $no_transferencia, $fecha_pago, $observacion);
+            if ($result) {
+                echo json_encode(["status" => true, "message" => "Factura eliminada correctamente."]);
+            } else {
+                echo json_encode(["status" => false, "message" => "Error al eliminar la factura."]);
+            }
+        }
+    }
+
+    public function getSolisinContra($contraseña)
+    {
+        $arrData = $this->model->getSolisinContra($contraseña);
+
+        // Verificar si se encontraron datos
+        if (empty($arrData)) {
+            $arrResponse = array('status' => false, 'msg' => 'No se encontraron datos 505');
+        } else {
+            // Transformar las fechas y valores a arrays
+            $arrData['no_factura'] = explode(",", $arrData['no_factura']);
+            $arrData['tipo'] = explode(",", $arrData['tipo']);
+            $arrData['bien_servicio'] = explode(",", $arrData['bien_servicio']);
+            $arrData['valor_documento'] = explode(',', $arrData['valor_documento']);
+            $arrResponse = array('status' => true, 'data' => $arrData);
+        }
+
+        echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+        die();
+    }
+
+
+    public function actualizarSolicitud()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id_solicitud = $_POST['id_solicitud']; // ID o código de la contraseña
+            $fecha_pago = $_POST['fecha_pago'];
+            $proveedor = intval($_POST['proveedor']);
+            $estado = $_POST['respuesta'];
+
+            $facturas = $_POST['factura'];
+            $bienes = $_POST['bien'];
+            $valores = $_POST['valor'];
+            $errores = [];
+
+            if (empty($id_solicitud)) {
+                echo json_encode(["status" => false, "message" => "Datos incompletos."]);
+                exit;
+            }
+
+            if (!empty($errores)) {
+                echo json_encode(["status" => false, "message" => $errores]);
+                exit;
+            }
+
+            // Actualizar datos generales de la contraseña
+            $updateContraseña = $this->model->updateSolicitud(
+                $id_solicitud,
+                $fecha_pago,
+                $proveedor,
+                $estado
+            );
+
+            if (!$updateContraseña) {
+                echo json_encode(["status" => false, "message" => "Error al actualizar los datos principales."]);
+                exit;
+            }
+
+            // Manejar facturas nuevas o actualizadas
+            foreach ($facturas as $index => $facturaItem) {
+                $bienItem = $bienes[$index] ?? null;
+                $valorItem = $valores[$index] ?? null;
+
+                if (!$facturaItem || !$bienItem || !$valorItem) {
+                    $errores[] = "Datos incompletos en la factura {$facturaItem}.";
+                    continue;
+                }
+
+                $this->model->updateDetalleFactura($id_solicitud, $bienItem, $valorItem);
+
+            }
+
+            if (!empty($errores)) {
+                echo json_encode(["status" => false, "message" => $errores, "errors" => $errores]);
+                exit;
+            }
+
+            echo json_encode(["status" => true, "message" => "Contraseña actualizada correctamente."]);
+        }
+    }
+
+    public function getAnticipos($id_solicitud)
+    {
+        $htmlOptions = "<option selected disabled>Seleccione un Anticipo...</option>";
+        $arrData = $this->model->selectAnticipos($id_solicitud);
+        if (count($arrData) > 0) {
+            for ($i = 0; $i < count($arrData); $i++) {
+                $htmlOptions .= '<option value="' . $arrData[$i]['id_solicitud'] . '">' . "No. transaccion:" . $arrData[$i]['no_transferencia'] . " | Fecha Transferencia: " . $arrData[$i]['fecha_transaccion'] . '</option>';
+            }
+        }
+        echo $htmlOptions;
+        die();
+    }
+
 
 }

@@ -4,6 +4,8 @@ document.addEventListener("DOMContentLoaded", function () {
     ajax: {
       url: base_url + "/Configuracion/getProveedores",
     },
+    autoWidth: false,
+    colReorder: true,
     columns: [
       {
         data: null,
@@ -14,6 +16,7 @@ document.addEventListener("DOMContentLoaded", function () {
       },
       { data: "nombre_proveedor" },
       { data: "nombre_social" },
+      { data: "nombre_regimen" },
       { data: "nit_proveedor" },
       { data: "fecha_creacion" },
       { data: "dias_credito" },
@@ -29,6 +32,25 @@ document.addEventListener("DOMContentLoaded", function () {
       },
     ],
     dom: "Bfrtip",
+    buttons: [
+      {
+        extend: "colvis",
+        text: '<i class="fas fa-eye me-1"></i> Columnas',
+        className: "btn btn-primary btn-sm me-1 rounded fw-bold text-white",
+        collectionLayout: "fixed two-column",
+        postfixButtons: ["colvisRestore"],
+      },
+      {
+        extend: "excel",
+        text: '<i class="fas fa-file-excel me-1"></i> Excel',
+        className: "btn btn-success btn-sm me-1 rounded fw-bold text-white",
+      },
+      {
+        extend: "print",
+        text: '<i class="fas fa-print me-1"></i> Imprimir',
+        className: "btn btn-secondary btn-sm rounded fw-bold text-white",
+      },
+    ],
   });
 
   document
@@ -80,6 +102,7 @@ document.addEventListener("DOMContentLoaded", function () {
           $("#edit_nombre_proveedor").val(response.data.nombre_proveedor);
           $("#edit_nombre_social").val(response.data.nombre_social);
           $("#edit_nit_proveedor").val(response.data.nit_proveedor);
+          $("#edit_regimen").val(response.data.regimen);
           $("#edit_estado").val(response.data.estado);
           $("#edit_dias_credito").val(response.data.dias_credito);
         } else {

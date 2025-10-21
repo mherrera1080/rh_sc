@@ -6,6 +6,8 @@ document.addEventListener("DOMContentLoaded", function () {
     ajax: {
       url: base_url + "/Contraseñas/registroContra",
     },
+    autoWidth: false,
+    colReorder: true,
     columns: [
       {
         data: null,
@@ -60,6 +62,25 @@ document.addEventListener("DOMContentLoaded", function () {
       },
     ],
     dom: "Bfrtip",
+    buttons: [
+      {
+        extend: "colvis",
+        text: '<i class="fas fa-eye me-1"></i> Columnas',
+        className: "btn btn-primary btn-sm me-1 rounded fw-bold text-white",
+        collectionLayout: "fixed two-column",
+        postfixButtons: ["colvisRestore"],
+      },
+      {
+        extend: "excel",
+        text: '<i class="fas fa-file-excel me-1"></i> Excel',
+        className: "btn btn-success btn-sm me-1 rounded fw-bold text-white",
+      },
+      {
+        extend: "print",
+        text: '<i class="fas fa-print me-1"></i> Imprimir',
+        className: "btn btn-secondary btn-sm rounded fw-bold text-white",
+      },
+    ],
   });
 
   $(document).on("click", ".btn-password", function () {
@@ -92,7 +113,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (request.readyState === 4 && request.status === 200) {
         document.querySelector("#proveedor_recibimiento").innerHTML =
           request.responseText;
-        $("#proveedor_recibimiento").selectpicker("refresh");
+        $("#proveedor_recibimiento");
       }
     };
   }
@@ -107,7 +128,7 @@ document.addEventListener("DOMContentLoaded", function () {
     request.onreadystatechange = function () {
       if (request.readyState === 4 && request.status === 200) {
         document.querySelector("#area").innerHTML = request.responseText;
-        $("#area").selectpicker("refresh");
+        $("#area");
       }
     };
   }
@@ -123,7 +144,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (request.readyState === 4 && request.status === 200) {
         document.querySelector("#edit_id_proveedor").innerHTML =
           request.responseText;
-        $("#edit_id_proveedor").selectpicker("refresh");
+        $("#edit_id_proveedor");
       }
     };
   }
@@ -139,7 +160,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (request.readyState === 4 && request.status === 200) {
         document.querySelector("#c_id_proveedor").innerHTML =
           request.responseText;
-        $("#c_id_proveedor").selectpicker("refresh");
+        $("#c_id_proveedor");
       }
     };
   }
@@ -154,7 +175,7 @@ document.addEventListener("DOMContentLoaded", function () {
     request.onreadystatechange = function () {
       if (request.readyState === 4 && request.status === 200) {
         document.querySelector("#edit_area").innerHTML = request.responseText;
-        $("#edit_area").selectpicker("refresh");
+        $("#edit_area");
       }
     };
   }
@@ -169,7 +190,7 @@ document.addEventListener("DOMContentLoaded", function () {
     request.onreadystatechange = function () {
       if (request.readyState === 4 && request.status === 200) {
         document.querySelector("#c_area").innerHTML = request.responseText;
-        $("#c_area").selectpicker("refresh");
+        $("#c_area");
       }
     };
   }

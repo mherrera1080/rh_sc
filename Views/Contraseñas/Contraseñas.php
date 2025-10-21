@@ -24,11 +24,6 @@
                 <div class="card-header">
                     <div class="d-flex align-items-center">
                         <h4 class="card-title">Contraseña</h4>
-                        <button class="btn btn-primary btn-round ms-auto btn-password" data-bs-toggle="modal"
-                            data-bs-target="#setContraseñaModal">
-                            <i class="fa fa-plus"></i>
-                            Añadir Contraseña
-                        </button>
                     </div>
                 </div>
                 <div class="card-body">
