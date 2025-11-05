@@ -102,6 +102,11 @@ class Vehiculos extends Controllers
                 exit;
             }
 
+            if ($categoria === null && $estado === "Finalizado" ) {
+                echo json_encode(["status" => false, "message" => "Seleccione una categoria antes"]);
+                exit;
+            }
+
             // Registrar cambios en el modelo
             $r1 = $this->model->setContraseña($contraseña, $estado);
             $r2 = $this->model->setEstadoDetalles($contraseña, $estado);
@@ -121,10 +126,6 @@ class Vehiculos extends Controllers
 
             // Si el estado es Finalizado, crear el fondo
             if ($estado === "Finalizado") {
-                if (empty($categoria)) {
-                    echo json_encode(["status" => false, "message" => "Datos incompletos para iniciar solicitud."]);
-                    exit;
-                }
 
                 $this->model->solicitudFondoVehiculos($contraseña, $area, $categoria);
 
@@ -146,8 +147,6 @@ class Vehiculos extends Controllers
             ]);
         }
     }
-
-
 
     // no
 }

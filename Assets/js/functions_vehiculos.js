@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", function () {
           let html = "";
           data = data.toLowerCase();
           if (data.includes("pendiente")) {
-            html = '<span class="badge badge-warning">' + data + "</span>";
+            html = '<span class="badge badge-warning"> PENDIENTE</span>';
           } else if (data.includes("validado")) {
             html = '<span class="badge badge-success">VALIDADO</span>';
           } else if (data.includes("corregir")) {
@@ -38,6 +38,8 @@ document.addEventListener("DOMContentLoaded", function () {
             html = '<span class="badge badge-success">CORREGIDO</span>';
           }else if (data.includes("descartado")) {
             html = '<span class="badge badge-danger">DESCARTADO</span>';
+          } else if (data.includes("finalizado")) {
+            html = '<span class="badge badge-success">FINALIZADO</span>';
           }
           return html;
         },
@@ -57,7 +59,7 @@ document.addEventListener("DOMContentLoaded", function () {
                   onclick="window.open('${base_url}/Contraseñas/generarContraseña/${row.contraseña}', '_blank')">
             <i class="far fa-file-pdf"></i>
           </button>`;
-          } else if (data && data.trim().includes("Pendiente") || data.trim().includes("Corregido") || data.trim().includes("Validado") ) {
+          } else if (data && data.trim().includes("Pendiente") || data.trim().includes("Corregido") || data.trim().includes("Validado") || data.trim().includes("Finalizado") ) {
             html = `
           <button class="btn btn-info btn-sm" onclick="window.location.href='${base_url}/Vehiculos/Detalles/${row.contraseña}'">
             <i class="fas fa-archive"></i>
@@ -66,7 +68,7 @@ document.addEventListener("DOMContentLoaded", function () {
                   onclick="window.open('${base_url}/Contraseñas/generarContraseña/${row.contraseña}', '_blank')">
             <i class="far fa-file-pdf"></i>
           </button>`;
-          }
+          } 
           return html;
         },
       },

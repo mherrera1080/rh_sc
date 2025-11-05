@@ -65,7 +65,7 @@
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <form id="setContraseña">
-                <input type="hidden" id="realizador" name="realizador" value="Prueba Administrador">
+                <input type="hidden" id="realizador" name="realizador" value="<?= $_SESSION['PersonalData']['nombre_completo'] ?>">
                 <div class="modal-header ">
                     <h5 class="modal-title" id="setUserModalLabel">Crear Contraseña</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -160,7 +160,8 @@
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <form id="updateContraseña">
-                <input type="hidden" id="edit_realizador" name="realizador" value="Prueba Administrador">
+                <input type="hidden" id="edit_realizador" name="realizador"
+                    value="<?= $_SESSION['PersonalData']['nombre_completo'] ?>">
 
                 <div class="modal-header ">
                     <h5 class="modal-title" id="setUserModalLabel">Crear Contraseña</h5>

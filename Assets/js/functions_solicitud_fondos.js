@@ -17,16 +17,6 @@ document.addEventListener("DOMContentLoaded", function () {
       { data: "contraseña" },
       {
         data: "categoria",
-        render: function (data, type, row, meta) {
-          let html = "";
-          data = data.toLowerCase();
-          if (data.includes("anticipo")) {
-            html = '<span class="badge badge-info"> ANTICIPO </span>';
-          } else if (data.includes("factura")) {
-            html = '<span class="badge badge-success">FACTURA</span>';
-          }
-          return html;
-        },
       },
       {
         data: null, // usamos null porque tomaremos varios campos del row
@@ -40,6 +30,8 @@ document.addEventListener("DOMContentLoaded", function () {
         },
       },
       { data: "area" },
+      { data: "no_transferencia" },
+      { data: "fecha_transaccion" },
       {
         data: "estado",
         className: "text-center",
@@ -50,12 +42,10 @@ document.addEventListener("DOMContentLoaded", function () {
             html = '<span class="badge badge-warning"> PENDIENTE </span>';
           } else if (data.includes("validado")) {
             html = '<span class="badge badge-success">VALIDADO</span>';
-          } else if (data.includes("finalizado")) {
-            html = '<span class="badge badge-success">FINALIZADO</span>';
+          } else if (data.includes("pagado")) {
+            html = '<span class="badge badge-success">PAGADO</span>';
           } else if (data.includes("corregir")) {
             html = '<span class="badge badge-danger">CORREGIR</span>';
-          } else if (data.includes("anticipo")) {
-            html = '<span class="badge badge-info">ANTICIPO</span>';
           } else if (data.includes("descartado")) {
             html = '<span class="badge badge-danger">DESCARTADO</span>';
           }
@@ -75,7 +65,7 @@ document.addEventListener("DOMContentLoaded", function () {
               </button>`;
           } else {
             // Si el estado es Anticipo
-            html = `<button class="btn btn-info btn-sm" onclick="window.location.href='${base_url}/SolicitudFondos/RevisionSinContra/${row.id_solicitud}'">
+            html = `<button class="btn btn-info btn-sm" onclick="window.location.href='${base_url}/SolicitudFondos/Anticipo/${row.id_solicitud}'">
                 <i class="fas fa-archive"></i>
               </button>`;
           }
@@ -197,17 +187,6 @@ document.addEventListener("DOMContentLoaded", function () {
           submitButton.disabled = false;
           spinner.classList.add("d-none");
         })
-        .catch((error) => {
-          Swal.fire({
-            title: "Error",
-            text: "Ocurrió un problema al procesar la solicitud.",
-            icon: "error",
-            confirmButtonText: "Entendido",
-          });
-          console.error("Error:", error);
-          submitButton.disabled = false;
-          spinner.classList.add("d-none");
-        });
     });
 
   // no pasarse

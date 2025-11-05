@@ -26,7 +26,6 @@ class ContraseñasModel extends Mysql
         INNER JOIN tb_proveedor tp ON tc.id_proveedor = tp.id_proveedor
         INNER JOIN tb_areas ta ON tc.area = ta.id_area
         INNER JOIN tb_detalles td ON tc.contraseña = td.contraseña
-        $where
         GROUP BY tc.id_contraseña";
 
         return $this->select_all($sql);
@@ -105,7 +104,8 @@ class ContraseñasModel extends Mysql
             ta.id_area,
             tc.id_proveedor,
             ta.nombre_area AS area,
-            ROUND(SUM(td.valor_documento), 2) AS monto_total,
+            FORMAT(SUM(td.valor_documento), 2) AS monto_formato,
+            SUM(td.valor_documento) AS monto_total,
             tc.fecha_pago,
             tc.estado,
             tc.anticipo,
@@ -121,18 +121,17 @@ class ContraseñasModel extends Mysql
         return $request;
     }
 
-    public function getAnticipo($proveedor, $area)
+    public function getCorreosArea($area, $estado)
     {
-        $sql = "SELECT 1
-            FROM tb_solicitud_fondos
-            WHERE proveedor = ? 
-              AND area = ? 
-              AND categoria = 'Anticipo' 
-              AND estado = 'Finalizado'
-            LIMIT 1";
-        $request = $this->select_multi_parameters($sql, [$proveedor, $area]);
-
-        return !empty($request);
+        $sql = "SELECT 
+        tu.correo as correos
+        FROM tb_fase_correos tfc
+        INNER JOIN tb_grupo_correos tg ON tfc.grupo = tg.id_grupo_correo
+        INNER JOIN tb_usuarios tu ON tfc.usuario = tu.id_usuario
+        INNER JOIN tb_fases tf ON tfc.fase = tf.id_fase
+        WHERE tg.area = ? AND tf.nombre_base = ?";
+        $request = $this->select_multi($sql, array($area, $estado));
+        return $request;
     }
 
     public function getAnticipoInfo($contraseña)
@@ -160,29 +159,6 @@ class ContraseñasModel extends Mysql
         return $request;
     }
 
-
-    public function selectContrasAreas($id_area)
-    {
-        $sql = "SELECT
-        tc.id_contraseña,
-        tc.contraseña,
-        tc.fecha_registro,
-        tp.nombre_proveedor as proveedor,
-        ta.nombre_area as area,
-        tc.valor_letras,
-        ROUND(SUM(td.valor_documento), 2) AS monto_total,
-        tc.fecha_pago,
-        tc.estado
-        FROM tb_contraseña tc
-        INNER JOIN tb_proveedor tp ON tc.id_proveedor = tp.id_proveedor
-        INNER JOIN tb_areas ta ON tc.area = ta.id_area
-        INNER JOIN tb_detalles td ON tc.contraseña = td.contraseña
-        WHERE ta.id_area = ? 
-        GROUP BY tc.contraseña";
-
-        $request = $this->select_multi($sql, array($id_area));
-        return $request;
-    }
 
     public function selectProveedores()
     {
@@ -319,14 +295,18 @@ class ContraseñasModel extends Mysql
     public function getFacturasbyContra(int $contraseña)
     {
         $sql = "SELECT
-            id_detalle,
-            no_factura,
-            bien_servicio,
-            valor_documento,
-            fecha_registro,
-            estado
-        FROM tb_detalles 
-        WHERE contraseña = ?";
+            td.id_detalle,
+            td.no_factura,
+            td.bien_servicio,
+            td.valor_documento,
+            td.fecha_registro,
+            td.estado,
+            tc.area,
+            tc.solicitante,
+            tc.estado as estado_contra
+        FROM tb_detalles td
+        INNER JOIN tb_contraseña tc ON td.contraseña = tc.contraseña 
+        WHERE td.contraseña = ?";
         $request = $this->select_multi($sql, array($contraseña));
         return $request;
     }
@@ -416,14 +396,25 @@ class ContraseñasModel extends Mysql
         return $this->update($sql, $arrData);
     }
 
-    public function validacionContraseña($contraseña, $anticipo, $estado)
+    public function validacionArea($contraseña, $anticipo, $area_user, $estado)
     {
         $sql = "UPDATE tb_contraseña 
                 SET 
                 anticipo = ?,
+                area_user = ?,
                 estado = ?
                 WHERE contraseña = ?";
-        $arrData = [$anticipo, $estado, $contraseña];
+        $arrData = [$anticipo, $area_user, $estado, $contraseña];
+        return $this->update($sql, $arrData);
+    }
+
+    public function validacionConta($contraseña, $estado)
+    {
+        $sql = "UPDATE tb_contraseña 
+                SET 
+                estado = ?
+                WHERE contraseña = ?";
+        $arrData = [$estado, $contraseña];
         return $this->update($sql, $arrData);
     }
 
@@ -467,5 +458,29 @@ class ContraseñasModel extends Mysql
         $arrData = [$estado, $contraseña];
         return $this->deletebyid($sql, $arrData);
     }
+
+    public function getUsuariosPorArea($id_area)
+    {
+        $sql = "SELECT id_usuario, 
+        CONCAT(nombres, ' ', primer_apellido, ' ', segundo_apellido) AS nombre_completo, 
+        correo
+        FROM tb_usuarios
+        WHERE area = ?";
+        $request = $this->select_parameters($sql, [$id_area]);
+
+        echo json_encode($request, JSON_UNESCAPED_UNICODE);
+        die();
+    }
+
+    public function getCorreobyName($realizador)
+    {
+        $sql = "SELECT 
+        correo 
+        FROM tb_usuarios
+        WHERE CONCAT(nombres, ' ', primer_apellido, ' ', segundo_apellido) = ?";
+        $request = $this->select($sql, array($realizador));
+        return $request;
+    }
+
 
 }

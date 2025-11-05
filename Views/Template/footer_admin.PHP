@@ -39,7 +39,7 @@
                         </div>
                         <div class="col-md-3">
                             <label for="rol" class="form-label">Rol</label>
-                            <input type="text" class="form-control" value="<?= $_SESSION['PersonalData']['rol'] ?>"
+                            <input type="text" class="form-control" value="<?= $_SESSION['PersonalData']['rol_usuario'] ?>"
                                 disabled>
                         </div>
                         <div class="col-md-6">

@@ -167,22 +167,44 @@ document.addEventListener("DOMContentLoaded", function () {
       request.send(formData);
 
       request.onreadystatechange = function () {
-        if (request.readyState === 4 && request.status === 200) {
-          let response = JSON.parse(request.responseText);
-          if (response.status) {
-            Swal.fire({
-              title: "Datos guardados correctamente",
-              icon: "success",
-              confirmButtonText: "Aceptar",
-            }).then((result) => {
-              if (result.isConfirmed) {
-                // Recargar la página al presionar "Aceptar"
-                location.reload();
+        if (request.readyState === 4) {
+          try {
+            if (request.status === 200) {
+              let response = JSON.parse(request.responseText);
+
+              if (response.status) {
+                Swal.fire({
+                  title: response.message || "Datos guardados correctamente",
+                  icon: "success",
+                  confirmButtonText: "Aceptar",
+                }).then((result) => {
+                  if (result.isConfirmed) {
+                    location.reload();
+                  }
+                });
+                $("#solicitarFondosVehiculos").modal("hide");
+              } else {
+                Swal.fire(
+                  "Atención",
+                  response.message || "Error al procesar la solicitud.",
+                  "error"
+                );
               }
-            });
-            $("#solicitarFondosVehiculos").modal("hide");
-          } else {
-            Swal.fire("Atención", response.msg, "error"); // Mostrar mensaje de error
+            } else {
+              Swal.fire(
+                "Error",
+                "Hubo un problema al procesar la solicitud. Código: " +
+                  request.status,
+                "error"
+              );
+            }
+          } catch (e) {
+            console.error(
+              "Error al procesar la respuesta:",
+              e,
+              request.responseText
+            );
+            Swal.fire("Error", "Respuesta inesperada del servidor.", "error");
           }
         }
       };

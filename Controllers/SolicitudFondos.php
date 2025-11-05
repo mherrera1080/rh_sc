@@ -51,17 +51,17 @@ class SolicitudFondos extends Controllers
         $this->views->getView($this, "Revision", $data);
     }
 
-    public function RevisionSinContra($id_solicitud)
+    public function Anticipo($id_solicitud)
     {
         $facturas = $this->model->getSolicitud($id_solicitud);
 
         $data['facturas'] = $facturas;
-        $data['page_id'] = 'Revision';
-        $data['page_tag'] = "Revision";
-        $data['page_title'] = "Revision";
-        $data['page_name'] = "Revision";
+        $data['page_id'] = 'Anticipo';
+        $data['page_tag'] = "Anticipo";
+        $data['page_title'] = "Anticipo";
+        $data['page_name'] = "Anticipo";
         $data['page_functions_js'] = "functions_revision_sin.js";
-        $this->views->getView($this, "RevisionSinContra", $data);
+        $this->views->getView($this, "Anticipo", $data);
     }
 
     public function getFacturas($contraseña)
@@ -136,7 +136,7 @@ class SolicitudFondos extends Controllers
             $bien = $_POST['bien'] ?? [];
             $valor = $_POST['valor'] ?? [];
             $categoria = 'Anticipo';
-            $estado_solicitud = 'Anticipo';
+            $estado_solicitud = 'Pendiente';
             $errores = [];
 
             // 🔹 Validaciones básicas
@@ -150,30 +150,35 @@ class SolicitudFondos extends Controllers
                 exit;
             }
 
-            // =====================================================
-            // 1️⃣ Crear la solicitud principal en tb_solicitud_fondos
-            // =====================================================
+            $ultimoCorrelativo = $this->model->getUltimoCorrelativo(); // <-- función que crearás en el modelo
+
+            if ($ultimoCorrelativo) {
+                $numero = intval(substr($ultimoCorrelativo, 4));
+                $nuevoNumero = str_pad($numero + 1, 5, "0", STR_PAD_LEFT);
+            } else {
+                // Si no hay registros previos
+                $nuevoNumero = "00001";
+            }
+
+            $contraseña = "ANT-" . $nuevoNumero;
+
             $solicitudCreada = $this->model->solicitudFondoVehiculosNueva(
                 $realizador,
                 $area,
                 $proveedor,
                 $categoria,
                 $fecha_pago,
-                $estado_solicitud
+                $estado_solicitud,
+                $contraseña
             );
-
 
             if (!$solicitudCreada) {
                 echo json_encode(["status" => false, "message" => "Error al crear la solicitud de fondos."]);
                 exit;
             }
 
-            // 🔹 Recuperamos el ID o número de solicitud generado
             $idSolicitud = $this->model->lastInsertId();
 
-            // =====================================================
-            // 2️⃣ Insertar los detalles (factura asociada)
-            // =====================================================
             foreach ($bien as $index => $valorBien) {
                 $valorTipo = $tipo[$index] ?? 'Anticipo';
                 $valorValor = floatval($valor[$index] ?? 0);
@@ -198,9 +203,6 @@ class SolicitudFondos extends Controllers
                 }
             }
 
-            // =====================================================
-            // 3️⃣ Resultado final
-            // =====================================================
             if (!empty($errores)) {
                 echo json_encode([
                     "status" => false,
@@ -210,35 +212,141 @@ class SolicitudFondos extends Controllers
                 exit;
             }
 
+            $arrData = [
+                'solicitud' => $this->model->getSolisinContra($idSolicitud),
+            ];
+            $sendcorreoEmpleado = 'Views/Template/Email/sendAnticipo.php';
+            try {
+                ob_start();
+                require $sendcorreoEmpleado;
+                ob_end_clean();
+            } catch (Exception $e) {
+                echo json_encode([
+                    "status" => false,
+                    "message" => "Error al enviar el correo: " . $e->getMessage()
+                ]);
+                exit;
+            }
+
             echo json_encode([
                 "status" => true,
-                "message" => "Solicitud de fondos registrada correctamente bajo estado ANTICIPO."
+                "message" => "Anticipo Creado"
             ]);
         }
     }
-
 
     public function generarSolicitud(int $contraseña)
     {
         if ($contraseña) {
             $informe = $this->model->getContraseña($contraseña);
             $id_anticipo = $informe["anticipo"];
+            $usuario = $informe["solicitante"];
             $anticipo = $this->model->getAnticipoInfo($id_anticipo);
             $facturas = $this->model->getDetallesbyContra($contraseña);
+            $solicitante = $this->model->selectUsuario($usuario);
             if (empty($informe)) {
                 $arrResponse = array('status' => false, 'msg' => 'Seleccione una solicitud válida.');
                 echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
                 return;
             }
 
+            if (empty($solicitante)) {
+                $arrResponse = ['status' => false, 'msg' => 'No se encontró el solicitante'];
+                echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+                return;
+            }
             if ($informe['regimen'] == 1) {
                 $inpuestos = $this->model->getImpuestosRegimen($contraseña);
             } else {
                 $inpuestos = $this->model->getImpuestosPeqContribuyente($contraseña);
             }
-
             $monto_total = $inpuestos['total'];
             $monto_letras = $this->numeroALetras($monto_total, 'asNumber', 2);
+            switch ($informe['mes_registro']) {
+                case '1':
+                    $mes = "Enero";
+                    break;
+                case '2':
+                    $mes = "Febrero";
+                    break;
+                case '3':
+                    $mes = "Marzo";
+                    break;
+                case '4':
+                    $mes = "Abril";
+                    break;
+                case '5':
+                    $mes = "Mayo";
+                    break;
+                case '6':
+                    $mes = "Junio";
+                    break;
+                case '7':
+                    $mes = "Julio";
+                    break;
+                case '8':
+                    $mes = "Agosto";
+                    break;
+                case '9':
+                    $mes = "Septiembre";
+                    break;
+                case '10':
+                    $mes = "Octubre";
+                    break;
+                case '11':
+                    $mes = "Noviembre";
+                    break;
+                case '12':
+                    $mes = "Diciembre";
+                    break;
+                default:
+                    $mes = "Mes no identificado";
+                    break;
+            }
+            $idArea = $informe['area_id'];
+            $grupo = $this->model->getGrupo($idArea);
+            if (empty($grupo)) {
+                $arrResponse = ['status' => false, 'msg' => 'No se encontró grupo de firmas.'];
+                echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+                return;
+            }
+            $id_grupo = is_array($grupo) ? $grupo['id_grupo'] : $grupo;
+            $firmas = $this->model->getFirmas($id_grupo);
+            $ruta_pdf = 'Views/Template/PDF/Solicitud_Fondos.php';
+            $arrData['contraseña'] = $informe;
+            $arrData['anticipo'] = $anticipo;
+            $arrData['facturas'] = $facturas;
+            $arrData['inpuestos'] = $inpuestos;
+            $arrData['mes'] = $mes;
+            $arrData['monto'] = $monto_total;
+            $arrData['monto_letras'] = $monto_letras;
+            $arrData['grupo'] = $grupo;
+            $arrData['firmas'] = $firmas;
+            $arrData['solicitante'] = $solicitante;
+            if (empty($arrData)) {
+                $arrResponse = array('status' => false, 'msg' => 'Datos no encontrados.');
+            } else {
+                require_once $ruta_pdf;
+                exit();
+            }
+        } else {
+            $arrResponse = array('status' => false, 'msg' => 'Seleccione Uniforme');
+            echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+        }
+    }
+    public function generarAnticipo($solicitud)
+    {
+        if ($solicitud) {
+            $informe = $this->model->getSolicitud($solicitud);
+            $facturas = $this->model->getDetallesAnticipo($solicitud);
+            if (empty($informe)) {
+                $arrResponse = array('status' => false, 'msg' => 'Seleccione una solicitud válida.');
+                echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+                return;
+            }
+
+            $monto_total = $informe['total'];
+            $monto_letras = $this->numeroALetras($monto_total, 'asNumber', 2) . ' Quetzales';
 
             switch ($informe['mes_registro']) {
                 case '1':
@@ -282,7 +390,7 @@ class SolicitudFondos extends Controllers
                     break;
             }
 
-            $idArea = $informe['area_id'];
+            $idArea = $informe['id_area'];
             $grupo = $this->model->getGrupo($idArea);
 
             if (empty($grupo)) {
@@ -295,12 +403,9 @@ class SolicitudFondos extends Controllers
 
             $firmas = $this->model->getFirmas($id_grupo);
 
-
-            $ruta_pdf = 'Views/Template/PDF/Solicitud_Fondos.php';
-            $arrData['contraseña'] = $informe;
-            $arrData['anticipo'] = $anticipo;
+            $ruta_pdf = 'Views/Template/PDF/Anticipo.php';
+            $arrData['anticipo'] = $informe;
             $arrData['facturas'] = $facturas;
-            $arrData['inpuestos'] = $inpuestos;
             $arrData['mes'] = $mes;
             $arrData['monto'] = $monto_total;
             $arrData['monto_letras'] = $monto_letras;
@@ -319,7 +424,6 @@ class SolicitudFondos extends Controllers
             echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
         }
     }
-
     private function numeroALetras($numero, $modo = 'asNumber', $maxFractionDigits = null)
     {
         // Requiere ext-intl (NumberFormatter)
@@ -411,7 +515,6 @@ class SolicitudFondos extends Controllers
         // Modo no reconocido -> devolver número tal cual
         return ucfirst($sign . $intWords . ' punto ' . $fraction);
     }
-
     public function getFacturaId($id)
     {
         $arrData = $this->model->FacturasbyID($id);
@@ -429,22 +532,63 @@ class SolicitudFondos extends Controllers
         die();
     }
 
+    
     public function validarSolicitud()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $id_solicitud = $_POST['id_solicitud'];
-            $respuesta = $_POST['respuesta'];
+            $id_solicitud = $_POST['id_solicitud'] ?? null;
+            $respuesta = $_POST['respuesta'] ?? null;
 
-            if (empty($id_solicitud)) {
+            // Validación básica
+            if (empty($id_solicitud) || empty($respuesta)) {
                 echo json_encode(["status" => false, "message" => "Datos incompletos."]);
                 exit;
             }
 
+            // Actualizar solicitud
             $result = $this->model->udapteSolicitud($id_solicitud, $respuesta);
-            if ($result) {
-                echo json_encode(["status" => true, "message" => "Factura eliminada correctamente."]);
+
+            if (!$result) {
+                echo json_encode([
+                    "status" => false,
+                    "message" => "Error al actualizar la solicitud."
+                ]);
+                exit;
+            }
+
+            $contra = $this->model->getContraSoli($id_solicitud);
+
+            $contraseña = $contra['contraseña'];
+
+            // Enviar correo
+            $arrData = [
+                'solicitud' => $this->model->getContraseña($contraseña),
+                'estado' => $respuesta
+            ];
+            $sendcorreoEmpleado = 'Views/Template/Email/sentSolicitudFondos.php';
+            try {
+                ob_start();
+                require $sendcorreoEmpleado;
+                ob_end_clean();
+            } catch (Exception $e) {
+                echo json_encode([
+                    "status" => false,
+                    "message" => "Error al enviar el correo: " . $e->getMessage()
+                ]);
+                exit;
+            }
+
+            // Respuesta según estado
+            if ($respuesta == 'Descartado') {
+                echo json_encode([
+                    "status" => true,
+                    "message" => "Solicitud descartada y correo enviado correctamente."
+                ]);
             } else {
-                echo json_encode(["status" => false, "message" => "Error al eliminar la factura."]);
+                echo json_encode([
+                    "status" => true,
+                    "message" => "Solicitud validada y correo enviado correctamente."
+                ]);
             }
         }
     }
@@ -458,20 +602,57 @@ class SolicitudFondos extends Controllers
             $fecha_pago = $_POST['fecha_pago'] ?? null;
             $observacion = $_POST['observacion'] ?? null;
 
-            if (empty($id_solicitud)) {
-                echo json_encode(["status" => false, "message" => "Datos incompletos."]);
-                exit;
+            if ($respuesta == 'Pagado') {
+                if (empty($id_solicitud) || empty($no_transferencia) || empty($fecha_pago)) {
+                    echo json_encode(["status" => false, "message" => "Datos incompletos."]);
+                    exit;
+                }
             }
 
             $result = $this->model->endSolicitud($id_solicitud, $respuesta, $no_transferencia, $fecha_pago, $observacion);
-            if ($result) {
-                echo json_encode(["status" => true, "message" => "Factura eliminada correctamente."]);
+            if (!$result) {
+                echo json_encode([
+                    "status" => false,
+                    "message" => "Error al actualizar la solicitud."
+                ]);
+                exit;
+            }
+            $contra = $this->model->getContraSoli($id_solicitud);
+
+            $contraseña = $contra['contraseña'];
+
+            // Enviar correo
+            $arrData = [
+                'solicitud' => $this->model->getContraseña($contraseña),
+                'estado' => $respuesta
+            ];
+            $sendcorreoEmpleado = 'Views/Template/Email/sentSolicitudFondos.php';
+            try {
+                ob_start();
+                require $sendcorreoEmpleado;
+                ob_end_clean();
+            } catch (Exception $e) {
+                echo json_encode([
+                    "status" => false,
+                    "message" => "Error al enviar el correo: " . $e->getMessage()
+                ]);
+                exit;
+            }
+
+            // Respuesta según estado
+            if ($respuesta == 'Descartado') {
+                echo json_encode([
+                    "status" => true,
+                    "message" => "Solicitud descartada"
+                ]);
             } else {
-                echo json_encode(["status" => false, "message" => "Error al eliminar la factura."]);
+                echo json_encode([
+                    "status" => true,
+                    "message" => "Solicitud Pagada"
+                ]);
             }
         }
     }
-
     public function finalizarSolicitudSinContra()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -481,12 +662,32 @@ class SolicitudFondos extends Controllers
             $fecha_pago = $_POST['fecha_pago'] ?? null;
             $observacion = $_POST['observacion'] ?? null;
 
-            if (empty($id_solicitud)) {
-                echo json_encode(["status" => false, "message" => "Datos incompletos."]);
-                exit;
+            if ($respuesta == 'Pagado') {
+                if (empty($id_solicitud) || empty($no_transferencia) || empty($fecha_pago)) {
+                    echo json_encode(["status" => false, "message" => "Datos incompletos."]);
+                    exit;
+                }
             }
 
             $result = $this->model->endSolicitudSinContra($id_solicitud, $respuesta, $no_transferencia, $fecha_pago, $observacion);
+
+            // Enviar correo
+            $arrData = [
+                'solicitud' => $this->model->getSolisinContra($id_solicitud),
+            ];
+            $sendcorreoEmpleado = 'Views/Template/Email/sendAnticipo.php';
+            try {
+                ob_start();
+                require $sendcorreoEmpleado;
+                ob_end_clean();
+            } catch (Exception $e) {
+                echo json_encode([
+                    "status" => false,
+                    "message" => "Error al enviar el correo: " . $e->getMessage()
+                ]);
+                exit;
+            }
+
             if ($result) {
                 echo json_encode(["status" => true, "message" => "Factura eliminada correctamente."]);
             } else {
@@ -499,23 +700,18 @@ class SolicitudFondos extends Controllers
     {
         $arrData = $this->model->getSolisinContra($contraseña);
 
-        // Verificar si se encontraron datos
         if (empty($arrData)) {
             $arrResponse = array('status' => false, 'msg' => 'No se encontraron datos 505');
         } else {
-            // Transformar las fechas y valores a arrays
             $arrData['no_factura'] = explode(",", $arrData['no_factura']);
             $arrData['tipo'] = explode(",", $arrData['tipo']);
             $arrData['bien_servicio'] = explode(",", $arrData['bien_servicio']);
             $arrData['valor_documento'] = explode(',', $arrData['valor_documento']);
             $arrResponse = array('status' => true, 'data' => $arrData);
         }
-
         echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
         die();
     }
-
-
     public function actualizarSolicitud()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -574,19 +770,26 @@ class SolicitudFondos extends Controllers
             echo json_encode(["status" => true, "message" => "Contraseña actualizada correctamente."]);
         }
     }
-
-    public function getAnticipos($id_solicitud)
+    public function getAnticipos($params)
     {
+        $arrParams = explode(",", $params);
+        $id_proveedor = $arrParams[0];
+        $id_area = $arrParams[1];
+
         $htmlOptions = "<option selected disabled>Seleccione un Anticipo...</option>";
-        $arrData = $this->model->selectAnticipos($id_solicitud);
+        $arrData = $this->model->selectAnticipos($id_proveedor, $id_area);
+
         if (count($arrData) > 0) {
             for ($i = 0; $i < count($arrData); $i++) {
-                $htmlOptions .= '<option value="' . $arrData[$i]['id_solicitud'] . '">' . "No. transaccion:" . $arrData[$i]['no_transferencia'] . " | Fecha Transferencia: " . $arrData[$i]['fecha_transaccion'] . '</option>';
+                $htmlOptions .= '<option value="' . $arrData[$i]['id_solicitud'] . '">'
+                    . "Correlativo: " . $arrData[$i]['contraseña']
+                    . " | Fecha Transaccion: " . $arrData[$i]['fecha_transaccion']
+                    . '</option>';
             }
         }
+
         echo $htmlOptions;
         die();
     }
-
 
 }

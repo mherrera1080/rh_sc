@@ -20,8 +20,8 @@ document.addEventListener("DOMContentLoaded", function () {
       { data: "registro_ax", title: "Registro AX", visible: false },
       { data: "bien_servicio", title: "Bien/Servicio" },
       { data: "valor_documento", title: "Valor Doc." },
-      { data: "reten_iva", title: "Ret. ISR" },
-      { data: "reten_isr", title: "Ret. IVA" },
+      { data: "reten_iva", title: "Ret. IVA" },
+      { data: "reten_isr", title: "Ret. ISR" },
       { data: "iva", title: "IVA", visible: false },
       { data: "base", title: "Base" },
       { data: "total", title: "Total" },
@@ -29,20 +29,24 @@ document.addEventListener("DOMContentLoaded", function () {
       {
         data: null,
         render: function (data, type, row) {
-          if (solicitud_estado != "Finalizado" && usuario == 4) {
-            return `
-          <button type="button" class="btn btn-primary m-0 d-flex justify-content-left btnFacturaEditar"
-            data-bs-toggle="modal" data-bs-target="#editarModal" data-id="${row.id_detalle}">
-            <i class="fas fa-edit"></i>
-          </button>`;
-          } else {
+          // if (
+          //   solicitud_estado != "Finalizado" &&
+          //   solicitud_estado != "Descartado" &&
+          //   usuario == 4
+          // ) {
+          //   return `
+          // <button type="button" class="btn btn-primary m-0 d-flex justify-content-left btnFacturaEditar"
+          //   data-bs-toggle="modal" data-bs-target="#editarModal" data-id="${row.id_detalle}">
+          //   <i class="fas fa-edit"></i>
+          // </button>`;
+          // } else {
             return `
           <button type="button" class="btn btn-secondary m-0 d-flex justify-content-left btnFacturaInfo"
             data-bs-toggle="modal" 
             data-bs-target="#infoModal">
             <i class="fas fa-edit"></i>
           </button>`;
-          }
+          // }
         },
       },
     ],
@@ -210,12 +214,16 @@ document.addEventListener("submit", function (event) {
         let response = JSON.parse(request.responseText);
         if (response.status) {
           Swal.fire({
-            title: "Datos guardados correctamente",
+            title: response.message,
             icon: "success",
             confirmButtonText: "Aceptar",
           }).then(() => location.reload());
         } else {
-          Swal.fire("Atención", response.msg || "Error desconocido", "error");
+          Swal.fire(
+            "Atención",
+            response.message || "Error desconocido",
+            "error"
+          );
         }
       }
     };

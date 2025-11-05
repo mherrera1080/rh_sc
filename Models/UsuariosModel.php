@@ -16,7 +16,7 @@ class UsuariosModel extends Mysql
         nombres,
         fecha_ingreso,
         correo,
-        rol,
+        rol_usuario,
         contraseña,
         estado
         FROM tb_usuarios";
@@ -24,33 +24,45 @@ class UsuariosModel extends Mysql
         return $request;
     }
 
-    public function insertUsuario(string $nombres, string $primer_apellido, string $segundo_apellido, int $identificacion, ?string $codigo_empleado, string $correo, int $rol)
-    {
+public function selectUserByid($id_usuario)
+{
+    $sql = "SELECT
+                id_usuario,
+                identificacion,
+                no_empleado,
+                primer_apellido, 
+                segundo_apellido,
+                nombres,
+                fecha_ingreso,
+                correo,
+                area,
+                rol_usuario,
+                contraseña,
+                estado
+            FROM tb_usuarios
+            WHERE id_usuario = ?";
+
+    $request = $this->select($sql, array($id_usuario));
+    return $request;
+}
+
+
+    public function insertUsuario(
+        string $nombres,
+        string $primer_apellido,
+        string $segundo_apellido,
+        int $identificacion,
+        ?string $codigo_empleado,
+        string $correo,
+        int $area,
+        string $password
+    ) {
         try {
+            // Encriptar contraseña antes de insertar
+            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-            $sql = "INSERT INTO tb_usuarios(nombres, primer_apellido, segundo_apellido, identificacion, no_empleado, correo, rol) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)";
-            $arrData = array($nombres, $primer_apellido, $segundo_apellido, $identificacion, $codigo_empleado, $correo, $rol);
-            $result = $this->insert($sql, $arrData);
-
-            return $result;
-        } catch (PDOException $e) {
-            return "ERROR: " . $e->getMessage();
-        }
-    }
-
-    public function updateUsuario(int $id_usuario, string $nombres, string $primer_apellido, string $segundo_apellido, int $identificacion, ?string $codigo_empleado, string $correo, int $rol)
-    {
-        try {
-            $sql = "UPDATE tb_usuarios SET 
-                    nombres = ?, 
-                    primer_apellido = ?, 
-                    segundo_apellido = ?, 
-                    identificacion = ?, 
-                    no_empleado = ?, 
-                    correo = ?, 
-                    rol = ?
-                WHERE id_usuario = ?";
+            $sql = "INSERT INTO tb_usuarios (nombres, primer_apellido, segundo_apellido, identificacion, no_empleado, correo, area, contraseña) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
             $arrData = array(
                 $nombres,
@@ -59,16 +71,83 @@ class UsuariosModel extends Mysql
                 $identificacion,
                 $codigo_empleado,
                 $correo,
-                $rol,
-                $id_usuario
+                $area,
+                $hashedPassword
             );
 
-            $result = $this->update($sql, $arrData);
-
+            $result = $this->insert($sql, $arrData);
             return $result;
         } catch (PDOException $e) {
             return "ERROR: " . $e->getMessage();
         }
     }
+
+
+    public function updateUsuario(
+        int $id_usuario,
+        string $nombres,
+        string $primer_apellido,
+        string $segundo_apellido,
+        int $identificacion,
+        ?string $codigo_empleado,
+        string $correo,
+        int $rol_usuario,
+        ?string $password
+    ) {
+        try {
+            if (!empty($password)) {
+                // Encriptar si viene una nueva contraseña
+                $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+                $sql = "UPDATE tb_usuarios SET 
+                        nombres = ?, 
+                        primer_apellido = ?, 
+                        segundo_apellido = ?, 
+                        identificacion = ?, 
+                        no_empleado = ?, 
+                        correo = ?, 
+                        rol_usuario = ?, 
+                        contraseña = ?
+                    WHERE id_usuario = ?";
+                $arrData = array(
+                    $nombres,
+                    $primer_apellido,
+                    $segundo_apellido,
+                    $identificacion,
+                    $codigo_empleado,
+                    $correo,
+                    $rol_usuario,
+                    $hashedPassword,
+                    $id_usuario
+                );
+            } else {
+                // Si no se envía password, no lo actualiza
+                $sql = "UPDATE tb_usuarios SET 
+                        nombres = ?, 
+                        primer_apellido = ?, 
+                        segundo_apellido = ?, 
+                        identificacion = ?, 
+                        no_empleado = ?, 
+                        correo = ?, 
+                        rol_usuario = ?
+                    WHERE id_usuario = ?";
+                $arrData = array(
+                    $nombres,
+                    $primer_apellido,
+                    $segundo_apellido,
+                    $identificacion,
+                    $codigo_empleado,
+                    $correo,
+                    $rol_usuario,
+                    $id_usuario
+                );
+            }
+
+            $result = $this->update($sql, $arrData);
+            return $result;
+        } catch (PDOException $e) {
+            return "ERROR: " . $e->getMessage();
+        }
+    }
+
 
 }

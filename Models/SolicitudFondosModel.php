@@ -19,6 +19,8 @@ class SolicitudFondosModel extends Mysql
             tc.fecha_creacion,
             ts.fecha_pago as fecha_pago,
             tc.fecha_pago as fecha_pago_sf,
+            tc.no_transferencia,
+            tc.fecha_transaccion,
             tc.estado
         FROM tb_solicitud_fondos tc
         INNER JOIN tb_areas ta ON tc.area = ta.id_area
@@ -64,38 +66,81 @@ class SolicitudFondosModel extends Mysql
             tc.estado,
             tsf.id_solicitud,
             tsf.estado as solicitud_estado,
+            tsf.usuario as solicitante,
             tc.anticipo
         FROM tb_contraseña tc
         INNER JOIN tb_proveedor tp ON tc.id_proveedor = tp.id_proveedor
         INNER JOIN tb_areas ta ON tc.area = ta.id_area
         INNER JOIN tb_detalles td ON tc.contraseña = td.contraseña
         INNER JOIN tb_solicitud_fondos tsf ON tc.contraseña = tsf.contraseña
-        WHERE tc.contraseña = ? ";
-
+        WHERE tc.contraseña = ?";
         $request = $this->select($sql, array($contraseña));
         return $request;
     }
 
-
+    public function getSolisinContra($contraseña)
+    {
+        $sql = "SELECT
+            tc.id_solicitud,
+            tc.contraseña,
+            tc.area,
+            tc.proveedor,
+            tc.categoria,
+            tc.fecha_creacion,
+            tc.estado,
+            tc.fecha_pago,
+            tc.observacion,
+            tp.nombre_proveedor AS proveedor,
+            ta.nombre_area AS area,
+            tc.fecha_creacion,
+            CONCAT(tu.nombres, ' ', tu.primer_apellido, ' ', tu.segundo_apellido) as usuario,
+            FORMAT(SUM(td.valor_documento), 2) AS monto_total,
+            GROUP_CONCAT(td.id_detalle ORDER BY td.id_detalle ASC) AS no_factura,
+            GROUP_CONCAT(td.tipo ORDER BY td.tipo ASC) AS tipo,
+            GROUP_CONCAT(td.bien_servicio ORDER BY td.no_factura ASC) AS bien_servicio,
+            GROUP_CONCAT(td.valor_documento ORDER BY td.no_factura ASC) AS valor_documento
+        FROM tb_solicitud_fondos tc
+        INNER JOIN tb_detalles td ON tc.id_solicitud = td.no_factura
+        INNER JOIN tb_usuarios tu ON tc.usuario = tu.id_usuario
+        LEFT JOIN tb_proveedor tp ON tc.proveedor = tp.id_proveedor
+        LEFT JOIN tb_areas ta ON tc.area = ta.id_area
+        WHERE tc.id_solicitud = ? ";
+        $request = $this->select($sql, array($contraseña));
+        return $request;
+    }
     public function getSolicitud($id_solicitud)
     {
         $sql = "SELECT
+            tc.id_solicitud,
+            tc.contraseña,
             tp.nombre_proveedor AS proveedor,
+            ta.id_area,
             ta.nombre_area AS area,
-            ROUND(SUM(td.valor_documento), 2) AS total_calc,
+            ROUND(SUM(td.valor_documento), 2) AS total,
             DAY(tc.fecha_creacion)   AS dia_registro,
             MONTH(tc.fecha_creacion) AS mes_registro,
             YEAR(tc.fecha_creacion)  AS año_registro,
-            tc.id_solicitud,
-            tc.fecha_creacion as fecha_registro,
+            tc.fecha_creacion AS fecha_registro,
             tc.fecha_pago,
-            tc.estado as solicitud_estado
+            tc.estado AS solicitud_estado
         FROM tb_solicitud_fondos tc
         INNER JOIN tb_proveedor tp ON tc.proveedor = tp.id_proveedor
         INNER JOIN tb_areas ta ON tc.area = ta.id_area
         INNER JOIN tb_detalles td ON tc.id_solicitud = td.no_factura
-        WHERE tc.id_solicitud = ? ";
+        WHERE tc.id_solicitud = ?
+        GROUP BY tc.id_solicitud;
+        ";
 
+        $request = $this->select($sql, array($id_solicitud));
+        return $request;
+    }
+
+    public function getContraSoli($id_solicitud)
+    {
+        $sql = "SELECT
+            tc.contraseña
+        FROM tb_solicitud_fondos tc
+        WHERE tc.id_solicitud = ?";
         $request = $this->select($sql, array($id_solicitud));
         return $request;
     }
@@ -103,27 +148,29 @@ class SolicitudFondosModel extends Mysql
     public function getFacturasbyContra($contraseña)
     {
         $sql = "SELECT 
-            id_detalle,
-            contraseña,
-            no_factura,
-            no_comparativa,
-            no_oc,
-            registro_ax,
-            bien_servicio,
-            valor_documento,
-            isr_valor,
-            iva_valor,
-            iva,
-            isr,
-            reten_iva,
-            reten_isr,
-            base,
-            total,
-            fecha_registro,
-            observacion,
-            estado
-        FROM tb_detalles
-        WHERE contraseña = ?";
+            td.id_detalle,
+            td.contraseña,
+            td.no_factura,
+            td.no_comparativa,
+            td.no_oc,
+            td.registro_ax,
+            td.bien_servicio,
+            td.valor_documento,
+            td.isr_valor,
+            td.iva_valor,
+            td.iva,
+            td.isr,
+            td.reten_iva,
+            td.reten_isr,
+            td.base,
+            td.total,
+            td.fecha_registro,
+            td.observacion,
+            td.estado,
+            tc.estado as estado_contra
+        FROM tb_detalles td
+        INNER JOIN tb_contraseña tc ON td.contraseña = tc.contraseña
+        WHERE td.contraseña = ?";
         $request = $this->select_multi($sql, array($contraseña));
         return $request;
     }
@@ -160,16 +207,45 @@ class SolicitudFondosModel extends Mysql
     {
         $sql = "SELECT
             id_detalle,
+            contraseña,
             no_factura,
+            no_comparativa,
+            no_oc,
+            registro_ax,
             bien_servicio,
             valor_documento,
+            isr_valor,
+            iva_valor,
+            iva,
+            isr,
+            reten_iva,
+            reten_isr,
+            base,
+            total,
             fecha_registro,
+            observacion,
             estado
         FROM tb_detalles 
         WHERE contraseña = ?";
         $request = $this->select_multi($sql, array($contraseña));
         return $request;
     }
+
+    public function getDetallesAnticipo($solicitud)
+    {
+        $sql = "SELECT
+            id_detalle,
+            no_factura,
+            bien_servicio,
+            valor_documento,
+            fecha_registro,
+            estado
+        FROM tb_detalles 
+        WHERE no_factura = ?";
+        $request = $this->select_multi($sql, array($solicitud));
+        return $request;
+    }
+
     public function UpdateDetalle($id_detalle, $cod_ax, $base, $iva_base, $iva, $isr, $reten_iva, $reten_isr, $total_iquido, $observacion)
     {
         $sql = "UPDATE tb_detalles 
@@ -198,8 +274,8 @@ class SolicitudFondosModel extends Mysql
                 ROUND(SUM(td.valor_documento) * 0.12, 2) AS iva,
                 ROUND(
                     (SUM(td.valor_documento) + (SUM(td.valor_documento) * 0.12))
-                    - (SUM(td.reten_isr) + SUM(td.reten_iva))
-                    - SUM(tdf.valor_documento),
+                    - (SUM(td.reten_isr) + SUM(td.reten_iva))                    
+                    - IFNULL(SUM(tdf.valor_documento), 0),
                     2
                 ) AS total
             FROM tb_contraseña tc
@@ -208,7 +284,7 @@ class SolicitudFondosModel extends Mysql
             INNER JOIN tb_detalles td ON tc.contraseña = td.contraseña
             LEFT JOIN tb_solicitud_fondos tf ON tc.anticipo = tf.id_solicitud
             LEFT JOIN tb_detalles tdf ON tf.id_solicitud = tdf.no_factura
-            WHERE tc.contraseña = ?;
+            WHERE tc.contraseña = ?
             ";
 
         $request = $this->select($sql, array($contraseña));
@@ -225,14 +301,16 @@ class SolicitudFondosModel extends Mysql
                 ROUND(SUM(td.valor_documento), 2) AS subtotal,
                 0 AS iva,
                 ROUND(
-                    SUM(td.valor_documento)
-                    - SUM(td.reten_iva), 
+                    (SUM(td.valor_documento)- SUM(td.reten_iva))
+                    - IFNULL(SUM(tdf.valor_documento), 0),
                     2
                 ) AS total
             FROM tb_contraseña tc
             INNER JOIN tb_proveedor tp ON tc.id_proveedor = tp.id_proveedor
             INNER JOIN tb_areas ta ON tc.area = ta.id_area
             INNER JOIN tb_detalles td ON tc.contraseña = td.contraseña
+            LEFT JOIN tb_solicitud_fondos tf ON tc.anticipo = tf.id_solicitud
+            LEFT JOIN tb_detalles tdf ON tf.id_solicitud = tdf.no_factura
             WHERE tc.contraseña = ?;
             ";
 
@@ -283,7 +361,7 @@ class SolicitudFondosModel extends Mysql
                 SET 
                 estado = ?,
                 no_transferencia = ?,
-                fecha_pago = ?,
+                fecha_transaccion = ?,
                 observacion = ?
                 WHERE id_solicitud = ?";
         $arrData = [$respuesta, $no_transferencia, $fecha_pago, $observacion, $id_solicitud];
@@ -333,8 +411,6 @@ class SolicitudFondosModel extends Mysql
         $request = $this->select_multi($sql, array($id_grupo));
         return $request;
     }
-
-
     public function insertDetalleSolicitudFondosNueva($idSolicitud, $tipo, $bien, $valor, $estado, $fecha)
     {
         $sql = "INSERT INTO tb_detalles (no_factura, tipo, bien_servicio, valor_documento, estado, fecha_registro)
@@ -342,11 +418,11 @@ class SolicitudFondosModel extends Mysql
         $arrData = [$idSolicitud, $tipo, $bien, $valor, $estado, $fecha];
         return $this->insert($sql, $arrData);
     }
-    public function solicitudFondoVehiculosNueva($realizador, $area, $proveedor, $categoria, $fecha_pago, $estado)
+    public function solicitudFondoVehiculosNueva($realizador, $area, $proveedor, $categoria, $fecha_pago, $estado, $contraseña)
     {
-        $sql = "INSERT INTO tb_solicitud_fondos (usuario, area, proveedor, categoria, fecha_creacion, fecha_pago, estado, no_transferencia)
-            VALUES (?, ?, ?, ?, CURDATE(), ?, ?, NULL)";
-        $arrData = [$realizador, $area, $proveedor, $categoria, $fecha_pago, $estado];
+        $sql = "INSERT INTO tb_solicitud_fondos (usuario, area, proveedor, categoria, fecha_creacion, fecha_pago, estado, contraseña)
+                VALUES (?, ?, ?, ?, NOW(), ?, ?, ?)";
+        $arrData = [$realizador, $area, $proveedor, $categoria, $fecha_pago, $estado, $contraseña];
         return $this->insert($sql, $arrData);
     }
     public function lastInsertId()
@@ -354,28 +430,6 @@ class SolicitudFondosModel extends Mysql
         $sql = "SELECT LAST_INSERT_ID() AS id";
         $result = $this->select($sql);
         return $result['id'] ?? null;
-    }
-
-    public function getSolisinContra($contraseña)
-    {
-        $sql = "SELECT
-            tc.id_solicitud,
-            tc.area,
-            tc.proveedor,
-            tc.categoria,
-            tc.fecha_creacion,
-            tc.estado,
-            tc.fecha_pago,
-            tc.observacion,
-            GROUP_CONCAT(td.id_detalle ORDER BY td.id_detalle ASC) AS no_factura,
-            GROUP_CONCAT(td.tipo ORDER BY td.tipo ASC) AS tipo,
-            GROUP_CONCAT(td.bien_servicio ORDER BY td.no_factura ASC) AS bien_servicio,
-            GROUP_CONCAT(td.valor_documento ORDER BY td.no_factura ASC) AS valor_documento
-        FROM tb_solicitud_fondos tc
-        INNER JOIN tb_detalles td ON tc.id_solicitud = td.no_factura
-        WHERE tc.id_solicitud = ? ";
-        $request = $this->select($sql, array($contraseña));
-        return $request;
     }
 
     public function updateSolicitud($id_solicitud, $fecha_pago, $proveedor, $estado)
@@ -388,7 +442,6 @@ class SolicitudFondosModel extends Mysql
         $arrData = [$fecha_pago, $proveedor, $estado, $id_solicitud];
         return $this->update($sql, $arrData);
     }
-
     public function updateDetalleFactura($id_solicitud, $bien_servicio, $valor_documento)
     {
         $sql = "UPDATE tb_detalles
@@ -398,21 +451,28 @@ class SolicitudFondosModel extends Mysql
         $arrData = [$bien_servicio, $valor_documento, $id_solicitud];
         return $this->update($sql, $arrData);
     }
-
-    public function selectAnticipos($id_solicitud)
+    public function selectAnticipos($id_proveedor, $id_area)
     {
         $sql = "SELECT 
-            id_solicitud,
-            categoria,
-            no_transferencia,
-            fecha_transaccion,
-            fecha_pago
-        FROM tb_solicitud_fondos
-        WHERE categoria = 'Anticipo' AND estado = 'Finalizado' ";
-        $request = $this->select_multi($sql, array($id_solicitud));
-        return $request;
-    }
+            tsf.id_solicitud,
+            tsf.categoria,
+            tsf.contraseña,
+            tsf.no_transferencia,
+            tsf.fecha_transaccion,
+            tsf.fecha_pago
+        FROM tb_solicitud_fondos tsf
+        WHERE tsf.proveedor = ? 
+        AND tsf.area = ?
+        AND tsf.categoria = 'Anticipo'
+        AND tsf.estado = 'Pagado'
+        AND tsf.id_solicitud NOT IN (
+            SELECT DISTINCT anticipo 
+            FROM tb_contraseña 
+            WHERE anticipo IS NOT NULL );
+        ";
 
+        return $this->select_multi($sql, array($id_proveedor, $id_area));
+    }
     public function getAnticipoInfo($contraseña)
     {
         $sql = "SELECT
@@ -435,6 +495,37 @@ class SolicitudFondosModel extends Mysql
         INNER JOIN tb_detalles td ON tf.id_solicitud = td.no_factura
         WHERE tf.id_solicitud = ?";
         $request = $this->select($sql, array($contraseña));
+        return $request;
+    }
+
+    public function getUltimoCorrelativo()
+    {
+        $sql = "SELECT
+        contraseña 
+        FROM tb_solicitud_fondos 
+        WHERE contraseña LIKE 'ANT-%' 
+        ORDER BY id_solicitud DESC LIMIT 1";
+        $request = $this->select($sql);
+        return $request['contraseña'] ?? null;
+    }
+
+    public function selectUsuario($usuario)
+    {
+        $sql = "SELECT
+        id_usuario,
+        identificacion,
+        no_empleado,
+        CONCAT(nombres, ' ', primer_apellido, ' ', segundo_apellido) AS nombre_completo,
+        nombres,
+        fecha_ingreso,
+        correo,
+        rol_usuario,
+        contraseña,
+        estado
+    FROM tb_usuarios
+    WHERE CONCAT(nombres, ' ', primer_apellido, ' ', segundo_apellido) LIKE ?";
+
+        $request = $this->select($sql, array('%' . $usuario . '%'));
         return $request;
     }
 

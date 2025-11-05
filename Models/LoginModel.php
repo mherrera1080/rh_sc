@@ -23,7 +23,7 @@ class LoginModel extends Mysql
         correo,
         tu.area,
         ta.nombre_area,
-        rol,
+        rol_usuario,
         fecha_ingreso,
         tu.estado
         FROM tb_usuarios tu

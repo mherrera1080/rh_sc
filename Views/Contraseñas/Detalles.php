@@ -16,13 +16,7 @@
                     </button>
                     <?php $_SESSION['PersonalData']['area'] ?>
                     <div class="ms-auto d-flex align-items-center gap-2">
-                        <?php if ($data['facturas']['estado'] === "Pendiente Contabilidad" && $_SESSION['PersonalData']['area'] == 4 && $data['facturas']['anticipo'] != null) { ?>
-                            <button class="btn-warning-circle ms-auto" id="btnValidar" data-bs-toggle="modal"
-                                data-bs-target="#anticipoModal" data-id="<?= $data['facturas']['contraseña']; ?>"
-                                title="Solicitar Fondos">
-                                <i class="fas fa-exclamation"></i>
-                            </button>
-                        <?php } ?>
+
                         <?php if ($data['facturas']['estado'] === "Pendiente" || $data['facturas']['estado'] === "Corregido") { ?>
                             <button class="btn btn-success btn-round ms-auto btn-password" id="btnValidar"
                                 data-bs-toggle="modal" data-bs-target="#validarModal"
@@ -30,23 +24,54 @@
                                 <i class="fas fa-check"></i> Validacion
                             </button>
                             <button class="btn btn-secondary btn-round ms-auto btn-corregir" id="btnCorregir"
-                                data-bs-toggle="modal" data-bs-target="#corregirModal"
+                                data-bs-toggle="modal" data-bs-target="#regresarModal"
                                 data-id="<?= $data['facturas']['contraseña']; ?>">
                                 <i class="fas fa-ban"></i> Corregir
                             </button>
                         <?php } ?>
-                        <?php if ($data['facturas']['estado'] === "Pendiente Contabilidad" && $_SESSION['PersonalData']['area'] == 4) { ?>
+
+                        <?php if ($data['facturas']['estado'] === "Validado Area" && $_SESSION['PersonalData']['area'] == 4) { ?>
                             <button class="btn btn-success btn-round ms-auto btn-password" id="btnValidar"
-                                data-bs-toggle="modal" data-bs-target="#solicitarFondos"
+                                data-bs-toggle="modal" data-bs-target="#validarConta"
                                 data-id="<?= $data['facturas']['contraseña']; ?>">
-                                <i class="fas fa-check"></i> Solicitar Fondos
+                                <i class="fas fa-check"></i> Validar Contraseña
                             </button>
                             <button class="btn btn-danger btn-round ms-auto btn-corregir" id="btnCorregir"
                                 data-bs-toggle="modal" data-bs-target="#corregirModal"
                                 data-id="<?= $data['facturas']['contraseña']; ?>">
                                 <i class="fas fa-ban"></i> Regresar
                             </button>
+                            <?php if ($data['facturas']['anticipo'] != null) { ?>
+                                <button class="btn-warning-circle ms-auto" id="btnValidar" data-bs-toggle="modal"
+                                    data-bs-target="#anticipoModal" data-id="<?= $data['facturas']['contraseña']; ?>"
+                                    title="Solicitar Fondos">
+                                    <i class="fas fa-exclamation"></i>
+                                </button>
+                            <?php } ?>
                         <?php } ?>
+
+
+                        <?php if ($data['facturas']['estado'] === "Validado Conta") { ?>
+                            <button class="btn btn-success btn-round ms-auto btn-password" id="btnValidar"
+                                data-bs-toggle="modal" data-bs-target="#solicitarFondos"
+                                data-id="<?= $data['facturas']['contraseña']; ?>">
+                                <i class="fas fa-check"></i> Solicitar Fondos
+                            </button>
+                            <button class="btn btn-danger btn-round ms-auto btn-corregir" id="btnCorregir"
+                                data-bs-toggle="modal" data-bs-target="#descartarModal"
+                                data-id="<?= $data['facturas']['contraseña']; ?>">
+                                <i class="fas fa-ban"></i> Descartar
+                            </button>
+                            <?php if ($data['facturas']['anticipo'] != null) { ?>
+                                <button class="btn-warning-circle ms-auto" id="btnValidar" data-bs-toggle="modal"
+                                    data-bs-target="#anticipoModal" data-id="<?= $data['facturas']['contraseña']; ?>"
+                                    title="Solicitar Fondos">
+                                    <i class="fas fa-exclamation"></i>
+                                </button>
+                            <?php } ?>
+                        <?php } ?>
+
+
                     </div>
                 </div>
                 <div class="card-body">
@@ -208,7 +233,166 @@
                         <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
                             <i class="fas fa-times"></i> Cerrar
                         </button>
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" class="btn btn-success" data-respuesta="Pendiente">
+                            <i class="fas fa-save"></i> Guardar Cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="descartarModal" tabindex="-1" aria-labelledby="corregirModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form id="descartarContraseña">
+
+                    <input type="hidden" class="form-control" name="contraseña"
+                        value="<?= $data['facturas']['contraseña']; ?>">
+
+                    <!-- Encabezado -->
+                    <div class="modal-header bg-dark text-white">
+                        <h5 class="modal-title" id="corregirModalLabel">
+                            Corrección de Contraseña de Pago
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                            aria-label="Cerrar">
+                        </button>
+                    </div>
+                    <!-- Cuerpo -->
+                    <div class="modal-body">
+                        <!-- Número de contraseña -->
+                        <div class="mb-4 border-bottom pb-2">
+                            <h5 class="fw-bold mb-0">
+                                CONTRASEÑA: <span class="text-dark"><?= $data['facturas']['contraseña']; ?></span>
+                            </h5>
+                        </div>
+                        <!-- Datos generales -->
+                        <div class="mb-4">
+                            <h6 class="fw-bold text-dark mb-3">Datos Generales</h6>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Realizador</label>
+                                    <input type="text" class="form-control"
+                                        value="<?= $data['facturas']['realizador'] ?? 'N/A'; ?>" disabled>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Proveedor</label>
+                                    <input type="text" class="form-control"
+                                        value="<?= $data['facturas']['proveedor'] ?? 'N/A'; ?>" disabled>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">Monto Total</label>
+                                    <input type="text" class="form-control"
+                                        value="<?= $data['facturas']['monto_total'] ?? 'N/A'; ?>" disabled>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">Área</label>
+                                    <input type="text" class="form-control"
+                                        value="<?= $data['facturas']['area'] ?? 'N/A'; ?>" disabled>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">Fecha Registro</label>
+                                    <input type="text" class="form-control"
+                                        value="<?= $data['facturas']['fecha_registro'] ?? 'N/A'; ?>" disabled>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="fecha_pago" class="form-label">Fecha Pago</label>
+                                    <input type="date" class="form-control btn-input"
+                                        value="<?= $data['facturas']['fecha_pago'] ?? ''; ?>" disabled>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Footer -->
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-save"></i> Descartar Contraseña
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="regresarModal" tabindex="-1" aria-labelledby="corregirModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form id="regresarContraseña">
+                    <input type="hidden" class="form-control" name="contraseña"
+                        value="<?= $data['facturas']['contraseña']; ?>">
+                    <input type="hidden" class="form-control" name="realizador"
+                        value="<?= $data['facturas']['realizador']; ?>">
+                    <!-- Encabezado -->
+                    <div class="modal-header bg-dark text-white">
+                        <h5 class="modal-title" id="corregirModalLabel">
+                            Regresar Contraseña a Recepcion
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                            aria-label="Cerrar">
+                        </button>
+                    </div>
+                    <!-- Cuerpo -->
+                    <div class="modal-body">
+                        <!-- Número de contraseña -->
+                        <div class="mb-4 border-bottom pb-2">
+                            <h5 class="fw-bold mb-0">
+                                CONTRASEÑA: <span class="text-dark"><?= $data['facturas']['contraseña']; ?></span>
+                            </h5>
+                        </div>
+                        <!-- Datos generales -->
+                        <div class="mb-4">
+                            <h6 class="fw-bold text-dark mb-3">Datos Generales</h6>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Realizador</label>
+                                    <input type="text" class="form-control"
+                                        value="<?= $data['facturas']['realizador'] ?? 'N/A'; ?>" disabled>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Proveedor</label>
+                                    <input type="text" class="form-control"
+                                        value="<?= $data['facturas']['proveedor'] ?? 'N/A'; ?>" disabled>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">Monto Total</label>
+                                    <input type="text" class="form-control"
+                                        value="<?= $data['facturas']['monto_total'] ?? 'N/A'; ?>" disabled>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">Área</label>
+                                    <input type="text" class="form-control"
+                                        value="<?= $data['facturas']['area'] ?? 'N/A'; ?>" disabled>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">Fecha Registro</label>
+                                    <input type="text" class="form-control"
+                                        value="<?= $data['facturas']['fecha_registro'] ?? 'N/A'; ?>" disabled>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="fecha_pago" class="form-label">Fecha Pago</label>
+                                    <input type="date" class="form-control btn-input"
+                                        value="<?= $data['facturas']['fecha_pago'] ?? ''; ?>" disabled>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Detalles de corrección -->
+                        <div>
+                            <h6 class="fw-bold text-dark mb-3">Detalles de Corrección</h6>
+                            <p class="text-muted small mb-2">
+                                Especifique los inconvenientes encontrados en esta contraseña antes de enviarla a
+                                corrección:
+                            </p>
+                            <textarea class="form-control" name="correciones" id="correciones" rows="4"
+                                placeholder="Describa los inconvenientes..." required></textarea>
+                        </div>
+                    </div>
+                    <!-- Footer -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
+                            <i class="fas fa-times"></i> Cerrar
+                        </button>
+                        <button type="submit" class="btn btn-success" data-respuesta="Corregir">
                             <i class="fas fa-save"></i> Guardar Cambios
                         </button>
                     </div>
@@ -221,6 +405,120 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <form id="validarForm">
+                    <input type="hidden" class="form-control" name="contraseña"
+                        value="<?= $data['facturas']['contraseña']; ?>">
+                    <input type="hidden" class="form-control" name="area"
+                        value="<?= $data['facturas']['id_area']; ?>">
+                    <input type="hidden" class="form-control" name="area_user"
+                        value="<?= $_SESSION['PersonalData']['nombre_completo'] ?>">
+                        
+                    <!-- Encabezado -->
+                    <div class="modal-header bg-dark text-white">
+                        <h5 class="modal-title" id="corregirModalLabel">
+                            Revision Contraseña de Pago
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                            aria-label="Cerrar">
+                        </button>
+                    </div>
+                    <!-- Cuerpo -->
+                    <div class="modal-body">
+                        <!-- Número de contraseña -->
+                        <div class="mb-4 border-bottom pb-2">
+                            <h5 class="fw-bold mb-0">
+                                CONTRASEÑA: <span class="text-dark"><?= $data['facturas']['contraseña']; ?></span>
+                            </h5>
+                        </div>
+                        <!-- Datos generales -->
+                        <div class="mb-4">
+                            <h6 class="fw-bold text-dark mb-3">Datos Generales</h6>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Realizador</label>
+                                    <input type="text" class="form-control"
+                                        value="<?= $data['facturas']['realizador'] ?? 'N/A'; ?>" disabled>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Proveedor</label>
+                                    <input type="text" class="form-control"
+                                        value="<?= $data['facturas']['proveedor'] ?? 'N/A'; ?>" disabled>
+                                </div>
+
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">Monto Total</label>
+                                    <input type="text" class="form-control"
+                                        value="<?= $data['facturas']['monto_total'] ?? 'N/A'; ?>" disabled>
+                                </div>
+
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">Área</label>
+                                    <input type="text" class="form-control"
+                                        value="<?= $data['facturas']['area'] ?? 'N/A'; ?>" disabled>
+                                </div>
+
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">Fecha Registro</label>
+                                    <input type="text" class="form-control"
+                                        value="<?= $data['facturas']['fecha_registro'] ?? 'N/A'; ?>" disabled>
+                                </div>
+
+                                <div class="col-md-3 mb-3">
+                                    <label for="fecha_pago" class="form-label">Fecha Pago</label>
+                                    <input type="date" class="form-control"
+                                        value="<?= $data['facturas']['fecha_pago'] ?? ''; ?>" disabled>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <input type="hidden" id="id_proveedor"
+                                    value="<?= $data['facturas']['id_proveedor']; ?>">
+                                <input type="hidden" id="id_area" value="<?= $data['facturas']['id_area']; ?>">
+                                <hr class="my-4">
+                                <div class="col-md-12 mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="chkAnticipo">
+                                            <label class="form-check-label" for="chkAnticipo">Adjuntar Anticipo</label>
+                                        </div>
+                                    </div>
+                                    <select class="form-control selectpicker" id="anticipo" name="anticipo" disabled>
+                                    </select>
+                                </div>
+                            </div>
+                            <?php if ($data['facturas']['correcciones'] != null) { ?>
+                                <div class="row">
+                                    <input type="hidden" id="id_solicitud"
+                                        value="<?= $data['facturas']['id_proveedor']; ?>">
+                                    <hr class="my-4">
+                                    <div class="col-md-12 mb-3">
+                                        <label class="form-label">Observación</label>
+                                        <div class="form-control bg-light" style="min-height: 80px;">
+                                            <?= !empty($data['facturas']['correcciones']) ? nl2br($data['facturas']['correcciones']) : 'Sin observaciones'; ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php } ?>
+                        </div>
+                    </div>
+                    <!-- Footer -->
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-danger" data-respuesta="Descartado">
+                            <i class="fas fa-times"></i> Descartar
+                        </button>
+                        <button type="submit" class="btn btn-success" data-respuesta="Validado Area">
+                            <i class="fas fa-save"></i> Validar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="validarConta" tabindex="-1" aria-labelledby="corregirModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form id="validarContaForm">
                     <input type="hidden" class="form-control" name="contraseña"
                         value="<?= $data['facturas']['contraseña']; ?>">
                     <!-- Encabezado -->
@@ -281,35 +579,14 @@
                                         value="<?= $data['facturas']['fecha_pago'] ?? ''; ?>" disabled>
                                 </div>
                             </div>
-
-                            <?php if ($data['anticipo']) { ?>
+                            <?php if ($data['facturas']['anticipo'] != null) { ?>
+                                <hr>
                                 <div class="row">
-                                    <input type="hidden" id="id_solicitud"
-                                        value="<?= $data['facturas']['id_proveedor']; ?>">
-                                    <hr class="my-4">
                                     <div class="col-md-12 mb-3">
-                                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <label class="form-label mb-0">El área tiene un Anticipo sin consumir</label>
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" id="chkAnticipo">
-                                                <label class="form-check-label" for="chkAnticipo">Añadir</label>
-                                            </div>
-                                        </div>
-                                        <select class="form-control selectpicker" id="anticipo" name="anticipo" disabled>
-                                        </select>
-                                    </div>
-                                </div>
-                            <?php } ?>
-                            <?php if ($data['facturas']['correcciones'] != null) { ?>
-                                <div class="row">
-                                    <input type="hidden" id="id_solicitud"
-                                        value="<?= $data['facturas']['id_proveedor']; ?>">
-                                    <hr class="my-4">
-                                    <div class="col-md-12 mb-3">
-                                        <label class="form-label">Observación</label>
-                                        <div class="form-control bg-light" style="min-height: 80px;">
-                                            <?= !empty($data['facturas']['correcciones']) ? nl2br($data['facturas']['correcciones']) : 'Sin observaciones'; ?>
-                                        </div>
+                                        <label class="form-label fw-semibold text-warning">Anticipo cargado</label>
+                                        <input type="text" class="form-control bg-light"
+                                            value="Proveedor: <?= $data['anticipoinfo']['proveedor']; ?> | No. Transferencia: <?= $data['anticipoinfo']['no_transferencia']; ?> | Fecha: <?= $data['anticipoinfo']['fecha_transaccion']; ?>"
+                                            disabled>
                                     </div>
                                 </div>
                             <?php } ?>
@@ -320,7 +597,7 @@
                         <button type="submit" class="btn btn-danger" data-respuesta="Descartado">
                             <i class="fas fa-times"></i> Descartar
                         </button>
-                        <button type="submit" class="btn btn-success" data-respuesta="Pendiente Contabilidad">
+                        <button type="submit" class="btn btn-success" data-respuesta="Validado Conta">
                             <i class="fas fa-save"></i> Validar
                         </button>
                     </div>
@@ -459,7 +736,6 @@
         </div>
     </div>
 
-
     <div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <form id="">
@@ -588,6 +864,224 @@
         </div>
     </div>
 
+    <div class="modal fade" id="impuestoModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Revisión Factura</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <form id="DetalleImpuesto">
+                    <div class="modal-body">
+                        <input type="hidden" id="impuesto_id" name="edit_id">
+                        <input type="hidden" id="impuesto_id_regimen">
+
+                        <div class="row">
+                            <div class="mb-4 border-bottom pb-2">
+                                <h5 class="fw-bold mb-0">Datos Principales</h5>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label for="impuesto_factura" class="form-label">No. de Factura</label>
+                                <input type="text" class="form-control" id="impuesto_factura" name="impuesto_factura"
+                                    disabled>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label for="impuesto_documento" class="form-label">Valor Documento</label>
+                                <input type="text" class="form-control" id="impuesto_documento"
+                                    name="impuesto_documento" disabled>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="impuesto_servicio" class="form-label">Bien/Servicio</label>
+                                <input type="text" class="form-control" id="impuesto_servicio" name="impuesto_servicio"
+                                    disabled>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label for="impuesto_codax" class="form-label">Registro AX</label>
+                                <input type="text" class="form-control" id="impuesto_codax" name="edit_codax">
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label for="impuesto_base" class="form-label">Base</label>
+                                <input type="text" class="form-control" id="impuesto_base" name="edit_base" readonly>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label for="impuesto_base_iva" class="form-label">IVA Base</label>
+                                <input type="text" class="form-control" id="impuesto_base_iva" name="edit_base_iva"
+                                    readonly>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label for="impuesto_regimen" class="form-label">Régimen</label>
+                                <input type="text" class="form-control" id="impuesto_regimen" readonly>
+                            </div>
+
+                            <hr>
+
+                            <div class="col-md-3 mb-3">
+                                <label for="input_iva" class="form-label">IVA</label>
+                                <div class="input-group">
+                                    <div class="input-group-text">
+                                        <input class="form-check-input mt-0" type="checkbox" id="check_iva">
+                                    </div>
+                                    <input type="number" class="form-control" id="input_iva" name="input_iva"
+                                        placeholder="%" disabled>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label for="input_isr" class="form-label">ISR</label>
+                                <div class="input-group">
+                                    <div class="input-group-text">
+                                        <input class="form-check-input mt-0" type="checkbox" id="check_isr">
+                                    </div>
+                                    <input type="number" class="form-control" id="input_isr" name="input_isr"
+                                        placeholder="%" disabled>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label for="impuesto_reten_iva" class="form-label">Retención IVA</label>
+                                <input type="text" class="form-control" id="impuesto_reten_iva" name="edit_reten_iva"
+                                    readonly>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label for="impuesto_reten_isr" class="form-label">Retención ISR</label>
+                                <input type="text" class="form-control" id="impuesto_reten_isr" name="edit_reten_isr"
+                                    readonly>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label for="impuesto_fecha_registro" class="form-label">Fecha Registro</label>
+                                <input type="text" class="form-control" id="impuesto_fecha_registro"
+                                    name="impuesto_fecha_registro" readonly>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label for="impuesto_total" class="form-label">Total Líquido</label>
+                                <input type="text" class="form-control" id="impuesto_total" name="edit_total" readonly>
+                            </div>
+
+                            <hr>
+
+                            <div class="col-md-12 mb-3">
+                                <label for="impuesto_observacion" class="form-label">Observación</label>
+                                <textarea class="form-control" id="impuesto_observacion" name="edit_observacion"
+                                    rows="2"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                            <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                        </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // IVA
+        document.getElementById('check_iva').addEventListener('change', function () {
+            const ivaInput = document.getElementById('input_iva');
+            ivaInput.disabled = !this.checked;
+            if (!this.checked) ivaInput.value = "";
+        });
+
+        // ISR
+        document.getElementById('check_isr').addEventListener('change', function () {
+            const isrInput = document.getElementById('input_isr');
+            isrInput.disabled = !this.checked;
+            if (!this.checked) isrInput.value = "";
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const totalInput = document.getElementById("impuesto_documento");
+            const retenIVAInput = document.getElementById("impuesto_reten_iva");
+            const retenISRInput = document.getElementById("impuesto_reten_isr");
+            const totalLiquidoInput = document.getElementById("impuesto_total");
+
+            const checkIVA = document.getElementById("check_iva");
+            const inputIVA = document.getElementById("input_iva");
+            const checkISR = document.getElementById("check_isr");
+            const inputISR = document.getElementById("input_isr");
+
+            const regimenInput = document.getElementById("impuesto_id_regimen");
+
+            function obtenerRegimen() {
+                return parseInt(regimenInput.value) || 1;
+            }
+
+            function calcular() {
+                const tipoRegimen = obtenerRegimen();
+                let total = parseFloat(totalInput.value) || 0;
+                let porcIVA = checkIVA.checked ? parseFloat(inputIVA.value) || 0 : 0;
+                let porcISR = checkISR.checked ? parseFloat(inputISR.value) || 0 : 0;
+
+                let base = 0;
+                let ivaIncluido = 0;
+                let ret_iva = 0;
+                let ret_isr = 0;
+
+                if (tipoRegimen === 1) {
+                    // Régimen 1: calcular base y IVA
+                    base = total / 1.12;
+                    ivaIncluido = total - base;
+
+                    if (checkIVA.checked && porcIVA > 0) ret_iva = ivaIncluido * (porcIVA / 100);
+                    if (checkISR.checked && porcISR > 0) ret_isr = base * (porcISR / 100);
+
+                    checkISR.disabled = false;
+                    inputISR.disabled = !checkISR.checked;
+                } else if (tipoRegimen === 2) {
+                    // Régimen 2: no separar IVA
+                    base = total;
+                    ivaIncluido = 0;
+
+                    checkISR.checked = false;
+                    checkISR.disabled = true;
+                    inputISR.disabled = true;
+                    inputISR.value = "";
+                    retenISRInput.value = "";
+
+                    if (checkIVA.checked && porcIVA > 0) {
+                        ret_iva = base * (porcIVA / 100);
+                    }
+                }
+
+                // Mostrar base e IVA base
+                document.getElementById("impuesto_base").value = base.toFixed(2);
+                document.getElementById("impuesto_base_iva").value = ivaIncluido.toFixed(2);
+
+                let totalLiquido = total - ret_iva - ret_isr;
+                retenIVAInput.value = ret_iva > 0 ? ret_iva.toFixed(2) : "";
+                retenISRInput.value = ret_isr > 0 ? ret_isr.toFixed(2) : "";
+                totalLiquidoInput.value = totalLiquido.toFixed(2);
+            }
+
+            [checkIVA, checkISR, inputIVA, inputISR, totalInput].forEach(el => {
+                if (el) {
+                    el.addEventListener("input", calcular);
+                    el.addEventListener("change", calcular);
+                }
+            });
+
+            // Al mostrar el modal, calcular una vez
+            const modal = document.getElementById("impuestoModal");
+            modal.addEventListener("shown.bs.modal", calcular);
+        });
+    </script>
+
+
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const chkProveedor = document.getElementById("chkAnticipo");
@@ -654,3 +1148,39 @@
             box-shadow: 0 4px 10px rgba(255, 193, 7, 0.6);
         }
     </style>
+
+    <div class="modal fade" id="correosModal" tabindex="-1" aria-labelledby="correosModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form id="formCorreos">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="correosModalLabel">Seleccionar destinatarios de notificación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table id="tableCorreos" class="table table-bordered table-hover text-center align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Usuario</th>
+                                    <th>Correo</th>
+                                    <th>Notificar</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Aquí se insertarán las filas con AJAX -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button id="btnEnviarCorreos" class="btn btn-primary">Enviar correos</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

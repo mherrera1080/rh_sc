@@ -69,8 +69,10 @@
                                     <th scope="col">ID</th>
                                     <th scope="col">Contraseña</th>
                                     <th scope="col">Tipo</th>
-                                    <th scope="col">Fecha Pago</th>
+                                    <th scope="col">Fecha Pago Estimado</th>
                                     <th scope="col">Area</th>
+                                    <th scope="col">No. Transaccion</th>
+                                    <th scope="col">Fecha Transaccion</th>
                                     <th scope="col">Estado</th>
                                     <th scope="col" class="text-center">Acciones</th>
                                 </tr>

@@ -50,10 +50,11 @@ document.addEventListener("DOMContentLoaded", function () {
         },
       },
       {
-        data: null,
+        data: "estado_contra",
         render: function (data, type, row) {
-          return `
-          <button type="button" class="btn btn-primary m-0 d-flex justify-content-left d-none btnFacturaEditar"
+          if (!data || data.trim() === "Pendiente") {
+            html = `
+            <button type="button" class="btn btn-primary m-0 d-flex justify-content-left d-none btnFacturaEditar"
             data-bs-toggle="modal" data-bs-target="#editarModal" data-id="${row.id_detalle}"> 
             <i class="fas fa-edit"></i>
           </button>
@@ -62,6 +63,16 @@ document.addEventListener("DOMContentLoaded", function () {
             <i class="fas fa-info-circle"></i>
           </button>
           `;
+          } else if (!data || data.trim() === "Validado Area") {
+            html = `
+          <button type="button" class="btn btn-primary m-0 d-flex justify-content-left btnImpuestosEdit"
+            data-bs-toggle="modal" data-bs-target="#impuestoModal" data-id="${row.id_detalle}"> 
+            <i class="fas fa-edit"></i>
+          </button>`;
+          } else {
+            html = "";
+          }
+          return html;
         },
       },
     ],
@@ -100,8 +111,82 @@ document.addEventListener("DOMContentLoaded", function () {
     .querySelector("#correccionContraseña")
     .addEventListener("submit", function (event) {
       event.preventDefault();
+      // Detecta el botón presionado
+      let boton = event.submitter;
+      let valor = boton.dataset.respuesta;
 
       let formData = new FormData(this);
+      formData.append("respuesta", valor);
+
+      let ajaxUrl = base_url + "/Contraseñas/corregirContraseña";
+      let request = window.XMLHttpRequest
+        ? new XMLHttpRequest()
+        : new ActiveXObject("Microsoft.XMLHTTP");
+
+      request.open("POST", ajaxUrl, true);
+      request.send(formData);
+
+      request.onreadystatechange = function () {
+        if (request.readyState === 4 && request.status === 200) {
+          let response = JSON.parse(request.responseText);
+          if (response.status) {
+            Swal.fire({
+              title: "Datos guardados correctamente",
+              icon: "success",
+              confirmButtonText: "Aceptar",
+            }).then(() => {
+              location.reload();
+            });
+          } else {
+            Swal.fire("Atención", response.msg || "Error desconocido", "error");
+          }
+        }
+      };
+    });
+
+  document
+    .querySelector("#descartarContraseña")
+    .addEventListener("submit", function (event) {
+      event.preventDefault();
+
+      let formData = new FormData(this);
+      let ajaxUrl = base_url + "/Contraseñas/descartarContraseña";
+      let request = window.XMLHttpRequest
+        ? new XMLHttpRequest()
+        : new ActiveXObject("Microsoft.XMLHTTP");
+
+      request.open("POST", ajaxUrl, true);
+      request.send(formData);
+
+      request.onreadystatechange = function () {
+        if (request.readyState === 4 && request.status === 200) {
+          let response = JSON.parse(request.responseText);
+          if (response.status) {
+            Swal.fire({
+              title: "Datos guardados correctamente",
+              icon: "success",
+              confirmButtonText: "Aceptar",
+            }).then(() => {
+              location.reload();
+            });
+          } else {
+            Swal.fire("Atención", response.msg || "Error desconocido", "error");
+          }
+        }
+      };
+    });
+
+  document
+    .querySelector("#regresarContraseña")
+    .addEventListener("submit", function (event) {
+      event.preventDefault();
+      // Detecta el botón presionado
+      let boton = event.submitter;
+      let valor = boton.dataset.respuesta;
+
+      let formData = new FormData(this);
+      formData.append("respuesta", valor);
+
       let ajaxUrl = base_url + "/Contraseñas/corregirContraseña";
       let request = window.XMLHttpRequest
         ? new XMLHttpRequest()
@@ -140,7 +225,91 @@ document.addEventListener("DOMContentLoaded", function () {
       let formData = new FormData(this);
       formData.append("respuesta", valor);
 
-      let ajaxUrl = base_url + "/Contraseñas/validarContraseña";
+      let ajaxUrl = base_url + "/Contraseñas/validacionArea";
+
+      // Mostrar loading en el botón
+      const originalText = boton.innerHTML;
+      boton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+      boton.disabled = true;
+
+      let request = new XMLHttpRequest();
+      request.open("POST", ajaxUrl, true);
+
+      request.onreadystatechange = function () {
+        if (request.readyState === 4) {
+          // Restaurar botón siempre
+          boton.innerHTML = originalText;
+          boton.disabled = false;
+
+          if (request.status === 200) {
+            try {
+              let data = JSON.parse(request.responseText);
+              if (data.status) {
+                Swal.fire({
+                  title: "Éxito",
+                  text: data.message,
+                  icon: "success",
+                  confirmButtonText: "Aceptar",
+                }).then(() => {
+                  if (data.reload !== false) {
+                    location.reload();
+                  }
+                });
+              } else {
+                Swal.fire({
+                  title: "Advertencia",
+                  text: data.message || "Ocurrió un error",
+                  icon: "error",
+                  confirmButtonText: "Entendido",
+                });
+              }
+            } catch (e) {
+              console.error("Error parsing JSON:", e);
+              Swal.fire({
+                title: "Error",
+                text: "Error procesando la respuesta del servidor",
+                icon: "error",
+                confirmButtonText: "Entendido",
+              });
+            }
+          } else {
+            Swal.fire({
+              title: "Error",
+              text: "Error de conexión: " + request.status,
+              icon: "error",
+              confirmButtonText: "Entendido",
+            });
+          }
+        }
+      };
+
+      request.onerror = function () {
+        boton.innerHTML = originalText;
+        boton.disabled = false;
+        Swal.fire({
+          title: "Error",
+          text: "Error de conexión con el servidor",
+          icon: "error",
+          confirmButtonText: "Entendido",
+        });
+      };
+
+      request.send(formData);
+    });
+
+  document
+    .querySelector("#validarContaForm")
+    .addEventListener("submit", function (event) {
+      event.preventDefault();
+
+      // Detecta el botón presionado
+      let boton = event.submitter;
+      let valor = boton.dataset.respuesta;
+
+      let formData = new FormData(this);
+      formData.append("respuesta", valor);
+
+      let ajaxUrl = base_url + "/Contraseñas/validacionConta";
       let request = new XMLHttpRequest();
       request.open("POST", ajaxUrl, true);
       request.send(formData);
@@ -232,23 +401,115 @@ document.addEventListener("DOMContentLoaded", function () {
       };
     });
 
-
-  let id_solicitud = document.querySelector("#id_solicitud").value;
+  let id_proveedor = document.querySelector("#id_proveedor").value;
+  let id_area = document.querySelector("#id_area").value;
 
   if (document.querySelector("#anticipo")) {
-    let ajaxUrl = base_url + "/SolicitudFondos/getAnticipos/" + id_solicitud; // Ajusta la URL según tu ruta
+    // Concatenamos con una coma entre ambos parámetros
+    let ajaxUrl =
+      base_url +
+      "/SolicitudFondos/getAnticipos/" +
+      id_proveedor +
+      "," +
+      id_area;
+
     let request = window.XMLHttpRequest
       ? new XMLHttpRequest()
       : new ActiveXObject("Microsoft.XMLHTTP");
+
     request.open("GET", ajaxUrl, true);
     request.send();
+
     request.onreadystatechange = function () {
       if (request.readyState === 4 && request.status === 200) {
         document.querySelector("#anticipo").innerHTML = request.responseText;
-        $("#anticipo");
       }
     };
   }
+
+  $(document).on("click", ".btnImpuestosEdit", function () {
+    const factura = $(this).data("id");
+
+    $.ajax({
+      url: `${base_url}/SolicitudFondos/getFacturaId/${factura}`,
+      method: "GET",
+      dataType: "json",
+      success: function (response) {
+        if (response.status) {
+          // Rellenar campos
+          $("#impuesto_id").val(response.data.id_detalle);
+          $("#impuesto_id_regimen").val(response.data.id_regimen);
+          $("#impuesto_regimen").val(response.data.nombre_regimen);
+
+          $("#impuesto_factura").val(response.data.no_factura);
+          $("#impuesto_codax").val(response.data.registro_ax);
+          $("#impuesto_servicio").val(response.data.bien_servicio);
+          $("#impuesto_documento").val(response.data.valor_documento);
+
+          // IVA
+          $("#input_iva").val(response.data.iva_valor);
+          if (response.data.iva_valor && response.data.iva_valor > 0) {
+            $("#check_iva").prop("checked", true);
+            $("#input_iva").prop("disabled", false);
+          } else {
+            $("#check_iva").prop("checked", false);
+            $("#input_iva").prop("disabled", true).val("");
+          }
+
+          // ISR
+          $("#input_isr").val(response.data.isr_valor);
+          if (response.data.isr_valor && response.data.isr_valor > 0) {
+            $("#check_isr").prop("checked", true);
+            $("#input_isr").prop("disabled", false);
+          } else {
+            $("#check_isr").prop("checked", false);
+            $("#input_isr").prop("disabled", true).val("");
+          }
+
+          $("#impuesto_reten_iva").val(response.data.reten_iva);
+          $("#impuesto_base").val(response.data.base);
+          $("#impuesto_base_iva").val(response.data.iva);
+          $("#impuesto_observacion").val(response.data.observacion);
+          $("#impuesto_fecha_registro").val(response.data.fecha_registro);
+
+          // ⚡ recalcular después de cargar la data
+          calcular();
+        } else {
+          alert(response.msg);
+        }
+      },
+      error: function (error) {
+        console.log("Error:", error);
+      },
+    });
+  });
+
+  document.addEventListener("submit", function (event) {
+    if (event.target && event.target.id === "DetalleImpuesto") {
+      event.preventDefault();
+      let formData = new FormData(event.target);
+      let ajaxUrl = base_url + "/SolicitudFondos/updateDetalle";
+
+      let request = new XMLHttpRequest();
+      request.open("POST", ajaxUrl, true);
+      request.send(formData);
+
+      request.onreadystatechange = function () {
+        if (request.readyState === 4 && request.status === 200) {
+          let response = JSON.parse(request.responseText);
+          if (response.status) {
+            Swal.fire({
+              title: "Datos guardados correctamente",
+              icon: "success",
+              confirmButtonText: "Aceptar",
+            }).then(() => location.reload());
+          } else {
+            Swal.fire("Atención", response.msg || "Error desconocido", "error");
+          }
+        }
+      };
+    }
+  });
 
   //bla bla bla
 });
@@ -281,7 +542,7 @@ function CancelEdit() {
   document.getElementById("btnEditar").style.display = "inline-block";
   document.getElementById("btnValidar").style.display = "inline-block";
   document.getElementById("btnCorregir").style.display = "inline-block";
-  
+
   const btnsEditar = document.getElementsByClassName("btnFacturaEditar");
   for (let btn of btnsEditar) {
     btn.classList.add("d-none");

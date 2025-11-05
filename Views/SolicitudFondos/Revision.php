@@ -20,21 +20,25 @@
                             </button>
                         <?php } ?>
                     </div>
-                    <!-- Sección botones -->
                     <div class="d-flex gap-2">
                         <?php if ($data['facturas']['solicitud_estado'] === "Pendiente" && $_SESSION['PersonalData']['area'] == 4) { ?>
                             <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#validarModal">
                                 <i class="fas fa-check"></i> Validar
                             </button>
+                                                            <button class="btn btn-danger btn-sm"
+                                    onclick="window.open('<?= base_url() ?>/SolicitudFondos/generarSolicitud/<?= $data['facturas']['contraseña']; ?>', '_blank')">
+                                    <i class="far fa-file-pdf"></i> PDF
+                                </button>
                         <?php } else if ($data['facturas']['solicitud_estado'] === "Validado" && $_SESSION['PersonalData']['area'] == 4) { ?>
                                 <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#finalizarModal">
-                                    <i class="fas fa-check"></i> Finalizar
+                                    <i class="fas fa-check"></i> Pagar
+                                </button>
+                                <button class="btn btn-danger btn-sm"
+                                    onclick="window.open('<?= base_url() ?>/SolicitudFondos/generarSolicitud/<?= $data['facturas']['contraseña']; ?>', '_blank')">
+                                    <i class="far fa-file-pdf"></i> PDF
                                 </button>
                         <?php } ?>
-                        <button class="btn btn-danger btn-sm"
-                            onclick="window.open('<?= base_url() ?>/SolicitudFondos/generarSolicitud/<?= $data['facturas']['contraseña']; ?>', '_blank')">
-                            <i class="far fa-file-pdf"></i> PDF
-                        </button>
+
                     </div>
                 </div>
                 <div class="card-body">
@@ -273,22 +277,22 @@
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">No. Transferencia</label>
-                                    <input type="text" class="form-control" name="no_transferencia" required>
+                                    <input type="text" class="form-control" name="no_transferencia">
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Fecha de Pago</label>
-                                    <input type="date" class="form-control" name="fecha_pago" required>
+                                    <input type="date" class="form-control" name="fecha_pago">
                                 </div>
                             </div>
                         </div>
                     </div>
                     <!-- Footer -->
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
-                            <i class="fas fa-times"></i> Descartar
+                        <button type="submit" class="btn btn-danger" data-respuesta="Descartado">
+                            Descartar
                         </button>
-                        <button type="submit" class="btn btn-success" data-respuesta="Finalizar">
-                            <i class="fas fa-save"></i> Finalizar
+                        <button type="submit" class="btn btn-success" data-respuesta="Pagado">
+                            <i class="fas fa-save"></i> Pagar
                         </button>
                     </div>
                 </form>
@@ -622,7 +626,7 @@
             modal.addEventListener("shown.bs.modal", calcular);
         });
     </script>
-    
+
     <style>
         .btn-warning-circle {
             width: 38px;

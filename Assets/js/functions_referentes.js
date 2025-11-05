@@ -1,9 +1,11 @@
-let tableAreas;
+let tableReferentes;
 document.addEventListener("DOMContentLoaded", function () {
-  tableAreas = $("#tableAreas").DataTable({
+  tableReferentes = $("#tableReferentes").DataTable({
     ajax: {
-      url: base_url + "/Configuracion/getAreas",
+      url: base_url + "/Configuracion/getReferentes",
     },
+    autoWidth: false,
+    colReorder: true,
     columns: [
       {
         data: null,
@@ -12,13 +14,14 @@ document.addEventListener("DOMContentLoaded", function () {
           return meta.row + 1;
         },
       },
-      { data: "nombre_area" },
+      { data: "area" },
+      { data: "usuario" },
       { data: "estado" },
       {
         data: null,
         render: function (data, type, row) {
           return `
-          <button type="button" class="btn btn-warning edit-btn" data-bs-toggle="modal" data-bs-target="#modalEditarArea" data-id="${row.id_area}">
+          <button type="button" class="btn btn-warning edit-btn" data-bs-toggle="modal" data-bs-target="#modalEditarReferencia" data-id="${row.id_referencia}">
             <i class="fas fa-edit"></i>
           </button>`;
         },
@@ -46,13 +49,74 @@ document.addEventListener("DOMContentLoaded", function () {
     ],
   });
 
+  if (document.querySelector("#area")) {
+    let ajaxUrl = base_url + "/Contraseñas/getSelectAreas"; // Ajusta la URL según tu ruta
+    let request = window.XMLHttpRequest
+      ? new XMLHttpRequest()
+      : new ActiveXObject("Microsoft.XMLHTTP");
+    request.open("GET", ajaxUrl, true);
+    request.send();
+    request.onreadystatechange = function () {
+      if (request.readyState === 4 && request.status === 200) {
+        document.querySelector("#area").innerHTML = request.responseText;
+        $("#area");
+      }
+    };
+  }
+
+  if (document.querySelector("#usuario")) {
+    let ajaxUrl = base_url + "/Configuracion/getUsers"; // Ajusta la URL según tu ruta
+    let request = window.XMLHttpRequest
+      ? new XMLHttpRequest()
+      : new ActiveXObject("Microsoft.XMLHTTP");
+    request.open("GET", ajaxUrl, true);
+    request.send();
+    request.onreadystatechange = function () {
+      if (request.readyState === 4 && request.status === 200) {
+        document.querySelector("#usuario").innerHTML = request.responseText;
+        $("#usuario");
+      }
+    };
+  }
+
+  if (document.querySelector("#edit_area")) {
+    let ajaxUrl = base_url + "/Contraseñas/getSelectAreas"; // Ajusta la URL según tu ruta
+    let request = window.XMLHttpRequest
+      ? new XMLHttpRequest()
+      : new ActiveXObject("Microsoft.XMLHTTP");
+    request.open("GET", ajaxUrl, true);
+    request.send();
+    request.onreadystatechange = function () {
+      if (request.readyState === 4 && request.status === 200) {
+        document.querySelector("#edit_area").innerHTML = request.responseText;
+        $("#edit_area");
+      }
+    };
+  }
+
+  if (document.querySelector("#edit_usuario")) {
+    let ajaxUrl = base_url + "/Configuracion/getUsers"; // Ajusta la URL según tu ruta
+    let request = window.XMLHttpRequest
+      ? new XMLHttpRequest()
+      : new ActiveXObject("Microsoft.XMLHTTP");
+    request.open("GET", ajaxUrl, true);
+    request.send();
+    request.onreadystatechange = function () {
+      if (request.readyState === 4 && request.status === 200) {
+        document.querySelector("#edit_usuario").innerHTML =
+          request.responseText;
+        $("#edit_usuario");
+      }
+    };
+  }
+
   document
-    .querySelector("#formNuevaArea")
+    .querySelector("#formSetReferencia")
     .addEventListener("submit", function (event) {
       event.preventDefault();
 
       let formData = new FormData(this);
-      let ajaxUrl = base_url + "/Configuracion/setArea";
+      let ajaxUrl = base_url + "/Configuracion/setReferencia";
       let request = window.XMLHttpRequest
         ? new XMLHttpRequest()
         : new ActiveXObject("Microsoft.XMLHTTP");
@@ -74,7 +138,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 location.reload();
               }
             });
-            $("#createModal").modal("hide");
+            $("#modalNuevoProveedor").modal("hide");
           } else {
             Swal.fire("Atención", response.msg, "error"); // Mostrar mensaje de error
           }
@@ -83,16 +147,17 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
   $(document).on("click", ".edit-btn", function () {
-    const idEmpresa = $(this).data("id");
+    const id_proveedor = $(this).data("id");
 
     $.ajax({
-      url: `${base_url}/Configuracion/getAreabyID/${idEmpresa}`,
+      url: `${base_url}/Configuracion/getReferenciaID/${id_proveedor}`,
       method: "GET",
       dataType: "json",
       success: function (response) {
         if (response.status) {
-          $("#edit_id_area").val(response.data.id_area);
-          $("#edit_nombre").val(response.data.nombre_area);
+          $("#edit_id_referencia").val(response.data.id_referencia);
+          $("#edit_usuario").val(response.data.usuario);
+          $("#edit_area").val(response.data.area);
           $("#edit_estado").val(response.data.estado);
         } else {
           Swal.fire({
@@ -110,12 +175,12 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   document
-    .querySelector("#formEditarArea")
+    .querySelector("#formEditReferencia")
     .addEventListener("submit", function (event) {
       event.preventDefault();
 
       let formData = new FormData(this);
-      let ajaxUrl = base_url + "/Configuracion/setArea";
+      let ajaxUrl = base_url + "/Configuracion/setReferencia";
       let request = window.XMLHttpRequest
         ? new XMLHttpRequest()
         : new ActiveXObject("Microsoft.XMLHTTP");
@@ -134,10 +199,10 @@ document.addEventListener("DOMContentLoaded", function () {
             }).then((result) => {
               if (result.isConfirmed) {
                 // Recargar la página al presionar "Aceptar"
-                tableAreas.ajax.reload();
+                location.reload();
               }
             });
-            $("#editModal").modal("hide");
+            $("#modalNuevoProveedor").modal("hide");
           } else {
             Swal.fire("Atención", response.msg, "error"); // Mostrar mensaje de error
           }

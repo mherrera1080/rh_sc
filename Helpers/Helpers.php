@@ -125,13 +125,5 @@ function Meses()
     return $meses;
 }
 
-function getModulos()
-{
-    require_once("Models/ModulosModel.php");
-    $model = new ModulosModel();
-
-    $modulos = $model->SelectModelos(); 
-    return $modulos;
-}
 
 

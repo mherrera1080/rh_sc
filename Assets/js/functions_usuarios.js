@@ -12,13 +12,83 @@ document.addEventListener("DOMContentLoaded", function () {
       { data: "no_empleado" },
       { data: "nombre_completo" },
       { data: "correo" },
-      { data: null },
+      {
+        data: null,
+        render: function (data, type, row) {
+          botones = `
+          <button type="button" class="btn btn-primary edit-btn" data-bs-toggle="modal" data-bs-target="#updateUser" data-id="${row.id_usuario}">
+            <i class="fas fa-archive"></i>
+          </button>`;
+          return botones;
+        },
+      },
     ],
     dom: "Bfrtip",
-    language: {
-      url: media_url + "/plugins/datatables/Spanish.json",
-    },
+    buttons: [
+      {
+        extend: "colvis",
+        text: '<i class="fas fa-eye me-1"></i> Columnas',
+        className: "btn btn-primary btn-sm me-1 rounded fw-bold text-white",
+        collectionLayout: "fixed two-column",
+        postfixButtons: ["colvisRestore"],
+      },
+      {
+        extend: "excel",
+        text: '<i class="fas fa-file-excel me-1"></i> Excel',
+        className: "btn btn-success btn-sm me-1 rounded fw-bold text-white",
+      },
+      {
+        extend: "print",
+        text: '<i class="fas fa-print me-1"></i> Imprimir',
+        className: "btn btn-secondary btn-sm rounded fw-bold text-white",
+      },
+    ],
   });
+
+  if (document.querySelector("#edit_area")) {
+    let ajaxUrl = base_url + "/Configuracion/getSelectArea"; // Ajusta la URL según tu ruta
+    let request = window.XMLHttpRequest
+      ? new XMLHttpRequest()
+      : new ActiveXObject("Microsoft.XMLHTTP");
+    request.open("GET", ajaxUrl, true);
+    request.send();
+    request.onreadystatechange = function () {
+      if (request.readyState === 4 && request.status === 200) {
+        document.querySelector("#edit_area").innerHTML = request.responseText;
+        $("#edit_area");
+      }
+    };
+  }
+
+  if (document.querySelector("#edit_rol")) {
+    let ajaxUrl = base_url + "/Configuracion/getSelectRol"; // Ajusta la URL según tu ruta
+    let request = window.XMLHttpRequest
+      ? new XMLHttpRequest()
+      : new ActiveXObject("Microsoft.XMLHTTP");
+    request.open("GET", ajaxUrl, true);
+    request.send();
+    request.onreadystatechange = function () {
+      if (request.readyState === 4 && request.status === 200) {
+        document.querySelector("#edit_rol").innerHTML = request.responseText;
+        $("#edit_rol");
+      }
+    };
+  }
+
+  if (document.querySelector("#set_area")) {
+    let ajaxUrl = base_url + "/Configuracion/getSelectArea"; // Ajusta la URL según tu ruta
+    let request = window.XMLHttpRequest
+      ? new XMLHttpRequest()
+      : new ActiveXObject("Microsoft.XMLHTTP");
+    request.open("GET", ajaxUrl, true);
+    request.send();
+    request.onreadystatechange = function () {
+      if (request.readyState === 4 && request.status === 200) {
+        document.querySelector("#set_area").innerHTML = request.responseText;
+        $("#set_area");
+      }
+    };
+  }
 
   document
     .querySelector("#setUsuarios")
@@ -61,5 +131,39 @@ document.addEventListener("DOMContentLoaded", function () {
 
   $("#setUserModal").on("show.bs.modal", function () {
     $("#setUsuarios")[0].reset(); // Reinicia el formulario
+  });
+
+  $(document).on("click", ".edit-btn", function () {
+    const id_usuario = $(this).data("id");
+
+    $.ajax({
+      url: `${base_url}/Usuarios/selectUserByid/${id_usuario}`,
+      method: "GET",
+      dataType: "json",
+      success: function (response) {
+        if (response.status) {
+          $("#edit_usuario").val(response.data.id_usuario);
+          $("#edit_identificacion").val(response.data.identificacion);
+          $("#edit_nombres").val(response.data.nombres);
+          $("#edit_primer_apellido").val(response.data.primer_apellido);
+          $("#edit_segundo_apellido").val(response.data.segundo_apellido);
+          $("#edit_codigo").val(response.data.no_empleado);
+          $("#edit_correo").val(response.data.correo);
+          $("#edit_area").val(response.data.area);
+          $("#edit_rol").val(response.data.rol_usuario);
+          $("#edit_estado").val(response.data.estado);
+        } else {
+          Swal.fire({
+            title: "Error",
+            text: "Hubo un problema al procesar la solicitud.",
+            icon: "error",
+            confirmButtonText: "Aceptar",
+          });
+        }
+      },
+      error: function (error) {
+        console.log("Error:", error);
+      },
+    });
   });
 });

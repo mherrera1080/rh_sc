@@ -17,6 +17,7 @@ class ConfiguracionModel extends Mysql
         return $request;
     }
 
+
     public function areasbyID($id_area)
     {
         $sql =
@@ -123,21 +124,6 @@ class ConfiguracionModel extends Mysql
         return $this->update($sql, $arrData);
     }
 
-
-
-    public function Modulos()
-    {
-        $sql = "SELECT 
-            tm.id_modulo,
-            tm.nombre_modulo,  
-            ta.nombre_area,
-            tm.estado
-            FROM tb_modulos tm
-            INNER JOIN tb_areas ta ON tm.id_area = ta.id_area";
-        $request = $this->select_all($sql);
-        return $request;
-    }
-
     public function firmasGrupo()
     {
         $sql = "SELECT 
@@ -156,14 +142,14 @@ class ConfiguracionModel extends Mysql
         return $request;
     }
 
-    public function insertGrupoFirmas($nombre, $area, $fecha, $estado)
+    public function insertGrupoFirmas($nombre, $area, $categoria, $fecha, $estado)
     {
-        $sql = "INSERT INTO tb_grupo_firmas (nombre_grupo, area_grupo, fecha_creacion, estado)
-            VALUES (?, ?, ?, ?)";
-        $arrData = [$nombre, $area, $fecha, $estado];
+        $sql = "INSERT INTO tb_grupo_firmas (nombre_grupo, area_grupo, categoria, fecha_creacion, estado)
+            VALUES (?, ?, ?, ?, ?)";
+        $arrData = [$nombre, $area, $categoria, $fecha, $estado];
         $request = $this->insert($sql, $arrData);
 
-        return $request; // Devuelve el ID del grupo insertado
+        return $request;
     }
 
     public function insertFirmaEnGrupo($data)
@@ -183,28 +169,26 @@ class ConfiguracionModel extends Mysql
         return $this->insert($sql, $arrData);
     }
 
-
     public function selectUsers()
     {
         $sql = "SELECT 
-            e.id_usuario AS id,
-            concat( e.nombres,' ', e.primer_apellido,' ',e.segundo_apellido ) AS usuario,
-            concat( e.primer_apellido,' ',e.segundo_apellido ) AS apellidos,
-            e.estado as estado
-        FROM tb_usuarios e
-        ORDER BY apellidos ASC
-        ";
-        $request = $this->select_all($sql);
-        return $request;
+        e.id_usuario AS id,
+        CONCAT(e.nombres, ' ', e.primer_apellido, ' ', e.segundo_apellido) AS nombre,
+        e.correo,
+        e.estado as estado
+    FROM tb_usuarios e
+    WHERE e.estado = 'Activo'
+    ORDER BY e.primer_apellido, e.segundo_apellido ASC";
+        return $this->select_all($sql);
     }
 
-    // Traer grupo por ID
     public function selectGrupoFirmasByID($id_grupo)
     {
         $sql = "SELECT 
                 gf.id_grupo,
                 gf.nombre_grupo,
                 gf.area_grupo,
+                gf.categoria,
                 gf.fecha_creacion,
                 gf.estado
             FROM tb_grupo_firmas gf
@@ -212,7 +196,6 @@ class ConfiguracionModel extends Mysql
         return $this->select($sql, [$id_grupo]);
     }
 
-    // Traer todas las firmas de un grupo
     public function selectFirmasByGrupo($id_grupo)
     {
         $sql = "SELECT 
@@ -234,10 +217,10 @@ class ConfiguracionModel extends Mysql
         return $this->deletebyid($sql, [$idFirma]);
     }
 
-    public function actualizarGrupoFirmas($idGrupo, $nombre, $area)
+    public function actualizarGrupoFirmas($idGrupo, $nombre, $area, $categoria)
     {
-        $sql = "UPDATE tb_grupo_firmas SET nombre_grupo = ?, area_grupo = ? WHERE id_grupo = ?";
-        return $this->update($sql, [$nombre, $area, $idGrupo]);
+        $sql = "UPDATE tb_grupo_firmas SET nombre_grupo = ?, area_grupo = ?, categoria = ? WHERE id_grupo = ?";
+        return $this->update($sql, [$nombre, $area, $categoria, $idGrupo]);
     }
 
     public function existeFirmaEnGrupo($idGrupo, $orden)
@@ -261,6 +244,284 @@ class ConfiguracionModel extends Mysql
         ];
         return $this->update($sql, $arrData);
     }
+
+    public function verificarGrupoPorAreaYCategoria($area, $categoria)
+    {
+        $sql = "SELECT COUNT(*) as total 
+            FROM tb_grupo_firmas 
+            WHERE area_grupo = ? 
+              AND categoria = ?";
+        $request = $this->select($sql, [$area, $categoria]);
+        return $request['total'] > 0;
+    }
+
+
+    public function Roles()
+    {
+        $sql = "SELECT
+            id,
+            role_name,
+            estado
+            FROM tb_roles";
+        $request = $this->select_all($sql);
+        return $request;
+    }
+
+    public function insertRol($role_name)
+    {
+        $sql = "INSERT INTO tb_roles (role_name, estado) 
+                VALUES (?, 'Activo')";
+        $arrData = array($role_name);
+        return $this->insert($sql, $arrData); // Devuelve el ID generado o false si falla
+    }
+
+    public function getAllModulos()
+    {
+        $sql = "SELECT id_modulo FROM tb_modulos WHERE estado = 'Activo' and tipo = 'permiso'"; // puedes quitar el WHERE si quieres todos
+        return $this->select_all($sql);
+    }
+
+    public function insertRolModulo($role_id, $modulo_id)
+    {
+        $sql = "INSERT INTO tb_permisos (role_id, modulo_id, acceder, crear, editar, eliminar, correo)
+            VALUES (?, ?, 0, 0, 0, 0, 0)";
+        return $this->insert($sql, [$role_id, $modulo_id]);
+    }
+
+    public function getRolbyID($id)
+    {
+        $sql = "SELECT
+                    rs.id,
+                    rs.role_name,
+                    rm.modulo_id,
+                    m.nombre_modulo,
+                    rm.crear,
+                    rm.acceder,
+                    rm.editar,
+                    rm.eliminar,
+                    rm.correo
+                FROM tb_permisos rm
+                INNER JOIN tb_roles rs ON rm.role_id = rs.id
+                INNER JOIN tb_modulos m ON rm.modulo_id = m.id_modulo
+                WHERE rs.id = ?";
+        $data = $this->select_multi($sql, [$id]);
+
+        // 🔒 Aplicar lógica de restricciones desde backend
+        foreach ($data as &$item) {
+            $item['disabled_crear'] = false;
+            $item['disabled_editar'] = false;
+            $item['disabled_eliminar'] = false;
+
+            switch ($item['modulo_id']) {
+                case 1:
+                    $item['disabled_crear'] = true;
+                    $item['disabled_editar'] = true;
+                    $item['disabled_eliminar'] = true;
+                    break;
+                case 2:
+                    $item['disabled_crear'] = true;
+                    $item['disabled_eliminar'] = true;
+                    break;
+                case 3:
+                    $item['disabled_crear'] = true;
+                    break;
+                case 4:
+                    $item['disabled_eliminar'] = true;
+                    break;
+                case 5:
+                case 6:
+                    $item['disabled_crear'] = true;
+                    $item['disabled_eliminar'] = true;
+                    break;
+                case 8:
+                    $item['disabled_eliminar'] = true;
+                    break;
+                case 9:
+                    $item['disabled_editar'] = true;
+                    $item['disabled_eliminar'] = true;
+                    break;
+                case 10:
+                    $item['disabled_crear'] = true;
+                    $item['disabled_eliminar'] = true;
+                    break;
+                case 11:
+                    $item['disabled_editar'] = true;
+                    break;
+                case 12:
+                    $item['disabled_crear'] = true;
+                    break;
+                case 14:
+                case 15:
+                case 16:
+                case 17:
+                case 18:
+                case 19:
+                    $item['disabled_crear'] = true;
+                    $item['disabled_editar'] = true;
+                    $item['disabled_eliminar'] = true;
+                    break;
+            }
+        }
+
+        return $data;
+    }
+
+    public function Modulos()
+    {
+        $sql = "SELECT
+            id_modulo,
+            nombre_modulo,
+            estado
+            FROM tb_modulos
+            WHERE tipo = 'correo'";
+        $request = $this->select_all($sql);
+        return $request;
+    }
+
+    public function insertarModulo($nombre, $tipo, $estadoSistema)
+    {
+        $sql = "INSERT INTO tb_modulos (nombre_modulo, tipo, estado) VALUES (?, ?, ?)";
+        $arrData = array($nombre, $tipo, $estadoSistema);
+        $request = $this->insert($sql, $arrData);
+        return $request; // devuelve el id del nuevo módulo
+    }
+
+    public function grupoCorreos()
+    {
+        $sql = "SELECT
+            tr.id_grupo_correo,
+            tr.nombre_grupo,
+            ta.nombre_area as area,
+            tc.nombre_categoria as categoria,
+            tr.estado
+            FROM tb_grupo_correos tr
+            INNER JOIN tb_areas ta ON tr.area = ta.id_area
+            INNER JOIN tb_categoria tc ON tr.categoria = tc.id_categoria
+            ";
+        $request = $this->select_all($sql);
+        return $request;
+    }
+
+    public function selectCategoria()
+    {
+        $sql = "SELECT 
+        id_categoria, 
+        nombre_categoria, 
+        estado
+        FROM tb_categoria";
+        $request = $this->select_all($sql);
+        return $request;
+    }
+
+    public function insertGrupoCorreo($nombre, $area, $categoria, $estado)
+    {
+        $sql = "INSERT INTO tb_grupo_correos (
+                nombre_grupo,
+                area,
+                categoria,
+                estado
+            )
+            VALUES (?, ?, ?, ?)";
+        $arrData = [
+            $nombre,
+            $area,
+            $categoria,
+            $estado
+        ];
+        $request = $this->insert($sql, $arrData);
+        return $request;
+    }
+
+
+    public function selectGrupoCorreoByID($id_grupo)
+    {
+        $sql = "SELECT 
+        id_grupo_correo, 
+        nombre_grupo, 
+        area, 
+        categoria,
+        estado 
+        FROM tb_grupo_correos
+        WHERE id_grupo_correo = ?";
+        return $this->select($sql, [$id_grupo]);
+    }
+
+    public function selectFasesConUsuarios($categoria, $id_grupo)
+    {
+        $sql = "SELECT 
+                f.id_fase, 
+                f.orden_fase, 
+                f.nombre_base, 
+                f.categoria,
+                fc.usuario,
+                u.nombres,
+                u.correo
+            FROM tb_fases f
+            LEFT JOIN tb_fase_correos fc ON f.id_fase = fc.fase AND fc.grupo = ?
+            LEFT JOIN tb_usuarios u ON fc.usuario = u.id_usuario
+            WHERE f.categoria = ?
+            ORDER BY f.orden_fase, u.nombres";
+
+        $result = $this->select_multi_parameters($sql, [$id_grupo, $categoria]);
+
+        // DEBUG: Verificar resultado de la consulta
+        error_log("Resultado de selectFasesConUsuarios: " . print_r($result, true));
+
+        return $result;
+    }
+
+    public function selectFases($categoria)
+    {
+        $sql = "SELECT 
+        id_fase, 
+        orden_fase, 
+        nombre_base, 
+        categoria
+        FROM tb_fases 
+        WHERE categoria = ?";
+        return $this->select_multi_parameters($sql, [$categoria]);
+    }
+
+    public function actualizarGrupoCorreos($idGrupo, $nombre, $area)
+    {
+        $sql = "UPDATE tb_grupo_correos SET nombre_grupo = ?, area = ? WHERE id_grupo_correo = ?";
+        return $this->update($sql, [$nombre, $area, $idGrupo]);
+    }
+
+    public function eliminarFaseCorreosPorGrupo($id_grupo)
+    {
+        $sql = "DELETE FROM tb_fase_correos WHERE grupo = ?";
+        return $this->deletebyid($sql, [$id_grupo]);
+    }
+
+    public function insertarFaseCorreo($usuario, $fase, $grupo)
+    {
+        $sql = "INSERT INTO tb_fase_correos (usuario, fase, grupo) VALUES (?, ?, ?)";
+        return $this->insert($sql, [$usuario, $fase, $grupo]);
+    }
+
+    public function getGrupoCorreoByID($id_grupo)
+    {
+        $sql = "SELECT * FROM tb_grupo_correos WHERE id_grupo_correo = ?";
+        return $this->select($sql, [$id_grupo]);
+    }
+
+    public function getFasesPorCategoria($id_categoria)
+    {
+        $sql = "SELECT * FROM tb_fases WHERE categoria = ? ORDER BY orden_fase ASC";
+        return $this->select_multi($sql, [$id_categoria]);
+    }
+
+    public function getFaseCorreosPorGrupo($id_grupo)
+    {
+        $sql = "SELECT fc.*, u.nombre, u.email, f.nombre_base 
+            FROM tb_fase_correos fc
+            INNER JOIN tb_usuarios u ON u.id_usuario = fc.usuario
+            INNER JOIN tb_fases f ON f.id_fase = fc.fase
+            WHERE fc.grupo = ?";
+        return $this->select_multi($sql, [$id_grupo]);
+    }
+
 
 
 }

@@ -36,7 +36,7 @@ class PDF extends FPDF
         $title = utf8_decode('SECTOR DUCTOS');
         $this->Text(82, 30, $title);
         $this->SetFont('Arial', '', 13);
-        $title = utf8_decode('SOLICITUD DE TRANSFERENCIA / CHEQUE');
+        $title = utf8_decode('SOLICITUD DE TRANSFERENCIA/CHEQUE');
         $this->Text(100, 40, $title);
 
         $this->SetFont('Arial', '', 10);
@@ -46,15 +46,15 @@ class PDF extends FPDF
         $this->Text(183, 15, $title);
         $title = utf8_decode('Referencia No. _________');
         $this->Text(10, 30, $title);
-        $title = utf8_decode($arrData['contraseña']['contraseña']);
+        $title = utf8_decode($arrData['anticipo']['contraseña']);
         $this->Text(37, 30, $title);
         $title = utf8_decode('De: ____________________');
         $this->Text(10, 40, $title);
-        $title = utf8_decode('Cuentas por Pagar');
-        $this->Text(18, 40, $title);
+        $title = utf8_decode('Anticipo');
+        $this->Text(25, 40, $title);
         $title = utf8_decode('Para: Depto. de Contabilidad');
         $this->Text(10, 48, $title);
-        $title = utf8_decode($arrData['contraseña']['fecha_registro']);
+        $title = utf8_decode($arrData['anticipo']['fecha_registro']);
         $this->Text(165, 48, $title);
         $title = utf8_decode('FECHA:________________________');
         $this->Text(140, 48, $title);
@@ -66,7 +66,7 @@ class PDF extends FPDF
     {
         $this->SetXY(5, 56);
         $this->SetFont('Arial', 'B', 15);
-        $this->Cell(200, 10, $arrData['contraseña']['proveedor'], "LTRB", 0, 'C');
+        $this->Cell(200, 10, $arrData['anticipo']['proveedor'], "LTRB", 0, 'C');
 
     }
 
@@ -83,7 +83,7 @@ class PDF extends FPDF
         $this->Text(65, 85, $title);
 
         $this->SetXY(18, 76);
-        $this->Cell(35, 5, number_format($arrData['inpuestos']['total'], 2, '.', ','), 0, 0, 'R');
+        $this->Cell(35, 5, number_format($arrData['anticipo']['total'], 2, '.', ','), 0, 0, 'R');
         $this->Cell(8, 5, null, 0, 'C');
         $this->Cell(62, 5, "( " . $arrData['monto_letras'] . " )", 0, 'C');
     }
@@ -106,11 +106,10 @@ class PDF extends FPDF
         $this->SetDrawColor(0, 0, 0);
         $this->SetFont('Arial', 'B', 12);
 
+        // Encabezados sin número de factura
         $this->Cell(20, 10, "No.", "R", 0, 'C');
-        $this->Cell(35, 10, 'No. Factura', "R", 0, 'C');
-        $this->Cell(95, 10, 'Bien / Servicio', "R", 0, 'C');
-        $this->Cell(50, 10, 'Valor', "R", 1, 'C');
-
+        $this->Cell(125, 10, 'Bien / Servicio', "R", 0, 'C');
+        $this->Cell(55, 10, 'Valor', "R", 1, 'C');
 
         $this->SetDrawColor(0, 0, 0);
         $this->SetTextColor(0, 0, 0);
@@ -131,25 +130,22 @@ class PDF extends FPDF
                 $cellX = $this->GetX();
                 $cellY = $this->GetY();
 
-                // Dibujar celdas
+                // Dibujar celdas (sin número de factura)
                 $this->Cell(20, $this->row_height, $contador, 1, 0, 'C');
-                $this->Cell(35, $this->row_height, utf8_decode($row['no_factura']), 1, 0, 'C');
-                $this->Cell(95, $this->row_height, null, 1, 0, 'L');
-                $this->Text($cellX + 60, $cellY + 4, utf8_decode($row['bien_servicio']));
-                $this->Cell(50, $this->row_height, '', 1, 0, 'R');
+                $this->Cell(125, $this->row_height, utf8_decode($row['bien_servicio']), 1, 0, 'L');
+                $this->Cell(55, $this->row_height, '', 1, 0, 'R');
 
-                $this->Text($cellX + 151, $cellY + 5, "Q.");
-
+                // Imprimir monto formateado
+                $this->Text($cellX + 147, $cellY + 5, "Q.");
                 $value = number_format($row['valor_documento'], 2);
-                $endX = $cellX + 35 + 150;
                 $textWidth = $this->GetStringWidth($value);
-                $this->Text($endX - $textWidth + 10, $cellY + 4.5, $value);
+                $this->Text($cellX + 195 - $textWidth, $cellY + 5, $value);
 
                 $y += $this->row_height;
                 $contador++;
             }
 
-            // Actualizar la posición Y final para cálculos posteriores
+            // Actualizar posición final
             $this->y_position = $y;
         } else {
             $this->SetXY(10, $y);
@@ -160,73 +156,22 @@ class PDF extends FPDF
         return $this->y_position;
     }
 
+
     function impuestos($arrData)
     {
         $this->SetTextColor(0, 0, 0);
         $this->SetFont('Arial', '', 9);
 
-        $lineHeight = 5;
-
         // Posición fija del TOTAL y fecha programada
         $yTotal = 239;
         $yFecha = 243;
-
-        // Si hay anticipo, necesitamos “subir” las líneas anteriores
-        $anticipoExiste = empty($arrData['informe']['anticipo']);
-        $desplazamiento = $anticipoExiste ? $lineHeight : 0;
-
-        // Posición inicial de SUBTOTAL (ajustada si hay anticipo)
-        $y = 215 - $desplazamiento;
-
-        // SUBTOTAL
-        $this->SetY($y);
-        $this->SetX(5);
-        $this->Cell(170, 5, "SUBTOTAL", "LTRB", 0, 'L');
-        $this->Text(176, $y + 4, "Q. ");
-        $this->Cell(30, 5, number_format($arrData['inpuestos']['monto_total'], 2), "LTRB", 1, 'R');
-        $y += 5;
-
-        // 12% IVA
-        $this->SetY($y);
-        $this->SetX(5);
-        $this->Cell(170, 5, "12% IVA", "LTRB", 0, 'L');
-        $this->Text(176, $y + 4, "Q. ");
-        $this->Cell(30, 5, number_format($arrData['inpuestos']['iva'], 2), "LTRB", 1, 'R');
-        $y += 5;
-
-        // RETENCION IVA
-        $this->SetY($y);
-        $this->SetX(5);
-        $this->Cell(170, 5, "RETENCION IVA", "LTRB", 0, 'L');
-        $this->Text(176, $y + 4, "Q. ");
-        $this->Cell(30, 5, number_format($arrData['inpuestos']['reten_iva'], 2), "LTRB", 1, 'R');
-        $y += 5;
-
-        // RETENCION ISR
-        $this->SetY($y);
-        $this->SetX(5);
-        $this->Cell(170, 5, "RETENCION ISR", "LTRB", 0, 'L');
-        $this->Text(176, $y + 4, "Q. ");
-        $this->Cell(30, 5, number_format($arrData['inpuestos']['reten_isr'], 2), "LTRB", 1, 'R');
-        $y += 5;
-
-
-        $this->SetY($y);
-        $this->SetX(5);
-        $this->Cell(170, 5, "ANTICIPO", "LTRB", 0, 'L');
-        $this->Text(176, $y + 4, "Q. ");
-        // Mostramos el anticipo como negativo
-        $this->Cell(30, 5, '- ' . number_format($arrData['anticipo']['monto_total'], 2), "LTRB", 1, 'R');
-        $y += 5;
-
-
 
         // TOTAL (posición fija)
         $this->SetY($yTotal);
         $this->SetX(5);
         $this->Cell(170, 5, "TOTAL", "LTRB", 0, 'L');
         $this->Text(176, $yTotal + 4, "Q. ");
-        $this->Cell(30, 5, number_format($arrData['inpuestos']['total'], 2), "LTRB", 1, 'R');
+        $this->Cell(30, 5, number_format($arrData['anticipo']['total'], 2), "LTRB", 1, 'R');
 
         // Fecha programada de pago (posición fija)
         $this->SetXY(5, $yFecha + 1);
@@ -236,10 +181,8 @@ class PDF extends FPDF
         $this->Text(50, $yFecha + 5, $title);
         $this->SetXY(25, $yFecha + 2);
         $this->SetFont('Arial', 'B', 9);
-        $this->Cell(75, 4, $arrData['inpuestos']['fecha_pago'], 0, 1, 'C');
+        $this->Cell(75, 4, $arrData['anticipo']['fecha_pago'], 0, 1, 'C');
     }
-
-
 
     function firmas($arrData)
     {
@@ -270,7 +213,7 @@ class PDF extends FPDF
         $this->SetXY($x, $y + 20);
 
         // Primer cuadro fijo
-        $this->Cell($ancho, 6, utf8_decode($arrData['solicitante']['nombre_completo']), "LTRB", 0, 'C');
+        $this->Cell($ancho, 6, utf8_decode("Usuario solicitante"), "LTRB", 0, 'C');
 
         // Nombres dinámicos
         foreach ($firmas as $f) {
@@ -296,7 +239,6 @@ class PDF extends FPDF
         $this->Text(110, 288, utf8_decode('CARSO INFRAESTRUCTURA Y CONTRUCCIÓN'));
         $this->Image('Assets/img/carso_logo.png', 55, 281, 50, 9);
     }
-
 
     function RoundedRect($x, $y, $w, $h, $r, $corners = ['TL' => true, 'TR' => true, 'BL' => true, 'BR' => true], $style = '')
     {
@@ -387,7 +329,7 @@ $pdf->impuestos($arrData);
 $pdf->firmas($arrData);
 
 
-$nombreArchivo = utf8_decode('Solicitud_Fondos_' . $arrData['contraseña']['contraseña'] . '.pdf');
+$nombreArchivo = utf8_decode('Solicitud_Fondos_' . $arrData['anticipo']['contraseña'] . '.pdf');
 $pdf->Output('I', $nombreArchivo);
 exit();
 

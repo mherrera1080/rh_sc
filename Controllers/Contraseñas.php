@@ -72,14 +72,10 @@ class Contraseñas extends Controllers
     public function Detalles($contraseña)
     {
         $facturas = $this->model->getContraseña($contraseña);
-        $proveedor = $facturas["id_proveedor"];
-        $area = $facturas["id_area"];
         $id_solicitud = $facturas["anticipo"];
-        $anticipo = $this->model->getAnticipo($proveedor, $area); // true o false
         $anticipoinfo = $this->model->getAnticipoInfo($id_solicitud);
 
         $data['facturas'] = $facturas;
-        $data['anticipo'] = $anticipo; // booleano
         $data['anticipoinfo'] = $anticipoinfo; // booleano
         $data['page_id'] = 'INFO';
         $data['page_tag'] = "Detalles";
@@ -126,12 +122,11 @@ class Contraseñas extends Controllers
         die();
     }
 
-    public function contraseñasAreas()
-    {
-        // aunque venga quemado, igual lo recibimos del POST
-        $id_area = intval($_POST['id_area'] ?? 0);
 
-        $arrData = $this->model->selectContrasAreas($id_area);
+    public function usuariosAreas($id_area)
+    {
+
+        $arrData = $this->model->getUsuariosPorArea($id_area);
 
         if (empty($arrData)) {
             $arrResponse = array('status' => false, 'msg' => 'No se encontraron datos.');
@@ -206,7 +201,6 @@ class Contraseñas extends Controllers
         echo $htmlOptions;
         die();
     }
-
     public function generarContraseña(int $contraseña)
     {
         if ($contraseña) {
@@ -283,8 +277,6 @@ class Contraseñas extends Controllers
             echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
         }
     }
-
-
     private function numeroALetras($numero, $modo = 'asNumber', $maxFractionDigits = null)
     {
         // Requiere ext-intl (NumberFormatter)
@@ -376,7 +368,6 @@ class Contraseñas extends Controllers
         // Modo no reconocido -> devolver número tal cual
         return ucfirst($sign . $intWords . ' punto ' . $fraction);
     }
-
     public function guardarContraseña()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -386,6 +377,7 @@ class Contraseñas extends Controllers
             $fecha_pago = $_POST['fecha_pago'];
             $proveedor_recibimiento = intval($_POST['proveedor_recibimiento']);
             $area = intval($_POST['area']);
+            
             $factura = $_POST['factura'];
             $bien = $_POST['bien'];
             $valor = $_POST['valor'];
@@ -431,7 +423,6 @@ class Contraseñas extends Controllers
                 echo json_encode(["status" => false, "message" => "Error al crear contraseña."]);
                 exit;
             }
-
             // Insertar detalles
             foreach ($factura as $index => $facturaItem) {
                 $valorBien = isset($bien[$index]) ? htmlspecialchars($bien[$index]) : null;
@@ -456,7 +447,29 @@ class Contraseñas extends Controllers
                 ]);
                 exit;
             }
-            echo json_encode(["status" => true, "message" => "Contraseña registrada correctamente."]);
+
+            $arrData = [
+                'contraseña' => $this->model->getContraseña($contraseña),
+                'correos' => $this->model->getCorreosArea($area, $estado)
+            ];
+
+            $sendcorreoEmpleado = 'Views/Template/Email/sendContraseña.php';
+            try {
+                ob_start();
+                require $sendcorreoEmpleado;
+                ob_end_clean();
+            } catch (Exception $e) {
+                echo json_encode([
+                    "status" => false,
+                    "message" => "Error al enviar el correo: " . $e->getMessage()
+                ]);
+                exit;
+            }
+
+            echo json_encode([
+                "status" => true,
+                "message" => "Contraseña registrada."
+            ]);
         }
     }
 
@@ -611,6 +624,24 @@ class Contraseñas extends Controllers
                 exit;
             }
 
+            $arrData = [
+                'contraseña' => $this->model->getContraseña($contraseña),
+            ];
+
+            $sendcorreoEmpleado = 'Views/Template/Email/sendContraseña.php';
+            try {
+                ob_start();
+                require $sendcorreoEmpleado;
+                ob_end_clean();
+            } catch (Exception $e) {
+                echo json_encode([
+                    "status" => false,
+                    "message" => "Error al enviar el correo: " . $e->getMessage()
+                ]);
+                exit;
+            }
+
+
             echo json_encode(["status" => true, "message" => "Contraseña actualizada correctamente."]);
         }
     }
@@ -641,8 +672,9 @@ class Contraseñas extends Controllers
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $contraseña = $_POST['contraseña'];
+            $realizador = $_POST['realizador'];
             $correciones = $_POST['correciones'];
-            $estado = "Pendiente";
+            $estado = $_POST['respuesta'];
             $errores = [];
 
             if (empty($contraseña) || empty($correciones)) {
@@ -675,7 +707,31 @@ class Contraseñas extends Controllers
                 exit;
             }
 
-            echo json_encode(["status" => true, "message" => "Contraseña registrada correctamente."]);
+            $correos = $this->model->getCorreobyName($realizador);
+
+
+            $arrData = [
+                'contraseña' => $this->model->getContraseña($contraseña),
+                'correos' => $correos
+            ];
+
+            $sendcorreoEmpleado = 'Views/Template/Email/sendContraseña.php';
+            try {
+                ob_start();
+                require $sendcorreoEmpleado;
+                ob_end_clean();
+            } catch (Exception $e) {
+                echo json_encode([
+                    "status" => false,
+                    "message" => "Error al enviar el correo: " . $e->getMessage()
+                ]);
+                exit;
+            }
+
+            echo json_encode([
+                "status" => true,
+                "message" => "Contraseña Corregida y correo enviado correctamente."
+            ]);
         }
     }
 
@@ -764,17 +820,39 @@ class Contraseñas extends Controllers
                 exit;
             }
 
-            echo json_encode(["status" => true, "message" => "Contraseña actualizada correctamente."]);
+            $arrData = [
+                'contraseña' => $this->model->getContraseña($contraseña),
+            ];
+            $sendcorreoEmpleado = 'Views/Template/Email/sendContraseña.php';
+            try {
+                ob_start();
+                require $sendcorreoEmpleado;
+                ob_end_clean();
+            } catch (Exception $e) {
+                echo json_encode([
+                    "status" => false,
+                    "message" => "Error al enviar el correo: " . $e->getMessage()
+                ]);
+                exit;
+            }
+
+            echo json_encode([
+                "status" => true,
+                "message" => "Contraseña Corregida y correo enviado correctamente."
+            ]);
         }
     }
 
-    public function validarContraseña()
+    public function validacionArea()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $contraseña = $_POST['contraseña'];
+            $area = $_POST['area'];
+            $area_user = $_POST['area_user'];
             $estado = $_POST['respuesta'];
             $anticipo = $_POST['anticipo'] ?? null;
             $errores = [];
+            
             if (empty($contraseña) || empty($estado)) {
                 echo json_encode(["status" => false, "msg" => "Problemas al obtener datos."]);
                 exit;
@@ -789,9 +867,10 @@ class Contraseñas extends Controllers
             }
 
             // Crear la contraseña
-            $this->model->validacionContraseña(
+            $this->model->validacionArea(
                 $contraseña,
                 $anticipo,
+                $area_user,
                 $estado
             );
 
@@ -804,10 +883,90 @@ class Contraseñas extends Controllers
                 exit;
             }
 
-            echo json_encode(["status" => true, "message" => "Contraseña registrada correctamente."]);
+            $arrData = [
+                'contraseña' => $this->model->getContraseña($contraseña),
+                'correos' => $this->model->getCorreosArea($area, $estado)
+            ];
+
+            $sendcorreoEmpleado = 'Views/Template/Email/sendContraseña.php';
+            try {
+                ob_start();
+                require $sendcorreoEmpleado;
+                ob_end_clean();
+            } catch (Exception $e) {
+                echo json_encode([
+                    "status" => false,
+                    "message" => "Error al enviar el correo: " . $e->getMessage()
+                ]);
+                exit;
+            }
+
+
+            echo json_encode([
+                "status" => true,
+                "message" => "Contraseña Guardada."
+            ]);
+
         }
     }
 
+    public function validacionConta()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $contraseña = $_POST['contraseña'];
+            $estado = $_POST['respuesta'];
+            $errores = [];
+            if (empty($contraseña) || empty($estado)) {
+                echo json_encode(["status" => false, "msg" => "Problemas al obtener datos."]);
+                exit;
+            }
+
+            $this->model->validacionConta(
+                $contraseña,
+                $estado
+            );
+
+            if (!empty($errores)) {
+                echo json_encode([
+                    "status" => false,
+                    "message" => $errores,
+                    "errors" => $errores
+                ]);
+                exit;
+            }
+
+            // $arrData = [
+            //     'contraseña' => $this->model->getContraseña($contraseña),
+            // ];
+            // $sendcorreoEmpleado = 'Views/Template/Email/sendContraseña.php';
+            // try {
+            //     ob_start();
+            //     require $sendcorreoEmpleado;
+            //     ob_end_clean();
+            // } catch (Exception $e) {
+            //     echo json_encode([
+            //         "status" => false,
+            //         "message" => "Error al enviar el correo: " . $e->getMessage()
+            //     ]);
+            //     exit;
+            // }
+
+
+            if ($estado == 'Descartado') {
+                echo json_encode([
+                    "status" => true,
+                    "message" => "Contraseña descartada y correo enviado correctamente."
+                ]);
+            } else {
+                echo json_encode([
+                    "status" => true,
+                    "message" => "Contraseña validado y correo enviado correctamente."
+                ]);
+
+            }
+
+        }
+    }
     public function solicitudFondos()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -843,10 +1002,28 @@ class Contraseñas extends Controllers
                 exit;
             }
 
-            echo json_encode(["status" => true, "message" => "Contraseña registrada correctamente."]);
+            $arrData = [
+                'contraseña' => $this->model->getContraseña($contraseña),
+            ];
+            $sendcorreoEmpleado = 'Views/Template/Email/sendContraseña.php';
+            try {
+                ob_start();
+                require $sendcorreoEmpleado;
+                ob_end_clean();
+            } catch (Exception $e) {
+                echo json_encode([
+                    "status" => false,
+                    "message" => "Error al enviar el correo: " . $e->getMessage()
+                ]);
+                exit;
+            }
+
+            echo json_encode([
+                "status" => true,
+                "message" => "Solicitud de Fondos Realizada y correo enviado correctamente."
+            ]);
         }
     }
-
     public function descartarContraseña()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {

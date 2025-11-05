@@ -36,6 +36,8 @@ document.addEventListener("DOMContentLoaded", function () {
             html = '<span class="badge badge-danger">CORREGIR</span>';
           } else if (data.includes("descartado")) {
             html = '<span class="badge badge-danger">DESCARTADO</span>';
+          } else if (data.includes("finalizado")) {
+            html = '<span class="badge badge-success">FINALIZADO</span>';
           }
           return html;
         },

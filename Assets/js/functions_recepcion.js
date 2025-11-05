@@ -22,7 +22,23 @@ document.addEventListener("DOMContentLoaded", function () {
       { data: "proveedor" },
       { data: "monto_total" },
       { data: "fecha_pago" },
-      { data: "estado" },
+      {
+        data: "estado",
+        render: function (data, type, row, meta) {
+          let html = "";
+          data = data.toLowerCase();
+          if (data.includes("pendiente")) {
+            html = '<span class="badge badge-warning">PENDIENTE</span>';
+          } else if (data.includes("validado")) {
+            html = '<span class="badge badge-success">VALIDADO</span>';
+          } else if (data.includes("corregir")) {
+            html = '<span class="badge badge-danger">CORREGIR</span>';
+          } else if (data.includes("descartado")) {
+            html = '<span class="badge badge-danger">DESCARTADO</span>';
+          }
+          return html;
+        },
+      },
       {
         data: "estado",
         render: function (data, type, row) {
@@ -38,7 +54,7 @@ document.addEventListener("DOMContentLoaded", function () {
                   onclick="window.open('${base_url}/Contraseñas/generarContraseña/${row.contraseña}', '_blank')">
             <i class="far fa-file-pdf"></i>
           </button>`;
-          } else if (data && data.trim().includes("Correccion")) {
+          } else if (data && data.trim().includes("Corregir")) {
             html = `
           <button class="btn btn-danger correccion-btn" data-bs-toggle="modal" data-id="${row.contraseña}"
           data-bs-target="#correccionContraseñaModal">
@@ -56,6 +72,8 @@ document.addEventListener("DOMContentLoaded", function () {
                   onclick="window.open('${base_url}/Contraseñas/generarContraseña/${row.contraseña}', '_blank')">
             <i class="far fa-file-pdf"></i>
           </button>`;
+          } else {
+            html = ``;
           }
           return html;
         },
@@ -266,8 +284,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 location.reload();
               }
             });
-            $("#setContraseñaModal").modal("hide");
-            tableContraseña.ajax.reload();
           } else {
             Swal.fire({
               title: "Advertencia",
@@ -276,9 +292,7 @@ document.addEventListener("DOMContentLoaded", function () {
               confirmButtonText: "Entendido",
             }).then((result) => {
               if (result.isConfirmed) {
-                // Recargar la página al presionar "Aceptar"
-                submitButton.disabled = false;
-                spinner.classList.add("d-none");
+                location.reload();
               }
             });
           }
@@ -289,8 +303,13 @@ document.addEventListener("DOMContentLoaded", function () {
             text: "Ocurrió un problema al procesar la solicitud.",
             icon: "error",
             confirmButtonText: "Entendido",
+          }).then((result) => {
+            if (result.isConfirmed) {
+              // Recargar la página al presionar "Aceptar"
+              submitButton.disabled = false;
+              spinner.classList.add("d-none");
+            }
           });
-          console.error("Error:", error);
         });
     });
 

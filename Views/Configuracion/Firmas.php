@@ -85,6 +85,16 @@
                                 Puedes seleccionar varias áreas (Ej: Finanzas, Recursos Humanos, TI)
                             </div>
                         </div>
+                        <div class="col-md-3">
+                            <label for="areas" class="form-label fw-semibold mb-1 d-block">Categoria</label>
+                            <select class="form-control selectpicker w-100" data-live-search="true"
+                                name="categoria" required title="Seleccione una o area" data-width="100%">
+                                <option selected disabled>Selecciona una categoria</option>
+                                <option value="Mayor">Mayor Al Limite</option>
+                                <option value="Menor">Menor Al Limite</option>
+                                <option value="Anticipo">Anticipo</option>
+                            </select>
+                        </div>
                     </div>
 
                     <hr>
@@ -140,11 +150,22 @@
                         </div>
                         <div class="col-md-6">
                             <label for="areas_edit" class="form-label fw-semibold">Área</label>
-                            <select class="form-control selectpicker" data-live-search="true" id="areas_edit" name="areas"> 
+                            <select class="form-control selectpicker" data-live-search="true" id="areas_edit"
+                                name="areas">
                             </select>
                             <div class="form-text mt-1">
                                 Selecciona el área correspondiente al grupo.
                             </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="areas" class="form-label fw-semibold mb-1 d-block">Categoria</label>
+                            <select class="form-control selectpicker w-100" data-live-search="true" id="categoria"
+                                name="categoria" required title="Seleccione una o area" data-width="100%">
+                                <option selected disabled>Selecciona una categoria</option>
+                                <option value="Mayor">Mayor Al Limite</option>
+                                <option value="Menor">Menor Al Limite</option>
+                                <option value="Anticipo">Anticipo</option>
+                            </select>
                         </div>
                     </div>
                     <hr>
@@ -177,7 +198,6 @@
         </div>
     </div>
 </div>
-
 
 <style>
     #contenedorFirmantes .card {

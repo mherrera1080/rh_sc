@@ -1,10 +1,14 @@
 <?php
+session_start();
 class Usuarios extends Controllers
 {
     public function __construct()
     {
         parent::__construct();
-
+        if (empty($_SESSION['login'])) {
+            header('Location: ' . base_url() . '/login');
+            die();
+        }
     }
 
     public function Usuarios()
@@ -25,8 +29,24 @@ class Usuarios extends Controllers
         die();
     }
 
+        public function selectUserByid($id)
+    {
+        $arrData = $this->model->selectUserByid($id);
 
-    
+        // Verificar y depurar datos
+        error_log(print_r($arrData, true));
+
+        if (empty($arrData)) {
+            $arrResponse = array('status' => false, 'msg' => 'No se encontraron datos.');
+        } else {
+            $arrResponse = array('status' => true, 'data' => $arrData);
+        }
+
+        echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+        die();
+    }
+
+
     public function setUsuario()
     {
         if ($_POST) {
@@ -40,7 +60,8 @@ class Usuarios extends Controllers
                 $identificacion = trim($_POST['set_identificacion']);
                 $codigo_empleado = trim($_POST['set_codigo']);
                 $correo = trim($_POST['set_correo']);
-                $rol = trim($_POST['set_rol']);
+                $rol = trim($_POST['set_area']);
+                $password = trim($_POST['set_password']);
 
                 if ($id_usuario == 0) {
                     // Insertar nuevo usuario
@@ -51,7 +72,8 @@ class Usuarios extends Controllers
                         $identificacion,
                         $codigo_empleado,
                         $correo,
-                        $rol
+                        $rol,
+                        $password
                     );
                 } else {
                     // Actualizar usuario existente
@@ -63,7 +85,8 @@ class Usuarios extends Controllers
                         $identificacion,
                         $codigo_empleado,
                         $correo,
-                        $rol
+                        $rol,
+                        $password
                     );
                 }
 

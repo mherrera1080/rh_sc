@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", function () {
         },
       },
       { data: "nombre_grupo" },
-      { data: "nombre_area" }, 
+      { data: "nombre_area" },
       { data: "total_firmas" },
       { data: "estado_grupo" },
       {
@@ -69,7 +69,6 @@ document.addEventListener("DOMContentLoaded", function () {
   // ----------------------------
   const contenedorFirmantes = document.getElementById("contenedorFirmantes");
   const btnAgregar = document.getElementById("btnAgregarFirmante");
-
 
   const cargarUsuarios = (selectElement) => {
     let ajaxUrl = base_url + "/Configuracion/getUsers";
@@ -205,39 +204,50 @@ document.addEventListener("DOMContentLoaded", function () {
   // EDITAR GRUPO
   // ----------------------------
 
-function cargarDatosGrupo(id_grupo) {
-  $.ajax({
-    url: `${base_url}/Configuracion/getGrupoFirmasByID/${id_grupo}`,
-    method: "GET",
-    dataType: "json",
-    success: function (response) {
-      if (response.status && response.data && response.data.grupo) {
-        const grupo = response.data.grupo;
+  function cargarDatosGrupo(id_grupo) {
+    $.ajax({
+      url: `${base_url}/Configuracion/getGrupoFirmasByID/${id_grupo}`,
+      method: "GET",
+      dataType: "json",
+      success: function (response) {
+        if (response.status && response.data && response.data.grupo) {
+          const grupo = response.data.grupo;
 
-        // Datos básicos
-        $("#id_grupo_edit").val(grupo.id_grupo);
-        $("#nombre_grupo_edit").val(grupo.nombre_grupo);
+          // Datos básicos
+          $("#id_grupo_edit").val(grupo.id_grupo);
+          $("#nombre_grupo_edit").val(grupo.nombre_grupo);
+          $("#areas_edit").val(grupo.area_grupo);
+          $("#categoria").val(grupo.categoria);
+          // Firmas
+          const firmas = response.data.firmas || [];
+          cargarFirmasGrupo(firmas);
 
-        // Cargar áreas (ahora sí sin duplicados)
-        cargarAreasEdit(grupo.area_grupo);
+          // Abrir modal
+          $("#modalGrupoFirmasEdit").modal("show");
+        } else {
+          alert(response.message);
+        }
+      },
+      error: function (err) {
+        console.error("Error al cargar grupo:", err);
+      },
+    });
+  }
 
-        // Firmas
-        const firmas = response.data.firmas || [];
-        cargarFirmasGrupo(firmas);
-
-        // Abrir modal
-        $("#modalGrupoFirmasEdit").modal("show");
-      } else {
-        alert(response.message);
+  if (document.querySelector("#areas_edit")) {
+    let ajaxUrl = base_url + "/Configuracion/getSelectArea"; // Ajusta la URL según tu ruta
+    let request = window.XMLHttpRequest
+      ? new XMLHttpRequest()
+      : new ActiveXObject("Microsoft.XMLHTTP");
+    request.open("GET", ajaxUrl, true);
+    request.send();
+    request.onreadystatechange = function () {
+      if (request.readyState === 4 && request.status === 200) {
+        document.querySelector("#areas_edit").innerHTML = request.responseText;
+        $("#areas_edit");
       }
-    },
-    error: function (err) {
-      console.error("Error al cargar grupo:", err);
-    },
-  });
-}
-
-
+    };
+  }
 
   // ----------------------------
   // Función para cargar firmas de un grupo
@@ -296,36 +306,6 @@ function cargarDatosGrupo(id_grupo) {
     const id_grupo = $(this).data("id");
     cargarDatosGrupo(id_grupo);
   });
-
-
-function cargarAreasEdit(valorSeleccionado = null) {
-  const select = $("#areas_edit");
-
-  // Limpiar opciones actuales
-  select.empty();
-
-  // Traer datos vía AJAX
-  $.ajax({
-    url: base_url + "/Configuracion/getSelectArea",
-    method: "GET",
-    success: function (response) {
-      // Llenar el select con la respuesta
-      select.html(response);
-
-      // Asignar valor seleccionado si existe
-      if (valorSeleccionado) {
-        select.val(valorSeleccionado);
-      }
-    },
-    error: function (err) {
-      console.error("Error al cargar áreas:", err);
-    },
-  });
-}
-
-
-
-
 
   function cargarUsuariosEdit(selectElement, idSeleccionado = null) {
     $.ajax({

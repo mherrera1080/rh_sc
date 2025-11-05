@@ -111,7 +111,7 @@ class VehiculosModel extends Mysql
             $contraseña,
             $area,
             $categoria,
-            'Pendiente'
+            'Validado'
         ];
 
         $request = $this->insert($sql, $arrData);

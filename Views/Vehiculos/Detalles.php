@@ -16,15 +16,16 @@
                         <i class="far fa-solid fa-envelope"></i>
                     </button>
                     <div class="ms-auto">
-                        <?php if ($data['facturas']['estado'] === "Validado" ) { ?>
+                        <?php if ($data['facturas']['estado'] === "Validado") { ?>
                             <button class="btn btn-success btn-round ms-auto btn-password" id="btnSolicitud"
                                 data-bs-toggle="modal" data-bs-target="#solicitarFondosVehiculos"
                                 data-id="<?= $data['facturas']['contraseña']; ?>">
                                 <i class="fas fa-check"></i> Solicitar Fondos
                             </button>
                         <?php } ?>
-                        <?php if ($data['facturas']['estado'] === "Pendiente" && $_SESSION['PersonalData']['area'] == 4
-                        || $data['facturas']['estado'] === "Corregido" && $_SESSION['PersonalData']['area'] == 4) { ?>
+                        <?php if (
+                            $data['facturas']['estado'] === "Pendiente" || $data['facturas']['estado'] === "Corregido" 
+                        ) { ?>
                             <button class="btn btn-success btn-round ms-auto btn-password" id="btnValidar"
                                 data-bs-toggle="modal" data-bs-target="#validarModal"
                                 data-id="<?= $data['facturas']['contraseña']; ?>">
@@ -179,8 +180,8 @@
                     </div>
                     <!-- Footer -->
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-danger" data-respuesta="Corregir">
-                            <i class="fas fa-times"></i> Descartar
+                        <button type="submit" class="btn btn-secondary" data-respuesta="Corregir">
+                            <i class="fas fa-times"></i> Corregir
                         </button>
                         <button type="submit" class="btn btn-success" data-respuesta="Validado">
                             <i class="fas fa-save"></i> Validar
@@ -249,7 +250,7 @@
                                 <div class="col-md-6 mb-3">
                                     <label for="categoria" class="form-label">Categoría<i style="color: red;">*</i>
                                     </label>
-                                    <select class="form-select" id="categoria" name="categoria" required>
+                                    <select class="form-select" id="categoria" name="categoria">
                                         <option value="" selected disabled>Seleccione una categoría</option>
                                         <option value="Combustible">Combustible</option>
                                         <option value="Servicios">Servicios</option>
