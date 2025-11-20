@@ -16,7 +16,7 @@
                         <i class="far fa-solid fa-envelope"></i>
                     </button>
                     <div class="ms-auto">
-                        <?php if ($data['facturas']['estado'] === "Validado") { ?>
+                        <?php if ($data['facturas']['estado'] === "Validado Area") { ?>
                             <button class="btn btn-success btn-round ms-auto btn-password" id="btnSolicitud"
                                 data-bs-toggle="modal" data-bs-target="#solicitarFondosVehiculos"
                                 data-id="<?= $data['facturas']['contraseña']; ?>">
@@ -94,8 +94,8 @@
                         <div class="table-responsive">
                             <input type="hidden" id="contraseña" value="<?= $data['facturas']['contraseña']; ?>">
                             <input type="hidden" id="usuario" value="<?= $_SESSION['PersonalData']['area']; ?>">
-                            <table id="tableFacturas" class="display table table-striped table-hover">
-                                <thead>
+                            <table id="tableFacturas" class="display table table-striped table-hover align-middle">
+                                <thead class="table-light">
                                     <tr>
                                         <th>ID</th>
                                         <th>No. Factura</th>
@@ -183,7 +183,7 @@
                         <button type="submit" class="btn btn-secondary" data-respuesta="Corregir">
                             <i class="fas fa-times"></i> Corregir
                         </button>
-                        <button type="submit" class="btn btn-success" data-respuesta="Validado">
+                        <button type="submit" class="btn btn-success" data-respuesta="Validado Area">
                             <i class="fas fa-save"></i> Validar
                         </button>
                     </div>
@@ -266,7 +266,7 @@
                         <button type="submit" class="btn btn-danger" data-respuesta="Descartado">
                             <i class="fas fa-times"></i> Descartar
                         </button>
-                        <button type="submit" class="btn btn-success" data-respuesta="Finalizado">
+                        <button type="submit" class="btn btn-success" data-respuesta="Validado">
                             <i class="fas fa-save"></i> Validar
                         </button>
                     </div>

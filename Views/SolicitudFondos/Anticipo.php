@@ -10,7 +10,7 @@
                         <h2 class="mb-1 fs-4 fw-bold">Solicitud de Fondos sin contraseña</h2>
                     </div>
                     <div class="d-flex gap-2">
-                        <?php if ($data['facturas']['solicitud_estado'] === "Pendiente" && $_SESSION['PersonalData']['area'] == 4) { ?>
+                        <?php if ($data['facturas']['solicitud_estado'] === "Pendiente" && $_SESSION['PersonalData']['area'] == 4 || $data['facturas']['solicitud_estado'] === "Corregido" && $_SESSION['PersonalData']['area'] == 4 ) { ?>
                             <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#finalizarModal">
                                 <i class="fas fa-check"></i> Pagar
                             </button>
@@ -18,7 +18,7 @@
                                 onclick="window.open('<?= base_url() ?>/SolicitudFondos/generarAnticipo/<?= $data['facturas']['id_solicitud']; ?>', '_blank')">
                                 <i class="far fa-file-pdf"></i> PDF
                             </button>
-                        <?php } else if ($data['facturas']['solicitud_estado'] === "Corregir" && $_SESSION['PersonalData']['area'] == 4) { ?>
+                        <?php } else if ($data['facturas']['solicitud_estado'] === "Corregir") { ?>
                                 <button type="button" class="btn btn-primary m-0 d-flex justify-content-left btnFacturaEditar"
                                     data-bs-toggle="modal" data-bs-target="#editarSolicitud"
                                     data-id="<?= $data['facturas']['id_solicitud']; ?>">
@@ -52,7 +52,7 @@
                         <div class="col-md-3">
                             <label class="form-label fw-bold">Monto Total</label>
                             <input type="text" class="form-control text-end"
-                                value="<?= $data['facturas']['total_calc'] ?? 'N/A'; ?>" disabled>
+                                value="<?= $data['facturas']['total'] ?? 'N/A'; ?>" disabled>
                         </div>
                     </div>
                 </div>
@@ -78,7 +78,7 @@
                             value="<?= $data['facturas']['solicitud_estado']; ?>">
                         <input type="hidden" id="area_usuario" value="<?= $_SESSION['PersonalData']['area'] ?>">
                         <table id="tableFacturas" class="table table-hover table-bordered align-middle">
-                            <thead>
+                            <thead class="table-light">
                                 <tr>
 
                                 </tr>
@@ -101,6 +101,8 @@
                 <form id="finalizarSolicitud">
                     <input type="hidden" class="form-control" name="id_solicitud"
                         value="<?= $data['facturas']['id_solicitud'] ?? 'N/A'; ?>">
+                    <input type="hidden" class="form-control" name="area"
+                        value="<?= $data['facturas']['id_area'] ?? 'N/A'; ?>">
                     <!-- Encabezado -->
                     <div class="modal-header bg-dark text-white">
                         <h5 class="modal-title" id="corregirModalLabel">
@@ -201,6 +203,9 @@
                     <input type="hidden" id="realizador" name="realizador"
                         value="<?php echo $_SESSION['PersonalData']['id_usuario']; ?>">
                     <input type="hidden" id="edit_id_solicitud" name="id_solicitud">
+                    <input type="hidden" class="form-control" name="area"
+                        value="<?= $data['facturas']['id_area'] ?? 'N/A'; ?>">
+
                     <div class="modal-header">
                         <h5 class="modal-title" id="setUserModalLabel">Editar Solicitud de Fondos</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -219,8 +224,6 @@
                             </div>
                             <div class="col-md-3">
                                 <label for="area" class="form-label">Área</label>
-                                <input type="hidden" name="area"
-                                    value="<?php echo $_SESSION['PersonalData']['area']; ?>">
                                 <input type="text" class="form-control"
                                     value="<?php echo $_SESSION['PersonalData']['nombre_area']; ?>" readonly>
                             </div>
@@ -271,7 +274,7 @@
                         <button type="submit" class="btn btn-danger" data-respuesta="Descartado">
                             <i class="fas fa-save"></i> Descartar
                         </button>
-                        <button type="submit" class="btn btn-success" data-respuesta="Pendiente">
+                        <button type="submit" class="btn btn-success" data-respuesta="Corregido">
                             <i class="fas fa-save"></i> Re-Enviar
                         </button>
                     </div>

@@ -89,7 +89,7 @@
                         <div class="table-responsive">
                             <input type="hidden" id="contraseña" value="<?= $data['facturas']['contraseña']; ?>">
                             <table id="tableFacturas" class="display table table-striped table-hover">
-                                <thead>
+                                <thead class="table-light">
                                     <tr>
                                         <th>ID</th>
                                         <th>No. Factura</th>

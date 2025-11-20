@@ -5,6 +5,18 @@ document.addEventListener("DOMContentLoaded", function () {
   tableContraseña = $("#tableContraseña").DataTable({
     ajax: {
       url: base_url + "/Contraseñas/contraseñasAreas",
+      dataSrc: function (json) {
+        // Si no hay datos, muestra swal y evita error
+        if (!json.status) {
+          Swal.fire({
+            icon: "info",
+            title: "Sin registros",
+            text: json.msg,
+          });
+          return []; // Retornar arreglo vacío para que DataTables no falle
+        }
+        return json.data;
+      },
       type: "POST",
       data: function (d) {
         d.id_area = 3; // 🔥 aquí quemas el área que quieras
@@ -34,6 +46,10 @@ document.addEventListener("DOMContentLoaded", function () {
         },
       },
     ],
+    language: {
+  url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json",
+},
+
     dom: "Bfrtip",
   });
 

@@ -9,6 +9,18 @@ document.addEventListener("DOMContentLoaded", function () {
       data: function (d) {
         d.id_area = 1; // 🔥 aquí quemas el área que quieras
       },
+      dataSrc: function (json) {
+        // Si no hay datos, muestra swal y evita error
+        if (!json.status) {
+          Swal.fire({
+            icon: "info",
+            title: "Sin registros",
+            text: json.msg,
+          });
+          return []; // Retornar arreglo vacío para que DataTables no falle
+        }
+        return json.data;
+      },
     },
     columns: [
       {

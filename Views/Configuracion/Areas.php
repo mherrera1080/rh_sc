@@ -1,5 +1,5 @@
 <?php headerAdmin($data); ?>
-<div class="main p-3">
+<div class="main p-4">
     <div class="page-header d-flex justify-content-between align-items-center">
         <div>
             <h3 class="fw-bold mb-3">Áreas</h3>
@@ -122,3 +122,9 @@
         </div>
     </div>
 </div>
+
+
+<script>
+    let role_id = <?= json_encode($_SESSION['rol_usuario'] ?? 0); ?>;
+    let permisos = <?= json_encode($_SESSION['permisos'] ?? []); ?>;
+</script>

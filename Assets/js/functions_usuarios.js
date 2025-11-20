@@ -1,13 +1,38 @@
 let tableUsuarios;
 
 document.addEventListener("DOMContentLoaded", function () {
+  let permisosMod = permisos[5] || {
+    acceder: 0,
+    crear: 0,
+    editar: 0,
+    eliminar: 0,
+  };
+
   // Tabla principal con datos AJAX
   tableUsuarios = $("#tableUsuarios").DataTable({
     ajax: {
       url: base_url + "/Usuarios/selectUsuarios",
+      dataSrc: function (json) {
+        // Si no hay datos, muestra swal y evita error
+        if (!json.status) {
+          Swal.fire({
+            icon: "info",
+            title: "Sin registros",
+            text: json.msg,
+          });
+          return []; // Retornar arreglo vacío para que DataTables no falle
+        }
+        return json.data;
+      },
     },
     columns: [
-      { data: "id_usuario" },
+      {
+        data: null,
+        render: function (data, type, row, meta) {
+          // Mostrar el número de ítem (índice + 1)
+          return meta.row + 1;
+        },
+      },
       { data: "identificacion" },
       { data: "no_empleado" },
       { data: "nombre_completo" },
@@ -15,10 +40,21 @@ document.addEventListener("DOMContentLoaded", function () {
       {
         data: null,
         render: function (data, type, row) {
-          botones = `
+          let botones = "";
+
+          // Botón Editar
+          if (permisosMod.editar == 1) {
+            botones += `
           <button type="button" class="btn btn-primary edit-btn" data-bs-toggle="modal" data-bs-target="#updateUser" data-id="${row.id_usuario}">
             <i class="fas fa-archive"></i>
           </button>`;
+          } else {
+            botones += `
+            <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+              <i class="fas fa-pencil-square"></i>
+            </button>`;
+          }
+
           return botones;
         },
       },
@@ -43,6 +79,9 @@ document.addEventListener("DOMContentLoaded", function () {
         className: "btn btn-secondary btn-sm rounded fw-bold text-white",
       },
     ],
+    language: {
+      url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json",
+    },
   });
 
   if (document.querySelector("#edit_area")) {
@@ -90,10 +129,40 @@ document.addEventListener("DOMContentLoaded", function () {
     };
   }
 
+  if (document.querySelector("#set_rol")) {
+    let ajaxUrl = base_url + "/Configuracion/getSelectRol"; // Ajusta la URL según tu ruta
+    let request = window.XMLHttpRequest
+      ? new XMLHttpRequest()
+      : new ActiveXObject("Microsoft.XMLHTTP");
+    request.open("GET", ajaxUrl, true);
+    request.send();
+    request.onreadystatechange = function () {
+      if (request.readyState === 4 && request.status === 200) {
+        document.querySelector("#set_rol").innerHTML = request.responseText;
+        $("#set_rol");
+      }
+    };
+  }
+
   document
     .querySelector("#setUsuarios")
     .addEventListener("submit", function (event) {
       event.preventDefault();
+
+      const pass1 = document.getElementById("set_password").value.trim();
+      const pass2 = document
+        .getElementById("set_confirm_password")
+        .value.trim();
+
+      if (pass1 !== pass2) {
+        Swal.fire({
+          title: "Error",
+          text: "Las contraseñas no coinciden.",
+          icon: "error",
+          confirmButtonText: "Aceptar",
+        });
+        return;
+      }
 
       let formData = new FormData(this);
       let ajaxUrl = base_url + "/Usuarios/setUsuario";
@@ -166,4 +235,42 @@ document.addEventListener("DOMContentLoaded", function () {
       },
     });
   });
+
+  document
+    .querySelector("#editUsuarios")
+    .addEventListener("submit", function (event) {
+      event.preventDefault();
+      let formData = new FormData(this);
+      let ajaxUrl = base_url + "/Usuarios/setUsuario";
+      let request = new XMLHttpRequest();
+
+      request.open("POST", ajaxUrl, true);
+      request.send(formData);
+
+      request.onreadystatechange = function () {
+        if (request.readyState === 4 && request.status === 200) {
+          let response = JSON.parse(request.responseText);
+
+          if (response.status) {
+            Swal.fire({
+              title: "Éxito",
+              text: response.msg,
+              icon: "success",
+              confirmButtonText: "Aceptar",
+            }).then(() => {
+              document.querySelector("#setUsuarios").reset();
+              $("#updateUser").modal("hide");
+              tableUsuarios.ajax.reload();
+            });
+          } else {
+            Swal.fire({
+              title: "Error",
+              text: response.msg,
+              icon: "error",
+              confirmButtonText: "Aceptar",
+            });
+          }
+        }
+      };
+    });
 });

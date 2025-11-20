@@ -1,10 +1,28 @@
 let tableVehiculos;
 
 document.addEventListener("DOMContentLoaded", function () {
+  let permisosMod = permisos[4] || {
+    acceder: 0,
+    crear: 0,
+    editar: 0,
+    eliminar: 0,
+  };
   // Tabla principal con datos AJAX
   tableVehiculos = $("#tableVehiculos").DataTable({
     ajax: {
       url: base_url + "/Vehiculos/registrosVehiculos",
+      dataSrc: function (json) {
+        // Si no hay datos, muestra swal y evita error
+        if (!json.status) {
+          Swal.fire({
+            icon: "info",
+            title: "Sin registros",
+            text: json.msg,
+          });
+          return []; // Retornar arreglo vacío para que DataTables no falle
+        }
+        return json.data;
+      },
     },
     autoWidth: false,
     colReorder: true,
@@ -36,7 +54,7 @@ document.addEventListener("DOMContentLoaded", function () {
             html = '<span class="badge badge-danger">CORREGIR</span>';
           } else if (data.includes("corregido")) {
             html = '<span class="badge badge-success">CORREGIDO</span>';
-          }else if (data.includes("descartado")) {
+          } else if (data.includes("descartado")) {
             html = '<span class="badge badge-danger">DESCARTADO</span>';
           } else if (data.includes("finalizado")) {
             html = '<span class="badge badge-success">FINALIZADO</span>';
@@ -49,8 +67,11 @@ document.addEventListener("DOMContentLoaded", function () {
         title: "Estado",
         render: function (data, type, row, meta) {
           let html = "";
-          if (data && data.trim().includes("Corregir")) {
-            html = `
+
+          // Botón Editar
+          if (permisosMod.editar == 1) {
+            if (data && data.trim().includes("Corregir")) {
+              html = `
           <button class="btn btn-danger correccion-btn" data-bs-toggle="modal" data-id="${row.contraseña}"
           data-bs-target="#correccionContraseñaModal">
             <i class="fas fa-chalkboard-teacher"></i>
@@ -59,8 +80,13 @@ document.addEventListener("DOMContentLoaded", function () {
                   onclick="window.open('${base_url}/Contraseñas/generarContraseña/${row.contraseña}', '_blank')">
             <i class="far fa-file-pdf"></i>
           </button>`;
-          } else if (data && data.trim().includes("Pendiente") || data.trim().includes("Corregido") || data.trim().includes("Validado") || data.trim().includes("Finalizado") ) {
-            html = `
+            } else if (
+              (data && data.trim().includes("Pendiente")) ||
+              data.trim().includes("Corregido") ||
+              data.trim().includes("Validado") ||
+              data.trim().includes("Finalizado")
+            ) {
+              html = `
           <button class="btn btn-info btn-sm" onclick="window.location.href='${base_url}/Vehiculos/Detalles/${row.contraseña}'">
             <i class="fas fa-archive"></i>
          </button>
@@ -68,7 +94,15 @@ document.addEventListener("DOMContentLoaded", function () {
                   onclick="window.open('${base_url}/Contraseñas/generarContraseña/${row.contraseña}', '_blank')">
             <i class="far fa-file-pdf"></i>
           </button>`;
-          } 
+            }
+            return html;
+          } else {
+            botones += `
+            <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+              <i class="fas fa-pencil-square"></i>
+            </button>`;
+          }
+
           return html;
         },
       },
@@ -93,6 +127,9 @@ document.addEventListener("DOMContentLoaded", function () {
         className: "btn btn-secondary btn-sm rounded fw-bold text-white",
       },
     ],
+    language: {
+      url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json",
+    },
   });
 
   $(document).on("click", ".btn-password", function () {

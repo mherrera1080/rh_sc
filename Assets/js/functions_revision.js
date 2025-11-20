@@ -9,6 +9,18 @@ document.addEventListener("DOMContentLoaded", function () {
   tableFacturas = $("#tableFacturas").DataTable({
     ajax: {
       url: base_url + "/SolicitudFondos/getFacturas/" + contraseña,
+      dataSrc: function (json) {
+        // Si no hay datos, muestra swal y evita error
+        if (!json.status) {
+          Swal.fire({
+            icon: "info",
+            title: "Sin registros",
+            text: json.msg,
+          });
+          return []; // Retornar arreglo vacío para que DataTables no falle
+        }
+        return json.data;
+      },
     },
     autoWidth: false,
     colReorder: true,
@@ -29,24 +41,24 @@ document.addEventListener("DOMContentLoaded", function () {
       {
         data: null,
         render: function (data, type, row) {
-          // if (
-          //   solicitud_estado != "Finalizado" &&
-          //   solicitud_estado != "Descartado" &&
-          //   usuario == 4
-          // ) {
-          //   return `
-          // <button type="button" class="btn btn-primary m-0 d-flex justify-content-left btnFacturaEditar"
-          //   data-bs-toggle="modal" data-bs-target="#editarModal" data-id="${row.id_detalle}">
-          //   <i class="fas fa-edit"></i>
-          // </button>`;
-          // } else {
+          if (
+            solicitud_estado != "Descartado" &&
+            solicitud_estado != "Pagado" &&
+            usuario == 4
+          ) {
+            return `
+          <button type="button" class="btn btn-primary m-0 d-flex justify-content-left btnFacturaEditar"
+            data-bs-toggle="modal" data-bs-target="#editarModal" data-id="${row.id_detalle}">
+            <i class="fas fa-edit"></i>
+          </button>`;
+          } else {
             return `
           <button type="button" class="btn btn-secondary m-0 d-flex justify-content-left btnFacturaInfo"
             data-bs-toggle="modal" 
             data-bs-target="#infoModal">
             <i class="fas fa-edit"></i>
           </button>`;
-          // }
+          }
         },
       },
     ],
@@ -70,6 +82,10 @@ document.addEventListener("DOMContentLoaded", function () {
         className: "btn btn-secondary btn-sm rounded fw-bold text-white",
       },
     ],
+    language: {
+  url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json",
+},
+
   });
 
   // no borrar

@@ -1,8 +1,26 @@
 let tableProveedores;
 document.addEventListener("DOMContentLoaded", function () {
+      let permisosMod = permisos[7] || {
+    acceder: 0,
+    crear: 0,
+    editar: 0,
+    eliminar: 0,
+  };
   tableProveedores = $("#tableProveedores").DataTable({
     ajax: {
       url: base_url + "/Configuracion/getProveedores",
+      dataSrc: function (json) {
+        // Si no hay datos, muestra swal y evita error
+        if (!json.status) {
+          Swal.fire({
+            icon: "info",
+            title: "Sin registros",
+            text: json.msg,
+          });
+          return []; // Retornar arreglo vacío para que DataTables no falle
+        }
+        return json.data;
+      },
     },
     autoWidth: false,
     colReorder: true,
@@ -23,11 +41,24 @@ document.addEventListener("DOMContentLoaded", function () {
       { data: "estado" },
       {
         data: null,
+        title: 'Acciones',
         render: function (data, type, row) {
-          return `
+          let botones = "";
+
+          // Botón Editar
+          if (permisosMod.editar == 1) {
+            botones +=`
           <button type="button" class="btn btn-warning edit-btn" data-bs-toggle="modal" data-bs-target="#modalEditarProveedor" data-id="${row.id_proveedor}">
             <i class="fas fa-edit"></i>
           </button>`;
+          } else {
+            botones += `
+            <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+              <i class="fas fa-pencil-square"></i>
+            </button>`;
+          }
+
+          return botones;
         },
       },
     ],
@@ -51,6 +82,10 @@ document.addEventListener("DOMContentLoaded", function () {
         className: "btn btn-secondary btn-sm rounded fw-bold text-white",
       },
     ],
+    language: {
+  url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json",
+},
+
   });
 
   document

@@ -29,7 +29,7 @@
                 <div class="card-body">
                     <div class="table-responsive">
                         <table id="tableContraseña" class="display table table-striped table-hover">
-                            <thead>
+                            <thead class="table-light">
                                 <tr>
                                     <th>ID</th>
                                     <th>Contraseña</th>

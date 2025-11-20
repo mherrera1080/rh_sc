@@ -28,17 +28,19 @@
                 <div class="card-header">
                     <div class="d-flex align-items-center">
                         <h4 class="card-title">Vehiculos</h4>
-                        <button class="btn btn-primary btn-round ms-auto btn-password" data-bs-toggle="modal"
-                            data-bs-target="#setContraseñaModal">
-                            <i class="fa fa-plus"></i>
-                            Añadir Contraseña
-                        </button>
+                        <?php if (!empty($_SESSION['permisos'][VEHICULOS]['crear'])) { ?>
+                            <button class="btn btn-primary btn-round ms-auto btn-password" data-bs-toggle="modal"
+                                data-bs-target="#setContraseñaModal">
+                                <i class="fa fa-plus"></i>
+                                Añadir Contraseña
+                            </button>
+                        <?php } ?>
                     </div>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table id="tableVehiculos" class="display table table-striped table-hover">
-                            <thead>
+                        <table id="tableVehiculos" class="display table table-striped table-hover align-middle">
+                            <thead class="table-light">
                                 <tr>
                                     <th>ID</th>
                                     <th>Contraseña</th>
@@ -69,7 +71,8 @@
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <form id="setContraseña">
-                <input type="hidden" id="realizador" name="realizador" value="Prueba Administrador">
+                <input type="hidden" id="realizador" name="realizador"
+                    value="<?= $_SESSION['PersonalData']['nombre_completo'] ?>">
                 <div class="modal-header ">
                     <h5 class="modal-title" id="setUserModalLabel">Crear Contraseña</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -262,3 +265,8 @@
         </div>
     </div>
 </div>
+
+<script>
+    let role_id = <?= json_encode($_SESSION['rol_usuario'] ?? 0); ?>;
+    let permisos = <?= json_encode($_SESSION['permisos'] ?? []); ?>;
+</script>

@@ -14,7 +14,7 @@ class Contraseñas extends Controllers
 
     public function Contraseñas()
     {
-        $data['page_id'] = DASHBOARD;
+        $data['page_id'] = CONTRASEÑAS;
         $data['page_tag'] = "Contraseñas";
         $data['page_title'] = "Contraseñas";
         $data['page_name'] = "Contraseñas";
@@ -25,7 +25,7 @@ class Contraseñas extends Controllers
 
     public function Recepcion()
     {
-        $data['page_id'] = DASHBOARD;
+        $data['page_id'] = RECEPCION;
         $data['page_tag'] = "Recepcion";
         $data['page_title'] = "Recepcion";
         $data['page_name'] = "Recepcion";
@@ -36,7 +36,7 @@ class Contraseñas extends Controllers
 
     public function Facturas()
     {
-        $data['page_id'] = DASHBOARD;
+        $data['page_id'] = CONTRASEÑAS;
         $data['page_tag'] = "Facturas";
         $data['page_title'] = "Facturas";
         $data['page_name'] = "Facturas";
@@ -50,7 +50,7 @@ class Contraseñas extends Controllers
         $arrData = $this->model->selectDetalles();
 
         if (empty($arrData)) {
-            $arrResponse = array('status' => false, 'msg' => 'No se encontraron datos.');
+            $arrResponse = array('status' => false, 'msg' => 'No se encontraron registros previos.');
         } else {
             $arrResponse = array('status' => true, 'data' => $arrData);
         }
@@ -92,7 +92,7 @@ class Contraseñas extends Controllers
         error_log(print_r($arrData, true));
 
         if (empty($arrData)) {
-            $arrResponse = array('status' => false, 'msg' => 'No se encontraron datos.');
+            $arrResponse = array('status' => false, 'msg' => 'No se encontraron registros previos.');
         } else {
             $arrResponse = array('status' => true, 'data' => $arrData);
         }
@@ -107,7 +107,7 @@ class Contraseñas extends Controllers
 
         // Verificar si se encontraron datos
         if (empty($arrData)) {
-            $arrResponse = array('status' => false, 'msg' => 'No se encontraron datos.');
+            $arrResponse = array('status' => false, 'msg' => 'No se encontraron registros previos.');
         } else {
             // Transformar las fechas y valores a arrays
             $arrData['no_factura'] = explode(",", $arrData['no_factura']);
@@ -129,7 +129,20 @@ class Contraseñas extends Controllers
         $arrData = $this->model->getUsuariosPorArea($id_area);
 
         if (empty($arrData)) {
-            $arrResponse = array('status' => false, 'msg' => 'No se encontraron datos.');
+            $arrResponse = array('status' => false, 'msg' => 'No se encontraron registros previos.');
+        } else {
+            $arrResponse = array('status' => true, 'data' => $arrData);
+        }
+        echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+        die();
+    }
+
+    public function contraseñasRecepcion()
+    {
+        $arrData = $this->model->selectRecepcion();
+
+        if (empty($arrData)) {
+            $arrResponse = array('status' => false, 'msg' => 'No se encontraron registros previos.');
         } else {
             $arrResponse = array('status' => true, 'data' => $arrData);
         }
@@ -142,7 +155,7 @@ class Contraseñas extends Controllers
         $arrData = $this->model->selectContras();
 
         if (empty($arrData)) {
-            $arrResponse = array('status' => false, 'msg' => 'No se encontraron datos.');
+            $arrResponse = array('status' => false, 'msg' => 'No se encontraron registros previos.');
         } else {
             $arrResponse = array('status' => true, 'data' => $arrData);
         }
@@ -155,7 +168,7 @@ class Contraseñas extends Controllers
         $arrData = $this->model->contrasContabilidad();
 
         if (empty($arrData)) {
-            $arrResponse = array('status' => false, 'msg' => 'No se encontraron datos.');
+            $arrResponse = array('status' => false, 'msg' => 'No se encontraron registros previos.');
         } else {
             $arrResponse = array('status' => true, 'data' => $arrData);
         }
@@ -168,7 +181,7 @@ class Contraseñas extends Controllers
         $arrData = $this->model->selectLastContraseña();
 
         if (empty($arrData)) {
-            $arrResponse = array('status' => false, 'msg' => 'No se encontraron datos.');
+            $arrResponse = array('status' => false, 'msg' => 'No se encontraron registros previos.');
         } else {
             $arrResponse = array('status' => true, 'data' => $arrData);
         }
@@ -377,7 +390,7 @@ class Contraseñas extends Controllers
             $fecha_pago = $_POST['fecha_pago'];
             $proveedor_recibimiento = intval($_POST['proveedor_recibimiento']);
             $area = intval($_POST['area']);
-            
+
             $factura = $_POST['factura'];
             $bien = $_POST['bien'];
             $valor = $_POST['valor'];
@@ -448,12 +461,13 @@ class Contraseñas extends Controllers
                 exit;
             }
 
+            $categoria = "Contraseña";
             $arrData = [
                 'contraseña' => $this->model->getContraseña($contraseña),
-                'correos' => $this->model->getCorreosArea($area, $estado)
+                'correos' => $this->model->getCorreosArea($area, $estado, $categoria)
             ];
 
-            $sendcorreoEmpleado = 'Views/Template/Email/sendContraseña.php';
+            $sendcorreoEmpleado = 'Views/Template/Email/createContraseña.php';
             try {
                 ob_start();
                 require $sendcorreoEmpleado;
@@ -672,7 +686,7 @@ class Contraseñas extends Controllers
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $contraseña = $_POST['contraseña'];
-            $realizador = $_POST['realizador'];
+            $area = $_POST['area'];
             $correciones = $_POST['correciones'];
             $estado = $_POST['respuesta'];
             $errores = [];
@@ -707,12 +721,10 @@ class Contraseñas extends Controllers
                 exit;
             }
 
-            $correos = $this->model->getCorreobyName($realizador);
-
-
+            $categoria = "Contraseña";
             $arrData = [
                 'contraseña' => $this->model->getContraseña($contraseña),
-                'correos' => $correos
+                'correos' => $this->model->getCorreosArea($area, $estado, $categoria)
             ];
 
             $sendcorreoEmpleado = 'Views/Template/Email/sendContraseña.php';
@@ -741,15 +753,13 @@ class Contraseñas extends Controllers
             $contraseña = $_POST['contraseña'] ?? null;
             $fecha_pago = $_POST['fecha_pago'] ?? null;
             $proveedor_recibimiento = intval($_POST['proveedor'] ?? 0);
-
-            // Si no existen, inicializamos como arrays vacíos
+            $area = $_POST['area'] ?? null;
             $facturas = $_POST['factura'] ?? [];
             $bienes = $_POST['bien'] ?? [];
             $valores = $_POST['valor'] ?? [];
 
             $errores = [];
 
-            // Validación básica de la contraseña
             if (empty($contraseña)) {
                 echo json_encode(["status" => false, "message" => "Datos incompletos."]);
                 exit;
@@ -820,9 +830,15 @@ class Contraseñas extends Controllers
                 exit;
             }
 
+            $datos = $this->model->getContraseña($contraseña);
+            $id_area = $datos['id_area'];
+            $categoria = "Contraseña";
+            $respuesta = "Corregido";
             $arrData = [
                 'contraseña' => $this->model->getContraseña($contraseña),
+                'correos' => $this->model->getCorreosArea($id_area, $respuesta, $categoria)
             ];
+
             $sendcorreoEmpleado = 'Views/Template/Email/sendContraseña.php';
             try {
                 ob_start();
@@ -852,7 +868,7 @@ class Contraseñas extends Controllers
             $estado = $_POST['respuesta'];
             $anticipo = $_POST['anticipo'] ?? null;
             $errores = [];
-            
+
             if (empty($contraseña) || empty($estado)) {
                 echo json_encode(["status" => false, "msg" => "Problemas al obtener datos."]);
                 exit;
@@ -883,9 +899,10 @@ class Contraseñas extends Controllers
                 exit;
             }
 
+            $categoria = "Contraseña";
             $arrData = [
                 'contraseña' => $this->model->getContraseña($contraseña),
-                'correos' => $this->model->getCorreosArea($area, $estado)
+                'correos' => $this->model->getCorreosArea($area, $estado, $categoria)
             ];
 
             $sendcorreoEmpleado = 'Views/Template/Email/sendContraseña.php';
@@ -914,6 +931,8 @@ class Contraseñas extends Controllers
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $contraseña = $_POST['contraseña'];
+            $area = $_POST['area'];
+            $conta_user = $_POST['conta_user'];
             $estado = $_POST['respuesta'];
             $errores = [];
             if (empty($contraseña) || empty($estado)) {
@@ -923,6 +942,7 @@ class Contraseñas extends Controllers
 
             $this->model->validacionConta(
                 $contraseña,
+                $conta_user,
                 $estado
             );
 
@@ -935,22 +955,24 @@ class Contraseñas extends Controllers
                 exit;
             }
 
-            // $arrData = [
-            //     'contraseña' => $this->model->getContraseña($contraseña),
-            // ];
-            // $sendcorreoEmpleado = 'Views/Template/Email/sendContraseña.php';
-            // try {
-            //     ob_start();
-            //     require $sendcorreoEmpleado;
-            //     ob_end_clean();
-            // } catch (Exception $e) {
-            //     echo json_encode([
-            //         "status" => false,
-            //         "message" => "Error al enviar el correo: " . $e->getMessage()
-            //     ]);
-            //     exit;
-            // }
+            $categoria = "Contraseña";
+            $arrData = [
+                'contraseña' => $this->model->getContraseña($contraseña),
+                'correos' => $this->model->getCorreosArea($area, $estado, $categoria)
+            ];
 
+            $sendcorreoEmpleado = 'Views/Template/Email/sendContraseña.php';
+            try {
+                ob_start();
+                require $sendcorreoEmpleado;
+                ob_end_clean();
+            } catch (Exception $e) {
+                echo json_encode([
+                    "status" => false,
+                    "message" => "Error al enviar el correo: " . $e->getMessage()
+                ]);
+                exit;
+            }
 
             if ($estado == 'Descartado') {
                 echo json_encode([
@@ -972,7 +994,8 @@ class Contraseñas extends Controllers
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $contraseña = $_POST['contraseña'];
             $area = $_POST['area'];
-            $categoria = $_POST['categoria'];
+            $categoria = 'N/A';
+            $solicitante = $_POST['solicitante'];
             $estado = "Validado";
             $errores = [];
 
@@ -988,8 +1011,11 @@ class Contraseñas extends Controllers
                 $categoria
             );
 
+            $this->model->descartarFacturas($contraseña);
+
             $this->model->validacionContraseñaSoli(
                 $contraseña,
+                $solicitante,
                 $estado
             );
 
@@ -1002,9 +1028,12 @@ class Contraseñas extends Controllers
                 exit;
             }
 
+            $categoria = "Contraseña";
             $arrData = [
                 'contraseña' => $this->model->getContraseña($contraseña),
+                'correos' => $this->model->getCorreosArea($area, $estado, $categoria)
             ];
+
             $sendcorreoEmpleado = 'Views/Template/Email/sendContraseña.php';
             try {
                 ob_start();
@@ -1017,7 +1046,6 @@ class Contraseñas extends Controllers
                 ]);
                 exit;
             }
-
             echo json_encode([
                 "status" => true,
                 "message" => "Solicitud de Fondos Realizada y correo enviado correctamente."
@@ -1028,6 +1056,7 @@ class Contraseñas extends Controllers
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $contraseña = trim($_POST['contraseña'] ?? '');
+            $area = $_POST['area'];
             $correciones = null;
             $estado = "Descartado";
 
@@ -1044,6 +1073,26 @@ class Contraseñas extends Controllers
                 $ok2 = $this->model->descartarDetalles($contraseña, $estado);
 
                 if ($ok1 && $ok2) {
+
+                    $categoria = "Contraseña";
+                    $arrData = [
+                        'contraseña' => $this->model->getContraseña($contraseña),
+                        'correos' => $this->model->getCorreosArea($area, $estado, $categoria)
+                    ];
+
+                    $sendcorreoEmpleado = 'Views/Template/Email/sendContraseña.php';
+                    try {
+                        ob_start();
+                        require $sendcorreoEmpleado;
+                        ob_end_clean();
+                    } catch (Exception $e) {
+                        echo json_encode([
+                            "status" => false,
+                            "message" => "Error al enviar el correo: " . $e->getMessage()
+                        ]);
+                        exit;
+                    }
+
                     echo json_encode([
                         "status" => true,
                         "message" => "Contraseña descartada correctamente."
@@ -1061,6 +1110,7 @@ class Contraseñas extends Controllers
                     "error" => $e->getMessage()
                 ]);
             }
+
         }
     }
 

@@ -1,8 +1,26 @@
 let tableGrupoCorreos;
 document.addEventListener("DOMContentLoaded", function () {
+  let permisosMod = permisos[8] || {
+    acceder: 0,
+    crear: 0,
+    editar: 0,
+    eliminar: 0,
+  };
   tableGrupoCorreos = $("#tableGrupoCorreos").DataTable({
     ajax: {
       url: base_url + "/Configuracion/getGrupoCorreos",
+      dataSrc: function (json) {
+        // Si no hay datos, muestra swal y evita error
+        if (!json.status) {
+          Swal.fire({
+            icon: "info",
+            title: "Sin registros",
+            text: json.msg,
+          });
+          return []; // Retornar arreglo vacío para que DataTables no falle
+        }
+        return json.data;
+      },
     },
     columns: [
       {
@@ -18,11 +36,24 @@ document.addEventListener("DOMContentLoaded", function () {
       { data: "estado" },
       {
         data: null,
+        title: "Acciones",
         render: function (data, type, row) {
-          return `
+          let botones = "";
+
+          // Botón Editar
+          if (permisosMod.editar == 1) {
+            botones += `
           <button type="button" class="btn btn-warning edit-btn" data-bs-toggle="modal" data-bs-target="#modalGrupoCorreos" data-id="${row.id_grupo_correo}">
             <i class="fas fa-edit"></i>
           </button>`;
+          } else {
+            botones += `
+            <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+              <i class="fas fa-pencil-square"></i>
+            </button>`;
+          }
+
+          return botones;
         },
       },
     ],
@@ -46,6 +77,9 @@ document.addEventListener("DOMContentLoaded", function () {
         className: "btn btn-secondary btn-sm rounded fw-bold text-white",
       },
     ],
+    language: {
+      url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json",
+    },
   });
 
   if (document.querySelector("#set_area")) {
@@ -182,6 +216,7 @@ document.addEventListener("DOMContentLoaded", function () {
       },
     });
   }
+
   function cargarFasesGrupo(fases) {
     const contenedor = $("#contenedorFasesCorreos");
     contenedor.empty();
@@ -200,7 +235,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       card.innerHTML = `
         <div class="card-header d-flex justify-content-between align-items-center">
-            <span>Fase: ${fase.nombre_base}</span>
+            <span> <strong>Fase: ${fase.nombre_base}</strong> </span>
             <button type="button" class="btn-close btn-close-white btn-delete-fase" title="Eliminar fase"></button>
         </div>
         <div class="card-body">
@@ -221,22 +256,57 @@ document.addEventListener("DOMContentLoaded", function () {
       function agregarUsuario(usuarioId = null) {
         const usuarioDiv = document.createElement("div");
         usuarioDiv.classList.add("usuario-card", "position-relative");
-        usuarioDiv.style.minWidth = "200px";
+        usuarioDiv.style.minWidth = "250px";
 
         usuarioDiv.innerHTML = `
-            <button type="button" class="btn-close position-absolute top-0 end-0 btn-delete-usuario" title="Eliminar usuario"></button>
-            <select class="form-select" data-live-search="true" name="usuarios[${fase.id_fase}][]"></select>
-            `;
+        <button type="button" class="btn-close position-absolute top-0 end-0 btn-delete-usuario"></button>
+
+        <!-- Buscador -->
+        <input type="text" class="form-control mb-1 buscador-usuario" placeholder="Buscar correo...">
+
+        <!-- Select normal -->
+        <select class="form-select" name="usuarios[${fase.id_fase}][]"></select>
+    `;
 
         usuariosContainer.appendChild(usuarioDiv);
 
-        // Inicializar selectpicker con los usuarios disponibles
         const selectUsuario = usuarioDiv.querySelector(
           `select[name="usuarios[${fase.id_fase}][]"]`
         );
+
+        const buscadorInput = usuarioDiv.querySelector(".buscador-usuario");
+
+        // Cargar correos
         cargarUsuariosEdit(selectUsuario, usuarioId);
 
-        // Eliminar usuario individual
+        // 🔍 Filtro + selección automática de la primera coincidencia
+buscadorInput.addEventListener("input", function () {
+    const filtro = this.value.toLowerCase();
+    let primeraCoincidencia = null;
+
+    Array.from(selectUsuario.options).forEach((opt) => {
+        const correo = opt.textContent.toLowerCase();
+        const nombre = (opt.dataset.nombre || "").toLowerCase();
+
+        // Coincide si el filtro aparece en el nombre O en el correo
+        const coincide = correo.includes(filtro) || nombre.includes(filtro);
+
+        opt.style.display = coincide ? "block" : "none";
+
+        if (coincide && !primeraCoincidencia && filtro.length > 1) {
+            primeraCoincidencia = opt;
+        }
+    });
+
+    if (primeraCoincidencia) {
+        selectUsuario.value = primeraCoincidencia.value;
+    } else {
+        selectUsuario.value = "";
+    }
+});
+
+
+        // Botón eliminar usuario
         usuarioDiv
           .querySelector(".btn-delete-usuario")
           .addEventListener("click", function () {
@@ -270,39 +340,39 @@ document.addEventListener("DOMContentLoaded", function () {
           }
         });
     });
-
   }
 
-  function cargarUsuariosEdit(selectElement, idSeleccionado = null) {
+function cargarUsuariosEdit(selectElement, idSeleccionado = null) {
     $.ajax({
-      url: `${base_url}/Configuracion/getCorreos`,
-      method: "GET",
-      dataType: "json",
-      success: function (response) {
-        let options = '<option value="">Seleccionar usuario...</option>';
+        url: `${base_url}/Configuracion/getCorreos`,
+        method: "GET",
+        dataType: "json",
+        success: function (response) {
+            let options = '<option value="">Seleccionar usuario...</option>';
 
-        if (response && response.length > 0) {
-          response.forEach((usuario) => {
-            const selected = usuario.id == idSeleccionado ? "selected" : "";
-            options += `<option value="${usuario.id}" ${selected}> ${usuario.correo}</option>`;
-          });
-        }
+            if (response && response.length > 0) {
+                response.forEach((usuario) => {
+                    const nombreCorreo = `${usuario.nombre} - ${usuario.correo}`;
+                    const selected = usuario.id == idSeleccionado ? "selected" : "";
+                    options += `
+                    <option value="${usuario.id}" data-nombre="${usuario.nombre}">
+                        ${usuario.correo}
+                    </option>`;
+                });
+            }
 
-        $(selectElement).html(options);
-        $(selectElement).selectpicker("refresh");
+            $(selectElement).html(options);
 
-        // Si hay un ID seleccionado, establecerlo
-        if (idSeleccionado) {
-          $(selectElement).val(idSeleccionado);
-          $(selectElement).selectpicker("refresh");
-        }
-      },
-      error: function (xhr, status, error) {
-        console.error("Error al cargar usuarios:", error);
-        alert("Error al cargar los usuarios.");
-      },
+            if (idSeleccionado) {
+                $(selectElement).val(idSeleccionado);
+            }
+        },
+        error: function () {
+            alert("Error al cargar los usuarios.");
+        },
     });
-  }
+}
+
 
   $(document).on("submit", "#formGrupoCorreos", function (e) {
     e.preventDefault();

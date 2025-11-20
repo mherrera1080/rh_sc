@@ -5,6 +5,18 @@ document.addEventListener("DOMContentLoaded", function () {
   tableContraseña = $("#tableContraseña").DataTable({
     ajax: {
       url: base_url + "/Contraseñas/areaContabilidad",
+      dataSrc: function (json) {
+        // Si no hay datos, muestra swal y evita error
+        if (!json.status) {
+          Swal.fire({
+            icon: "info",
+            title: "Sin registros",
+            text: json.msg,
+          });
+          return []; // Retornar arreglo vacío para que DataTables no falle
+        }
+        return json.data;
+      },
     },
     columns: [
       {

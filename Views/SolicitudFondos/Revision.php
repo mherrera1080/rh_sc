@@ -21,24 +21,43 @@
                         <?php } ?>
                     </div>
                     <div class="d-flex gap-2">
-                        <?php if ($data['facturas']['solicitud_estado'] === "Pendiente" && $_SESSION['PersonalData']['area'] == 4) { ?>
-                            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#validarModal">
-                                <i class="fas fa-check"></i> Validar
-                            </button>
-                                                            <button class="btn btn-danger btn-sm"
-                                    onclick="window.open('<?= base_url() ?>/SolicitudFondos/generarSolicitud/<?= $data['facturas']['contraseña']; ?>', '_blank')">
-                                    <i class="far fa-file-pdf"></i> PDF
-                                </button>
-                        <?php } else if ($data['facturas']['solicitud_estado'] === "Validado" && $_SESSION['PersonalData']['area'] == 4) { ?>
-                                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#finalizarModal">
-                                    <i class="fas fa-check"></i> Pagar
+                        <?php if ($data['facturas']['area_id'] != 2) { ?>
+                            <?php if ($data['facturas']['solicitud_estado'] === "Pendiente") { ?>
+                                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#validarModal">
+                                    <i class="fas fa-check"></i> Validar
                                 </button>
                                 <button class="btn btn-danger btn-sm"
                                     onclick="window.open('<?= base_url() ?>/SolicitudFondos/generarSolicitud/<?= $data['facturas']['contraseña']; ?>', '_blank')">
                                     <i class="far fa-file-pdf"></i> PDF
                                 </button>
+                            <?php } else if ($data['facturas']['solicitud_estado'] === "Validado Area" && $_SESSION['PersonalData']['area'] == 4) { ?>
+                                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#finalizarModal">
+                                        <i class="fas fa-check"></i> Pagar
+                                    </button>
+                                    <button class="btn btn-danger btn-sm"
+                                        onclick="window.open('<?= base_url() ?>/SolicitudFondos/generarSolicitud/<?= $data['facturas']['contraseña']; ?>', '_blank')">
+                                        <i class="far fa-file-pdf"></i> PDF
+                                    </button>
+                            <?php } ?>
+                        <?php } else if ($data['facturas']['area_id'] == 2) { ?>
+                            <?php if ($data['facturas']['solicitud_estado'] === "Pendiente" && $_SESSION['PersonalData']['area'] == 4) { ?>
+                                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#validarModal">
+                                        <i class="fas fa-check"></i> Validar
+                                    </button>
+                                    <button class="btn btn-danger btn-sm"
+                                        onclick="window.open('<?= base_url() ?>/SolicitudFondos/generarSolicitud/<?= $data['facturas']['contraseña']; ?>', '_blank')">
+                                        <i class="far fa-file-pdf"></i> PDF
+                                    </button>
+                            <?php } else if ($data['facturas']['solicitud_estado'] === "Validado Conta" && $_SESSION['PersonalData']['area'] == 4) { ?>
+                                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#finalizarModal">
+                                            <i class="fas fa-check"></i> Pagar
+                                        </button>
+                                        <button class="btn btn-danger btn-sm"
+                                            onclick="window.open('<?= base_url() ?>/SolicitudFondos/generarSolicitud/<?= $data['facturas']['contraseña']; ?>', '_blank')">
+                                            <i class="far fa-file-pdf"></i> PDF
+                                        </button>
+                            <?php } ?>
                         <?php } ?>
-
                     </div>
                 </div>
                 <div class="card-body">
@@ -108,7 +127,7 @@
                             value="<?= $data['facturas']['solicitud_estado']; ?>">
                         <input type="hidden" id="area_usuario" value="<?= $_SESSION['PersonalData']['area'] ?>">
                         <table id="tableFacturas" class="table table-hover table-bordered align-middle">
-                            <thead>
+                            <thead class="table-light">
                                 <tr>
                                     <th>#</th>
                                     <th>Contraseña</th>
@@ -142,6 +161,7 @@
                 <form id="validarSolicitud">
                     <input type="hidden" class="form-control" name="id_solicitud"
                         value="<?= $data['facturas']['id_solicitud']; ?>">
+                    <input type="hidden" class="form-control" name="area" value="<?= $data['facturas']['area_id']; ?>">
                     <!-- Encabezado -->
                     <div class="modal-header bg-dark text-white">
                         <h5 class="modal-title" id="corregirModalLabel">
@@ -202,9 +222,15 @@
                         <button type="submit" class="btn btn-danger" data-respuesta="Descartado">
                             <i class="fas fa-times"></i> Descartar
                         </button>
-                        <button type="submit" class="btn btn-success" data-respuesta="Validado">
-                            <i class="fas fa-save"></i> Validar
-                        </button>
+                        <?php if ($data['facturas']['area_id'] == 2) { ?>
+                            <button type="submit" class="btn btn-success" data-respuesta="Validado Conta">
+                                <i class="fas fa-save"></i> Validar
+                            </button>
+                        <?php } else if ($data['facturas']['area_id'] != 2) { ?>
+                                <button type="submit" class="btn btn-success" data-respuesta="Validado Area">
+                                    <i class="fas fa-save"></i> Validar
+                                </button>
+                        <?php } ?>
                     </div>
                 </form>
             </div>
@@ -217,6 +243,7 @@
                 <form id="finalizarSolicitud">
                     <input type="hidden" class="form-control" name="id_solicitud"
                         value="<?= $data['facturas']['id_solicitud']; ?>">
+                    <input type="hidden" class="form-control" name="area" value="<?= $data['facturas']['area_id']; ?>">
                     <!-- Encabezado -->
                     <div class="modal-header bg-dark text-white">
                         <h5 class="modal-title" id="corregirModalLabel">

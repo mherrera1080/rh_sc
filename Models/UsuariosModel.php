@@ -24,9 +24,9 @@ class UsuariosModel extends Mysql
         return $request;
     }
 
-public function selectUserByid($id_usuario)
-{
-    $sql = "SELECT
+    public function selectUserByid($id_usuario)
+    {
+        $sql = "SELECT
                 id_usuario,
                 identificacion,
                 no_empleado,
@@ -42,28 +42,28 @@ public function selectUserByid($id_usuario)
             FROM tb_usuarios
             WHERE id_usuario = ?";
 
-    $request = $this->select($sql, array($id_usuario));
-    return $request;
-}
+        $request = $this->select($sql, array($id_usuario));
+        return $request;
+    }
 
 
     public function insertUsuario(
         string $nombres,
         string $primer_apellido,
         string $segundo_apellido,
-        int $identificacion,
+        string $identificacion,
         ?string $codigo_empleado,
         string $correo,
         int $area,
+        int $rol_usuario,
         string $password
     ) {
         try {
-            // Encriptar contraseña antes de insertar
             $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-            $sql = "INSERT INTO tb_usuarios (nombres, primer_apellido, segundo_apellido, identificacion, no_empleado, correo, area, contraseña) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-
+            $sql = "INSERT INTO tb_usuarios 
+            (nombres, primer_apellido, segundo_apellido, identificacion, no_empleado, correo, area, rol_usuario, contraseña, fecha_ingreso) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
             $arrData = array(
                 $nombres,
                 $primer_apellido,
@@ -72,16 +72,15 @@ public function selectUserByid($id_usuario)
                 $codigo_empleado,
                 $correo,
                 $area,
+                $rol_usuario,
                 $hashedPassword
             );
 
-            $result = $this->insert($sql, $arrData);
-            return $result;
+            return $this->insert($sql, $arrData);
         } catch (PDOException $e) {
             return "ERROR: " . $e->getMessage();
         }
     }
-
 
     public function updateUsuario(
         int $id_usuario,
@@ -91,6 +90,7 @@ public function selectUserByid($id_usuario)
         int $identificacion,
         ?string $codigo_empleado,
         string $correo,
+        int $area,
         int $rol_usuario,
         ?string $password
     ) {
@@ -104,7 +104,8 @@ public function selectUserByid($id_usuario)
                         segundo_apellido = ?, 
                         identificacion = ?, 
                         no_empleado = ?, 
-                        correo = ?, 
+                        correo = ?,
+                        area = ?,
                         rol_usuario = ?, 
                         contraseña = ?
                     WHERE id_usuario = ?";
@@ -115,6 +116,7 @@ public function selectUserByid($id_usuario)
                     $identificacion,
                     $codigo_empleado,
                     $correo,
+                    $area,
                     $rol_usuario,
                     $hashedPassword,
                     $id_usuario
@@ -126,7 +128,8 @@ public function selectUserByid($id_usuario)
                         primer_apellido = ?, 
                         segundo_apellido = ?, 
                         identificacion = ?, 
-                        no_empleado = ?, 
+                        no_empleado = ?,
+                        area = ?,
                         correo = ?, 
                         rol_usuario = ?
                     WHERE id_usuario = ?";
@@ -136,6 +139,7 @@ public function selectUserByid($id_usuario)
                     $segundo_apellido,
                     $identificacion,
                     $codigo_empleado,
+                    $area,
                     $correo,
                     $rol_usuario,
                     $id_usuario
@@ -147,6 +151,44 @@ public function selectUserByid($id_usuario)
         } catch (PDOException $e) {
             return "ERROR: " . $e->getMessage();
         }
+    }
+
+    public function existenciaCorreo($correo)
+    {
+        $sql = "SELECT COUNT(*) as total 
+            FROM tb_usuarios 
+            WHERE correo = ? ";
+        $request = $this->select($sql, [$correo]);
+        return $request['total'] > 0;
+    }
+
+    public function existenciaDoc($identificacion)
+    {
+        $sql = "SELECT COUNT(*) as total 
+            FROM tb_usuarios 
+            WHERE identificacion = ? ";
+        $request = $this->select($sql, [$identificacion]);
+        return $request['total'] > 0;
+    }
+
+    public function existenciaCorreoUpdate($correo, $id_usuario)
+    {
+        $sql = "SELECT COUNT(*) as total 
+            FROM tb_usuarios 
+            WHERE correo = ? 
+                AND id_usuario != ?";
+        $request = $this->select($sql, [$correo, $id_usuario]);
+        return $request['total'] > 0;
+    }
+
+        public function existenciaDocUpdate($identificacion, $id_usuario)
+    {
+        $sql = "SELECT COUNT(*) as total 
+            FROM tb_usuarios 
+            WHERE identificacion = ? 
+                AND id_usuario != ?";
+        $request = $this->select($sql, [$identificacion, $id_usuario]);
+        return $request['total'] > 0;
     }
 
 

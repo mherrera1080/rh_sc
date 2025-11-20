@@ -6,6 +6,29 @@ class ContraseñasModel extends Mysql
         parent::__construct();
     }
 
+        public function selectRecepcion()
+    {
+        $sql = "SELECT
+            tc.id_contraseña,
+            tc.contraseña,
+            tc.fecha_registro,
+            tp.nombre_proveedor AS proveedor,
+            tc.area as id_area,
+            ta.nombre_area AS area,
+            tc.valor_letras,
+            ROUND(SUM(td.valor_documento), 2) AS monto_total,
+            tc.fecha_pago,
+            tc.estado
+        FROM tb_contraseña tc
+        INNER JOIN tb_proveedor tp ON tc.id_proveedor = tp.id_proveedor
+        INNER JOIN tb_areas ta ON tc.area = ta.id_area
+        INNER JOIN tb_detalles td ON tc.contraseña = td.contraseña
+        GROUP BY tc.id_contraseña";
+
+        return $this->select_all($sql);
+    }
+
+
     public function selectContras()
     {
         $area = intval($_SESSION['PersonalData']['area']);
@@ -26,6 +49,7 @@ class ContraseñasModel extends Mysql
         INNER JOIN tb_proveedor tp ON tc.id_proveedor = tp.id_proveedor
         INNER JOIN tb_areas ta ON tc.area = ta.id_area
         INNER JOIN tb_detalles td ON tc.contraseña = td.contraseña
+        $where
         GROUP BY tc.id_contraseña";
 
         return $this->select_all($sql);
@@ -121,7 +145,7 @@ class ContraseñasModel extends Mysql
         return $request;
     }
 
-    public function getCorreosArea($area, $estado)
+    public function getCorreosArea($area, $estado, $categoria)
     {
         $sql = "SELECT 
         tu.correo as correos
@@ -129,8 +153,9 @@ class ContraseñasModel extends Mysql
         INNER JOIN tb_grupo_correos tg ON tfc.grupo = tg.id_grupo_correo
         INNER JOIN tb_usuarios tu ON tfc.usuario = tu.id_usuario
         INNER JOIN tb_fases tf ON tfc.fase = tf.id_fase
-        WHERE tg.area = ? AND tf.nombre_base = ?";
-        $request = $this->select_multi($sql, array($area, $estado));
+        INNER JOIN tb_categoria tc ON tf.categoria = tc.id_categoria
+        WHERE tg.area = ? AND tf.nombre_base = ? AND tc.nombre_categoria = ?";
+        $request = $this->select_multi($sql, array($area, $estado, $categoria));
         return $request;
     }
 
@@ -408,23 +433,25 @@ class ContraseñasModel extends Mysql
         return $this->update($sql, $arrData);
     }
 
-    public function validacionConta($contraseña, $estado)
+    public function validacionConta($contraseña, $conta_user, $estado)
     {
         $sql = "UPDATE tb_contraseña 
                 SET 
-                estado = ?
+                estado = ?,
+                conta_user = ?
                 WHERE contraseña = ?";
-        $arrData = [$estado, $contraseña];
+        $arrData = [$estado, $conta_user, $contraseña];
         return $this->update($sql, $arrData);
     }
 
-    public function validacionContraseñaSoli($contraseña, $estado)
+    public function validacionContraseñaSoli($contraseña, $conta_user, $estado)
     {
         $sql = "UPDATE tb_contraseña 
                 SET 
-                estado = ?
+                estado = ?,
+                conta_user = ?
                 WHERE contraseña = ?";
-        $arrData = [$estado, $contraseña];
+        $arrData = [$estado, $conta_user, $contraseña];
         return $this->update($sql, $arrData);
     }
 
@@ -456,6 +483,13 @@ class ContraseñasModel extends Mysql
             SET estado = ?
         WHERE contraseña = ? ";
         $arrData = [$estado, $contraseña];
+        return $this->deletebyid($sql, $arrData);
+    }
+
+        public function descartarFacturas($contraseña)
+    {
+        $sql = "DELETE FROM tb_detalles WHERE contraseña = ? AND estado != 'Validado'";
+        $arrData = [$contraseña];
         return $this->deletebyid($sql, $arrData);
     }
 

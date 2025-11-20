@@ -42,6 +42,7 @@
                   <th>Fecha Creación</th>
                   <th>Días Crédito</th>
                   <th>Estado</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
@@ -171,3 +172,8 @@
     </div>
   </div>
 </div>
+
+<script>
+    let role_id = <?= json_encode($_SESSION['rol_usuario'] ?? 0); ?>;
+    let permisos = <?= json_encode($_SESSION['permisos'] ?? []); ?>;
+</script>

@@ -41,7 +41,7 @@ class LoginModel extends Mysql
             us.id_user,
             us.usuario_id,
             us.correo_empresarial,
-            us.password,
+            us.contraseña,
             CONCAT(et.nombres,' ', et.primer_apellido,' ', et.segundo_apellido) AS nombres,
             us.role_id,
             us.estado
@@ -65,7 +65,7 @@ class LoginModel extends Mysql
         $sql = "SELECT 
         u.correo_empresarial,
         e.estado,
-        u.password
+        u.contraseña
         FROM users_sistema u
         INNER JOIN empleado_tb e ON u.usuario_id = e.id_empleado
         WHERE u.correo_empresarial = ? AND e.estado = 'Activo'";
@@ -79,46 +79,44 @@ class LoginModel extends Mysql
         $sql = "SELECT 
         id_usuario, 
         nombres,
-        CONCAT(nombres,' ', primer_apellido,' ', segundo_apellido) AS nombre_completo
+        CONCAT(nombres, ' ', primer_apellido, ' ', segundo_apellido) AS nombre_completo
         FROM tb_usuarios 
         WHERE correo = ? AND estado = 'Activo'";
-        $arrData = array($correo_empresarial);
-        return $this->select($sql, $arrData); // Devuelve los datos si existe
+        $arrData = [$correo_empresarial];
+        return $this->select($sql, $arrData);
+    }
+
+    public function getUserByCorreo($correo_empresarial)
+    {
+        $sql = "SELECT 
+        id_usuario, 
+        correo,
+        contraseña,
+        estado
+        FROM tb_usuarios 
+        WHERE correo = ? AND estado = 'Activo'";
+        $arrData = [$correo_empresarial];
+        return $this->select($sql, $arrData);
     }
 
     public function guardarToken($correo, $token, $expires_at)
     {
-        $sql = "INSERT INTO login_tokens (correo_empresarial, token, expires_at) VALUES (?, ?, ?)";
+        $sql = "INSERT INTO auth_tokens (correo_empresarial, token, created_at, expires_at) VALUES (?, ?, NOW(), ?)";
         $arrData = [$correo, $token, $expires_at];
         return $this->insert($sql, $arrData);
     }
 
-
-    public function validarToken($correo_empresarial, $token)
+    public function getTokenValido($correo_empresarial, $token)
     {
-        // Definir la zona horaria en PHP (por seguridad)
-        date_default_timezone_set('America/Guatemala'); // Ajusta según tu zona horaria
-
-        // Obtener la fecha y hora actual en la zona correcta
-        $query = date("Y-m-d H:i:s");
-
-        $sql = "SELECT 
-            e.id_empleado, 
-            e.nombres,
-            e.codigo_empleado AS no_empleado,
-            CONCAT(e.primer_apellido, ' ', e.segundo_apellido) as apellidos,
-            CONCAT(e.nombres, ' ',e.primer_apellido, ' ', e.segundo_apellido) as nombre_completo,
-            e.correo_empresarial 
-                FROM login_tokens t
-                INNER JOIN empleado_tb e ON e.correo_empresarial = t.correo_empresarial
-                WHERE t.correo_empresarial = ? 
-                AND t.token = ? 
-                AND t.expires_at > ?";
-
-        $arrData = [$correo_empresarial, $token, $query];
-
-        return $this->select($sql, $arrData); // Retorna los datos del usuario si el token es válido
+        $sql = "SELECT * FROM auth_tokens 
+            WHERE correo_empresarial = ? 
+            AND token = ? 
+            AND expires_at >= NOW()
+            ORDER BY id DESC LIMIT 1";
+        $arrData = [$correo_empresarial, $token];
+        return $this->select($sql, $arrData);
     }
+
 
 
 }

@@ -6,6 +6,9 @@ class ConfiguracionModel extends Mysql
         parent::__construct();
     }
 
+    public $role_id;
+
+
     public function Areas()
     {
         $sql = "SELECT 
@@ -130,6 +133,7 @@ class ConfiguracionModel extends Mysql
             g.id_grupo,
             g.nombre_grupo,
             g.area_grupo as areas,
+            g.categoria,
             ta.nombre_area,
             g.fecha_creacion,
             g.estado AS estado_grupo,
@@ -174,6 +178,7 @@ class ConfiguracionModel extends Mysql
         $sql = "SELECT 
         e.id_usuario AS id,
         CONCAT(e.nombres, ' ', e.primer_apellido, ' ', e.segundo_apellido) AS nombre,
+        CONCAT(e.nombres, ' ', e.primer_apellido, ' ', e.segundo_apellido) AS usuario,
         e.correo,
         e.estado as estado
     FROM tb_usuarios e
@@ -255,6 +260,17 @@ class ConfiguracionModel extends Mysql
         return $request['total'] > 0;
     }
 
+        public function verificarGrupoPorAreaYCategoriabyID($area, $categoria, $idGrupo)
+    {
+        $sql = "SELECT COUNT(*) as total 
+            FROM tb_grupo_firmas 
+            WHERE area_grupo = ? 
+              AND categoria = ?
+              AND id_grupo != ?";
+        $request = $this->select($sql, [$area, $categoria, $idGrupo]);
+        return $request['total'] > 0;
+    }
+
 
     public function Roles()
     {
@@ -277,14 +293,14 @@ class ConfiguracionModel extends Mysql
 
     public function getAllModulos()
     {
-        $sql = "SELECT id_modulo FROM tb_modulos WHERE estado = 'Activo' and tipo = 'permiso'"; // puedes quitar el WHERE si quieres todos
+        $sql = "SELECT id_modulo FROM tb_modulos WHERE estado = 'Activo'"; // puedes quitar el WHERE si quieres todos
         return $this->select_all($sql);
     }
 
     public function insertRolModulo($role_id, $modulo_id)
     {
-        $sql = "INSERT INTO tb_permisos (role_id, modulo_id, acceder, crear, editar, eliminar, correo)
-            VALUES (?, ?, 0, 0, 0, 0, 0)";
+        $sql = "INSERT INTO tb_permisos (role_id, modulo_id, acceder, crear, editar, eliminar)
+            VALUES (?, ?, 0, 0, 0, 0)";
         return $this->insert($sql, [$role_id, $modulo_id]);
     }
 
@@ -298,8 +314,7 @@ class ConfiguracionModel extends Mysql
                     rm.crear,
                     rm.acceder,
                     rm.editar,
-                    rm.eliminar,
-                    rm.correo
+                    rm.eliminar
                 FROM tb_permisos rm
                 INNER JOIN tb_roles rs ON rm.role_id = rs.id
                 INNER JOIN tb_modulos m ON rm.modulo_id = m.id_modulo
@@ -319,43 +334,9 @@ class ConfiguracionModel extends Mysql
                     $item['disabled_eliminar'] = true;
                     break;
                 case 2:
-                    $item['disabled_crear'] = true;
                     $item['disabled_eliminar'] = true;
                     break;
                 case 3:
-                    $item['disabled_crear'] = true;
-                    break;
-                case 4:
-                    $item['disabled_eliminar'] = true;
-                    break;
-                case 5:
-                case 6:
-                    $item['disabled_crear'] = true;
-                    $item['disabled_eliminar'] = true;
-                    break;
-                case 8:
-                    $item['disabled_eliminar'] = true;
-                    break;
-                case 9:
-                    $item['disabled_editar'] = true;
-                    $item['disabled_eliminar'] = true;
-                    break;
-                case 10:
-                    $item['disabled_crear'] = true;
-                    $item['disabled_eliminar'] = true;
-                    break;
-                case 11:
-                    $item['disabled_editar'] = true;
-                    break;
-                case 12:
-                    $item['disabled_crear'] = true;
-                    break;
-                case 14:
-                case 15:
-                case 16:
-                case 17:
-                case 18:
-                case 19:
                     $item['disabled_crear'] = true;
                     $item['disabled_editar'] = true;
                     $item['disabled_eliminar'] = true;
@@ -431,6 +412,18 @@ class ConfiguracionModel extends Mysql
         $request = $this->insert($sql, $arrData);
         return $request;
     }
+
+    public function verificarGrupoCorreoPorAreaYCategoria($area, $categoria)
+    {
+        $sql = "SELECT COUNT(*) AS total 
+            FROM tb_grupo_correos 
+            WHERE area = ? AND categoria = ? AND estado = 'Activo'";
+        $arrData = [$area, $categoria];
+        $request = $this->select($sql, $arrData);
+
+        return $request && $request['total'] > 0;
+    }
+
 
 
     public function selectGrupoCorreoByID($id_grupo)
@@ -520,6 +513,40 @@ class ConfiguracionModel extends Mysql
             INNER JOIN tb_fases f ON f.id_fase = fc.fase
             WHERE fc.grupo = ?";
         return $this->select_multi($sql, [$id_grupo]);
+    }
+
+    public function permisosModulo(int $role_id)
+    {
+        $this->role_id = $role_id;
+        $sql = "SELECT 
+            r.role_id,
+            r.modulo_id,
+            m.nombre_modulo as modulo,
+            r.crear,
+            r.acceder,
+            r.editar,
+            r.eliminar 
+        FROM tb_permisos r 
+        INNER JOIN tb_modulos m ON r.modulo_id = m.id_modulo
+        WHERE r.role_id = $this->role_id";
+
+        $request = $this->select_all($sql);
+        $arrPermisos = array();
+        for ($i = 0; $i < count($request); $i++) {
+            $arrPermisos[$request[$i]['modulo_id']] = $request[$i];
+        }
+        return $arrPermisos;
+    }
+
+
+    public function updatePermiso($idRol, $moduloNombre, $crear, $leer, $editar, $eliminar)
+    {
+        $sql = "UPDATE tb_permisos 
+            SET crear = ?, acceder = ?, editar = ?, eliminar = ? 
+            WHERE role_id = ? AND modulo_id = (SELECT id_modulo FROM tb_modulos WHERE nombre_modulo = ?)";
+
+        $params = [$crear, $leer, $editar, $eliminar, $idRol, $moduloNombre];
+        return $this->update($sql, $params);
     }
 
 

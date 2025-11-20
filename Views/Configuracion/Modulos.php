@@ -13,12 +13,6 @@
                     <i class="icon-arrow-right"></i>
                 </li>
                 <li class="nav-item">
-                    <a href="#">Configuracion</a>
-                </li>
-                <li class="separator">
-                    <i class="icon-arrow-right"></i>
-                </li>
-                <li class="nav-item">
                     <a href="#">Modulos</a>
                 </li>
             </ul>
@@ -37,7 +31,7 @@
                 <div class="card-body">
                     <div class="table-responsive">
                         <table id="tableModulos" class="display table table-striped table-hover">
-                            <thead>
+                            <thead class="table-light">
                                 <tr>
                                     <th>ID</th>
                                     <th>Modulo</th>
@@ -77,3 +71,8 @@
         </div>
     </div>
 </div>
+
+<script>
+    let role_id = <?= json_encode($_SESSION['rol_usuario'] ?? 0); ?>;
+    let permisos = <?= json_encode($_SESSION['permisos'] ?? []); ?>;
+</script>

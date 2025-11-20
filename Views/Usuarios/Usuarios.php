@@ -1,39 +1,40 @@
 <?php headerAdmin($data); ?>
-
 <div class="main p-3">
+    <div class="page-header d-flex justify-content-between align-items-center">
+        <div>
+            <h3 class="fw-bold mb-3">Panel Usuarios</h3>
+            <ul class="breadcrumbs mb-3">
+                <li class="nav-home">
+                    <a href="<?= base_url(); ?>/Dashboard">
+                        <i class="icon-home"></i>
+                    </a>
+                </li>
+                <li class="separator">
+                    <i class="icon-arrow-right"></i>
+                </li>
+                <li class="nav-item">
+                    <a href="#">Usuarios</a>
+                </li>
+            </ul>
+        </div>
+        <div>
+            <button class="btn btn-primary  shadow-sm d-flex align-items-center" data-bs-toggle="modal"
+                data-bs-target="#setUserModal">
+                <i class="fa fa-plus"></i>
+                Agregar Usuario
+            </button>
+        </div>
 
-    <div class="page-header">
-        <h3 class="fw-bold mb-3">Panel Usuarios</h3>
-        <ul class="breadcrumbs mb-3">
-            <li class="nav-home">
-                <a href="<?= base_url(); ?>/Dashboard">
-                    <i class="icon-home"></i>
-                </a>
-            </li>
-            <li class="separator">
-                <i class="icon-arrow-right"></i>
-            </li>
-            <li class="nav-item">
-                <a href="#">Usuarios</a>
-            </li>
-        </ul>
     </div>
     <div class="row">
         <div class="col-md-12">
             <div class="card">
                 <div class="card-header">
-                    <div class="d-flex align-items-center">
-                        <button class="btn btn-primary btn-round ms-auto" data-bs-toggle="modal"
-                            data-bs-target="#setUserModal">
-                            <i class="fa fa-plus"></i>
-                            Agregar Usuario
-                        </button>
-                    </div>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
                         <table id="tableUsuarios" class="display table table-striped table-hover">
-                            <thead>
+                            <thead class="table-light">
                                 <tr>
                                     <th>Id</th>
                                     <th>Identificacion</th>
@@ -120,19 +121,35 @@
                                     name="set_area" required title="Seleccione un área" data-width="100%">
                                 </select>
                             </div>
-
+                            <div class="col-md-6">
+                                <label for="edit_correo" class="form-label fw-semibold">Rol <i
+                                        class="text-danger">*</i></label>
+                                <select class="form-select selectpicker w-100" data-live-search="true" id="set_rol"
+                                    name="set_rol" required title="Seleccione un rol" data-width="100%">
+                                </select>
+                            </div>
                             <div class="col-md-6">
                                 <label for="set_password" class="form-label fw-semibold">Contraseña <i
                                         class="text-danger">*</i></label>
                                 <div class="input-group">
                                     <input type="password" class="form-control" id="set_password" name="set_password"
                                         placeholder="Ingrese una contraseña" required>
-                                    <button class="btn btn-outline-secondary" type="button" id="togglePassword">
-                                        <i class="bi bi-eye"></i>
+                                    <button class="btn btn-outline-secondary togglePassword" type="button">
+                                        <i class="fa-solid fa-eye"></i>
                                     </button>
                                 </div>
                             </div>
-
+                            <div class="col-md-6">
+                                <label for="set_confirm_password" class="form-label fw-semibold">Confirmar Contraseña <i
+                                        class="text-danger">*</i></label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="set_confirm_password"
+                                        name="set_confirm_password" placeholder="Confirme la contraseña" required>
+                                    <button class="btn btn-outline-secondary togglePassword" type="button">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -149,7 +166,6 @@
         </div>
     </div>
 </div>
-
 
 <div class="modal fade" id="updateUser" tabindex="-1" aria-labelledby="updateUserLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -225,25 +241,26 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label for="edit_correo" class="form-label fw-semibold">Estado <i
+                                <label for="set_password" class="form-label fw-semibold">Contraseña <i
                                         class="text-danger">*</i></label>
-                                <select class="form-select selectpicker w-100" data-live-search="true" id="edit_estado"
-                                    name="set_area" required title="Seleccione un área" data-width="100%">
-                                    <option value="Activo">Activo</option>
-                                    <option value="Baja">Baja</option>
-                                </select>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label for="edit_password" class="form-label fw-semibold">Nueva Contraseña</label>
                                 <div class="input-group">
                                     <input type="password" class="form-control" id="edit_password" name="set_password"
-                                        placeholder="Opcional, solo si desea cambiarla">
-                                    <button class="btn btn-outline-secondary" type="button" id="toggleEditPassword">
-                                        <i class="bi bi-eye"></i>
+                                        placeholder="Ingrese una contraseña">
+                                    <button class="btn btn-outline-secondary togglePassword" type="button">
+                                        <i class="fa-solid fa-eye"></i>
                                     </button>
                                 </div>
-                                <small class="text-muted">Déjelo vacío si no desea cambiar la contraseña.</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="set_confirm_password" class="form-label fw-semibold">Confirmar Contraseña <i
+                                        class="text-danger">*</i></label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="edit_confirm_password"
+                                        name="set_confirm_password" placeholder="Confirme la contraseña">
+                                    <button class="btn btn-outline-secondary togglePassword" type="button">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -264,12 +281,19 @@
 
 
 <script>
-    document.getElementById('togglePassword').addEventListener('click', function () {
-        const passwordInput = document.getElementById('set_password');
-        const icon = this.querySelector('i');
-        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-        passwordInput.setAttribute('type', type);
-        icon.classList.toggle('bi-eye');
-        icon.classList.toggle('bi-eye-slash');
+    document.querySelectorAll('.togglePassword').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const input = this.previousElementSibling;
+            const icon = this.querySelector('i');
+            const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+            input.setAttribute('type', type);
+            icon.classList.toggle('fa-eye');
+            icon.classList.toggle('fa-eye-slash');
+        });
     });
+</script>
+
+<script>
+    let role_id = <?= json_encode($_SESSION['rol_usuario'] ?? 0); ?>;
+    let permisos = <?= json_encode($_SESSION['permisos'] ?? []); ?>;
 </script>

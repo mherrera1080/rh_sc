@@ -78,13 +78,27 @@ class SolicitudFondosModel extends Mysql
         return $request;
     }
 
+    public function getCorreosArea($area, $estado, $categoria)
+    {
+        $sql = "SELECT 
+        tu.correo as correos
+        FROM tb_fase_correos tfc
+        INNER JOIN tb_grupo_correos tg ON tfc.grupo = tg.id_grupo_correo
+        INNER JOIN tb_usuarios tu ON tfc.usuario = tu.id_usuario
+        INNER JOIN tb_fases tf ON tfc.fase = tf.id_fase
+        INNER JOIN tb_categoria tc ON tf.categoria = tc.id_categoria
+        WHERE tg.area = ? AND tf.nombre_base = ? AND tc.nombre_categoria = ?";
+        $request = $this->select_multi($sql, array($area, $estado, $categoria));
+        return $request;
+    }
+
     public function getSolisinContra($contraseña)
     {
         $sql = "SELECT
             tc.id_solicitud,
             tc.contraseña,
             tc.area,
-            tc.proveedor,
+            tc.proveedor as proveedor_id,
             tc.categoria,
             tc.fecha_creacion,
             tc.estado,
@@ -138,7 +152,8 @@ class SolicitudFondosModel extends Mysql
     public function getContraSoli($id_solicitud)
     {
         $sql = "SELECT
-            tc.contraseña
+            tc.contraseña,
+            tc.area
         FROM tb_solicitud_fondos tc
         WHERE tc.id_solicitud = ?";
         $request = $this->select($sql, array($id_solicitud));
@@ -270,12 +285,12 @@ class SolicitudFondosModel extends Mysql
                 ROUND(SUM(td.valor_documento), 2) AS monto_total,
                 ROUND(SUM(td.reten_iva), 2) AS reten_iva,
                 ROUND(SUM(td.reten_isr), 2) AS reten_isr,
-                ROUND(SUM(td.valor_documento), 2) AS subtotal,
-                ROUND(SUM(td.valor_documento) * 0.12, 2) AS iva,
+                ROUND(SUM(td.base), 2) AS subtotal,
+                ROUND(SUM(td.base) * 0.12, 2) AS iva,
                 ROUND(
-                    (SUM(td.valor_documento) + (SUM(td.valor_documento) * 0.12))
+                    (SUM(td.base) + (SUM(td.base) * 0.12))
                     - (SUM(td.reten_isr) + SUM(td.reten_iva))                    
-                    - IFNULL(SUM(tdf.valor_documento), 0),
+                    - IFNULL((tdf.valor_documento), 0),
                     2
                 ) AS total
             FROM tb_contraseña tc
@@ -284,7 +299,7 @@ class SolicitudFondosModel extends Mysql
             INNER JOIN tb_detalles td ON tc.contraseña = td.contraseña
             LEFT JOIN tb_solicitud_fondos tf ON tc.anticipo = tf.id_solicitud
             LEFT JOIN tb_detalles tdf ON tf.id_solicitud = tdf.no_factura
-            WHERE tc.contraseña = ?
+            WHERE tc.contraseña = ? 
             ";
 
         $request = $this->select($sql, array($contraseña));
@@ -298,10 +313,10 @@ class SolicitudFondosModel extends Mysql
                 ROUND(SUM(td.valor_documento), 2) AS monto_total,
                 ROUND(SUM(td.reten_iva), 2) AS reten_iva,
                 ROUND(SUM(td.reten_isr), 2) AS reten_isr,
-                ROUND(SUM(td.valor_documento), 2) AS subtotal,
+                ROUND(SUM(td.base), 2) AS subtotal,
                 0 AS iva,
                 ROUND(
-                    (SUM(td.valor_documento)- SUM(td.reten_iva))
+                    (SUM(td.base)- SUM(td.reten_iva))
                     - IFNULL(SUM(tdf.valor_documento), 0),
                     2
                 ) AS total
@@ -382,17 +397,18 @@ class SolicitudFondosModel extends Mysql
         return $this->update($sql, $arrData);
     }
 
-    public function getGrupo($idArea)
+    public function getGrupo($idArea, $categoria)
     {
         $sql = "SELECT 
-        id_grupo
-        FROM tb_grupo_firmas
-        WHERE area_grupo = ? ";
+                    id_grupo
+                FROM tb_grupo_firmas
+                WHERE area_grupo = ? AND categoria = ?
+                ORDER BY id_grupo DESC 
+                LIMIT 1";
 
-        $request = $this->select($sql, array($idArea));
+        $request = $this->select($sql, array($idArea, $categoria)); 
         return $request;
     }
-
     public function getFirmas(int $id_grupo)
     {
         $sql = "SELECT 
@@ -477,6 +493,7 @@ class SolicitudFondosModel extends Mysql
     {
         $sql = "SELECT
             tf.id_solicitud,
+            tf.contraseña as correlativo,
             ta.nombre_area AS area,
             tp.nombre_proveedor AS proveedor,
             CONCAT(tu.nombres, ' ', tu.primer_apellido, ' ', tu.segundo_apellido) as usuario,

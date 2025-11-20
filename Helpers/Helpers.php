@@ -31,7 +31,6 @@ function footerAdmin($data = "")
     require_once($view_footer);
 }
 
-
 function strClean($strCadena)
 {
     $string = preg_replace(['/\s+/', '/^\s|\s$/'], [' ', ''], $strCadena);
@@ -66,7 +65,6 @@ function strClean($strCadena)
     return $string;
 }
 
-
 function strComillas($cadena)
 {
     $string = str_replace(['"', '\\'], '', $cadena);
@@ -77,7 +75,7 @@ function sessionUser(int $id_user)
 {
     require_once("Models/LoginModel.php");
     $objLogin = new LoginModel(); // Asegúrate de que este nombre de clase sea correcto
-    $request = $objLogin->sessionLogin($id_user); 
+    $request = $objLogin->sessionLogin($id_user);
     return $request;
 }
 
@@ -87,12 +85,10 @@ function sessionStart()
 
     $inactive = 1800; // media hora
 
-    // Si existe 'timeout' en la sesión, verifica la inactividad
     if (isset($_SESSION['timeout'])) {
         // Calcula el tiempo de inactividad
         $session_in = time() - $_SESSION['timeout'];
 
-        // Si el tiempo de inactividad excede el límite permitido
         if ($session_in > $inactive) {
             session_unset();    // Elimina todas las variables de sesión
             session_destroy();  // Destruye la sesión actual
@@ -101,10 +97,50 @@ function sessionStart()
         }
     }
 
-    // Actualiza el tiempo de la última actividad
-    $_SESSION['timeout'] = time(); 
+    $_SESSION['timeout'] = time();
 }
 
+function getPermisos(int $modulo_id)
+{
+    require_once("Models/ConfiguracionModel.php");
+    $objPermisos = new ConfiguracionModel();
+    if (!empty($_SESSION['PersonalData'])) {
+        $role_id = $_SESSION['PersonalData']['rol_usuario']; 
+        $arrPermisos = $objPermisos->permisosModulo($role_id);
+        $permisos = '';
+        $permisosMod = '';
+        if (count($arrPermisos) > 0) {
+            $permisos = $arrPermisos;
+            $permisosMod = isset($arrPermisos[$modulo_id]) ? $arrPermisos[$modulo_id] : "";
+        }
+        $_SESSION['permisos'] = $permisos;
+        $_SESSION['permisosMod'] = $permisosMod;
+    }
+}
+
+function isLoggedIn()
+{
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+
+    // Verifica si el usuario está logueado
+    if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
+        return false; // No está logueado
+    }
+
+    // Obtén el correo y el token de la sesión
+    $correo = $_SESSION['userData']['correo_empresarial'] ?? null;
+    $token = $_SESSION['userData']['token'] ?? null;
+
+    if (!$correo || !$token) {
+        session_unset();
+        session_destroy();
+        return false; // Datos de sesión incompletos
+    }
+
+    return true; // Sesión válida
+}
 
 function Meses()
 {

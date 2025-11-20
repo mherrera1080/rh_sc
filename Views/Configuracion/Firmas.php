@@ -1,19 +1,22 @@
 <?php headerAdmin($data); ?>
 <div class="main p-4">
     <!-- Encabezado de página -->
-    <div class="page-header mb-4 d-flex justify-content-between align-items-center flex-wrap">
+    <div class="page-header d-flex justify-content-between align-items-center">
         <div>
-            <h3 class="fw-bold mb-1 text-primary">Gestión de Firmas</h3>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item">
-                        <a href="<?= base_url(); ?>/Dashboard" class="text-decoration-none">
-                            <i class="icon-home me-1"></i> Inicio
-                        </a>
-                    </li>
-                    <li class="breadcrumb-item active" aria-current="page">Firmas</li>
-                </ol>
-            </nav>
+            <h3 class="fw-bold mb-3">Gestion de Firmas</h3>
+            <ul class="breadcrumbs mb-0">
+                <li class="nav-home">
+                    <a href="<?= base_url(); ?>/Dashboard">
+                        <i class="icon-home"></i>
+                    </a>
+                </li>
+                <li class="separator">
+                    <i class="icon-arrow-right"></i>
+                </li>
+                <li class="nav-item">
+                    <a href="#">Firmas</a>
+                </li>
+            </ul>
         </div>
         <div>
             <button class="btn btn-primary shadow-sm" type="button" data-bs-toggle="modal"
@@ -24,15 +27,6 @@
     </div>
 
     <div class="card shadow-sm border-0">
-        <div class="card-header bg-light d-flex justify-content-between align-items-center">
-            <h5 class="mb-0 fw-semibold text-secondary">
-                <i class="fas fa-th-large me-2 text-primary"></i>Listado de Grupos
-            </h5>
-            <div class="input-group input-group-sm w-auto">
-                <span class="input-group-text bg-white"><i class="fas fa-search"></i></span>
-                <input type="text" id="buscarModulo" class="form-control" placeholder="Buscar módulo...">
-            </div>
-        </div>
         <div class="card-body p-3">
             <div class="table-responsive">
                 <table id="tableFirmas" class="table table-striped table-hover align-middle">
@@ -41,6 +35,7 @@
                             <th class="text-center" style="width: 60px;">ID</th>
                             <th>Nombre</th>
                             <th>Área</th>
+                            <th>Categoria</th>
                             <th>Firmas</th>
                             <th>Estado</th>
                             <th class="text-center" style="width: 80px;">Acciones</th>
@@ -87,8 +82,8 @@
                         </div>
                         <div class="col-md-3">
                             <label for="areas" class="form-label fw-semibold mb-1 d-block">Categoria</label>
-                            <select class="form-control selectpicker w-100" data-live-search="true"
-                                name="categoria" required title="Seleccione una o area" data-width="100%">
+                            <select class="form-control selectpicker w-100" data-live-search="true" name="categoria"
+                                required title="Seleccione una o area" data-width="100%">
                                 <option selected disabled>Selecciona una categoria</option>
                                 <option value="Mayor">Mayor Al Limite</option>
                                 <option value="Menor">Menor Al Limite</option>
@@ -107,9 +102,11 @@
                                 <i class="fas fa-user-plus me-1"></i>Agregar Firmante
                             </button>
                         </div>
-                        <div id="contenedorFirmantes" class="d-flex flex-wrap gap-3">
-                            <!-- Tarjetas dinámicas de firmantes -->
+                        <div id="contenedorFirmantes" class="d-flex flex-wrap gap-2 overflow-auto"
+                            style="max-height:450px;">
+                            <!-- Tarjetas dinámicas -->
                         </div>
+
                     </div>
                 </div>
 
@@ -143,12 +140,12 @@
                     <input type="hidden" id="firmas_eliminadas" name="firmas_eliminadas" value="[]">
                     <input type="hidden" id="id_grupo_edit" name="id_grupo_edit">
                     <div class="row mb-4">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label for="nombre_grupo_edit" class="form-label fw-semibold">Nombre del Grupo</label>
                             <input type="text" class="form-control" id="nombre_grupo_edit" name="nombre_grupo_edit"
                                 placeholder="Ej: Grupo de Autorizaciones de Compras" required>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label for="areas_edit" class="form-label fw-semibold">Área</label>
                             <select class="form-control selectpicker" data-live-search="true" id="areas_edit"
                                 name="areas">
@@ -157,15 +154,9 @@
                                 Selecciona el área correspondiente al grupo.
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <label for="areas" class="form-label fw-semibold mb-1 d-block">Categoria</label>
-                            <select class="form-control selectpicker w-100" data-live-search="true" id="categoria"
-                                name="categoria" required title="Seleccione una o area" data-width="100%">
-                                <option selected disabled>Selecciona una categoria</option>
-                                <option value="Mayor">Mayor Al Limite</option>
-                                <option value="Menor">Menor Al Limite</option>
-                                <option value="Anticipo">Anticipo</option>
-                            </select>
+                            <input type="text" class="form-control" id="categoria" name="categoria" readonly>
                         </div>
                     </div>
                     <hr>
@@ -179,7 +170,8 @@
                             </button>
                         </div>
 
-                        <div id="contenedorFirmantesEdit" class="d-flex flex-wrap gap-3">
+                        <div id="contenedorFirmantesEdit" class="d-flex flex-wrap gap-3 overflow-auto"
+                            style="max-height:350px;">
                             <!-- Tarjetas dinámicas -->
                         </div>
                     </div>
@@ -209,3 +201,8 @@
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 </style>
+
+<script>
+    let role_id = <?= json_encode($_SESSION['rol_usuario'] ?? 0); ?>;
+    let permisos = <?= json_encode($_SESSION['permisos'] ?? []); ?>;
+</script>

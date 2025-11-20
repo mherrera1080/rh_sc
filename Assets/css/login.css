@@ -1,328 +1,150 @@
-:root {
-    --primary: #f49300;
-    --primary-hover: #0325ad;
-    --background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-}
-
+/* --- Fondo general --- */
 body {
-    background: var(--background);
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: #f0f2f5;
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
-    margin: 0;
+    height: 100vh;
 }
 
-.login-container {
-    background: rgba(255, 255, 255, 0.95);
-    padding: 2.5rem;
-    border-radius: 1.5rem;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+/* --- Contenedor principal --- */
+.login-wrapper {
     width: 100%;
-    max-width: 440px;
-    text-align: center;
-    transition: transform 0.3s ease;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    max-width: 420px;
+    padding: 20px;
 }
 
-.login-container:hover {
-    transform: translateY(-2px);
+/* --- Tarjeta de login --- */
+.login-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 35px 30px 40px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease-in-out;
 }
 
-.login-container h2 {
-    margin-bottom: 2rem;
-    font-size: 1.75rem;
+.login-card:hover {
+    transform: translateY(-3px);
+}
+
+/* --- Logo --- */
+.logo {
+    width: 220px;
+    height: auto;
+    margin-bottom: 5px;
+}
+
+/* --- Texto principal --- */
+.login-header h2 {
     font-weight: 700;
-    color: #1e293b;
-    position: relative;
+    color: #333;
 }
 
-.login-container h2::after {
-    content: '';
-    width: 40px;
-    height: 4px;
-    background: var(--primary);
+.login-header p {
+    font-size: 14px;
+    color: #666;
+}
+
+/* --- Campos de entrada --- */
+.form-label {
+    font-weight: 600;
+    font-size: 14px;
+    color: #444;
+    margin-bottom: 4px;
+}
+
+.form-control {
+    border-radius: 10px;
+    padding: 10px 40px;
+    border: 1px solid #ddd;
+    box-shadow: none;
+    transition: all 0.2s;
+}
+
+.form-control:focus {
+    border-color: #f28c00;
+    box-shadow: 0 0 0 0.2rem rgba(242, 140, 0, 0.15);
+}
+
+/* --- Íconos de inputs --- */
+.input-icon {
     position: absolute;
-    bottom: -12px;
-    left: 50%;
-    transform: translateX(-50%);
-    border-radius: 2px;
-}
-
-.login-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-
-.input-group {
-    position: relative;
-    text-align: left;
-}
-
-.input-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-size: 0.875rem;
-    color: #64748b;
-    font-weight: 500;
-}
-
-.input-group input {
-    width: 100%;
-    padding: 0.875rem 1rem 0.875rem 2.75rem;
-    border: 2px solid #e2e8f0;
-    border-radius: 0.75rem;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    background-color: #f8fafc;
-}
-
-.input-group input:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-    background-color: white;
-}
-
-.input-group i {
-    position: absolute;
-    left: 1rem;
-    bottom: 0.875rem;
-    color: #94a3b8;
-    font-size: 1.1rem;
+    top: 43px;
+    left: 14px;
+    color: #888;
 }
 
 .password-toggle {
     position: absolute;
-    right: 1rem;
-    bottom: 0.875rem;
+    top: 43px;
+    right: 14px;
     cursor: pointer;
-    color: #94a3b8;
+    color: #888;
 }
 
-button[type="submit"] {
-    background: var(--primary);
-    color: white;
-    padding: 1rem;
-    border: none;
-    border-radius: 0.75rem;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-top: 0.5rem;
-    position: relative;
-    overflow: hidden;
+.password-toggle:hover {
+    color: #f28c00;
 }
 
-button[type="submit"]:hover {
-    background: var(--primary-hover);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
-}
-
-.links {
-    margin-top: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-.links a {
-    color: #64748b;
-    text-decoration: none;
-    font-size: 0.875rem;
-    transition: color 0.3s ease;
-}
-
-.links a:hover {
-    color: var(--primary);
-}
-
+/* --- Divider --- */
 .divider {
-    margin: 1.5rem 0;
-    position: relative;
-    color: #cbd5e1;
-}
-
-.divider::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: #e2e8f0;
-    z-index: 1;
-}
-
-.divider span {
-    position: relative;
-    padding: 0 1rem;
-    background: white;
-    z-index: 2;
-    font-size: 0.875rem;
-}
-
-
-.modal {
-    display: none;
-    position: fixed;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
+    color: #aaa;
+    margin: 25px 0 20px;
+    font-size: 14px;
 }
 
-.modal-content {
-    background: white;
-    padding: 20px;
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #ddd;
+    margin: 0 10px;
+}
+
+/* --- Botón principal --- */
+.btn-primary {
+    background-color: #0298a9;
+    border: none;
+    font-weight: 600;
+    letter-spacing: 0.3px;
     border-radius: 10px;
-    text-align: center;
-    width: 300px;
-}
-
-.spinner {
-    width: 40px;
-    height: 40px;
-    border: 5px solid rgba(0, 0, 0, 0.1);
-    border-top-color: #007bff;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 20px auto;
-}
-
-@keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
-
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-@media (max-width: 480px) {
-    .login-container {
-        margin: 1rem;
-        padding: 1.5rem;
-    }
-}
-
-/* Fondo con desenfoque más elegante */
-#modalEspera {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.3);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    backdrop-filter: blur(8px);
-    animation: fadeIn 0.3s ease-in-out;
-}
-
-/* Animación de entrada */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Contenedor del modal */
-.modal-content {
-    background: white;
-    padding: 25px;
-    border-radius: 12px;
-    text-align: center;
-    width: 350px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-    transform: scale(0.9);
+    padding: 10px 0;
     transition: all 0.3s ease-in-out;
 }
 
-/* Mostrar el modal con animación */
-.modal.show .modal-content {
-    transform: scale(1);
+.btn-primary:hover {
+    background-color: #d97b00;
+    transform: scale(1.02);
 }
 
-/* Texto en el modal */
-.modal-content h2 {
-    font-size: 1.4rem;
-    font-weight: 600;
-    color: #1e293b;
-    margin-bottom: 15px;
+/* --- Modal --- */
+.modal-content {
+    border-radius: 14px;
+    overflow: hidden;
 }
 
-/* Estilo del input */
-.modal-content input {
-    width: 100%;
-    padding: 12px;
-    border: 2px solid #e2e8f0;
-    border-radius: 8px;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    background-color: #f8fafc;
-    text-align: center;
+.modal-header {
+    background-color: #f28c00;
+    color: #fff;
+    border-bottom: none;
 }
 
-.modal-content input:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 5px rgba(244, 147, 0, 0.3);
-    background: white;
-    outline: none;
+.modal-footer {
+    border-top: none;
 }
 
-/* Botón mejorado */
-.modal-content .btn-validar {
-    background: var(--primary);
-    color: white;
-    padding: 12px;
-    border: none;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    width: 100%;
-    margin-top: 15px;
-    display: inline-block;
-}
+/* --- Adaptabilidad --- */
+@media (max-width: 480px) {
+    .login-card {
+        padding: 25px 20px 30px;
+    }
 
-.modal-content .btn-validar:hover {
-    background: var(--primary-hover);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-}
-
-/* Botón de cerrar */
-.modal-content .btn-close {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    color: #64748b;
-    transition: all 0.3s ease;
-}
-
-.modal-content .btn-close:hover {
-    color: var(--primary);
-    transform: rotate(90deg);
+    .logo {
+        width: 180px;
+    }
 }

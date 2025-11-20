@@ -29,37 +29,6 @@
     <div class="row">
         <div class="col-12">
             <div class="card shadow-sm border-0">
-                <div class="card-body border-bottom pb-3">
-                    <div class="row g-3">
-                        <div class="col-md-3">
-                            <label for="filtroArea" class="form-label">Área</label>
-                            <select id="filtroArea" class="form-select">
-                                <option value="">Todas</option>
-                                <option value="Finanzas">Finanzas</option>
-                                <option value="Recursos Humanos">Recursos Humanos</option>
-                                <option value="Operaciones">Operaciones</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label for="filtroEstado" class="form-label">Estado</label>
-                            <select id="filtroEstado" class="form-select">
-                                <option value="">Todos</option>
-                                <option value="Pendiente">Pendiente</option>
-                                <option value="Aprobado">Aprobado</option>
-                                <option value="Rechazado">Rechazado</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label for="filtroFecha" class="form-label">Fecha Registro</label>
-                            <input type="date" id="filtroFecha" class="form-control">
-                        </div>
-                        <div class="col-md-3 d-flex align-items-end">
-                            <button class="btn btn-primary w-100" id="btnFiltrar">
-                                <i class="fa fa-filter"></i> Filtrar
-                            </button>
-                        </div>
-                    </div>
-                </div>
                 <div class="card-body">
                     <div class="table-responsive">
                         <table id="tableSolicitudes"

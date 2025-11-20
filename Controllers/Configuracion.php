@@ -38,7 +38,7 @@ class Configuracion extends Controllers
         $arrData = $this->model->Areas();
 
         if (empty($arrData)) {
-            $arrResponse = array('status' => false, 'msg' => 'No se encontraron datos.');
+            $arrResponse = array('status' => false, 'msg' => 'No se encontraron registros previos.');
         } else {
             $arrResponse = array('status' => true, 'data' => $arrData);
         }
@@ -115,7 +115,7 @@ class Configuracion extends Controllers
         $arrData = $this->model->Proveedores();
 
         if (empty($arrData)) {
-            $arrResponse = array('status' => false, 'msg' => 'No se encontraron datos.');
+            $arrResponse = array('status' => false, 'msg' => 'No se encontraron registros previos.');
         } else {
             $arrResponse = array('status' => true, 'data' => $arrData);
         }
@@ -203,7 +203,7 @@ class Configuracion extends Controllers
         $arrData = $this->model->firmasGrupo();
 
         if (empty($arrData)) {
-            $arrResponse = array('status' => false, 'msg' => 'No se encontraron datos.');
+            $arrResponse = array('status' => false, 'msg' => 'No se encontraron registros previos.');
         } else {
             $arrResponse = array('status' => true, 'data' => $arrData);
         }
@@ -302,7 +302,8 @@ class Configuracion extends Controllers
     public function actualizarGrupoFirmas()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST')
-            $idGrupo = intval($_POST['id_grupo_edit'] ?? 0);
+            return;
+        $idGrupo = $_POST['id_grupo_edit'];
         $nombre = trim($_POST['nombre_grupo_edit'] ?? '');
         $areas = $_POST['areas'] ?? '[]';
         $categoria = $_POST['categoria'] ?? '[]';
@@ -310,9 +311,20 @@ class Configuracion extends Controllers
         $firmantes = json_decode($_POST['firmantes'] ?? '[]', true);
 
         if ($idGrupo <= 0) {
-            echo json_encode(["status" => false, "message" => "ID de grupo inválido."]);
+            echo json_encode(["status" => false, "message" => "ID de grupo invalido."]);
             exit;
         }
+
+        $existe = $this->model->verificarGrupoPorAreaYCategoriabyID($areas, $categoria, $idGrupo);
+
+            if ($existe) {
+                echo json_encode([
+                    "status" => false,
+                    "message" => "Ya existe un grupo de tipo '{$categoria}' en esta área. No se pueden duplicar."
+                ]);
+                exit;
+            }
+
 
         // 🧹 Eliminar firmas marcadas
         if (!empty($firmasEliminadas)) {
@@ -463,7 +475,7 @@ class Configuracion extends Controllers
         $arrData = $this->model->Roles();
 
         if (empty($arrData)) {
-            $arrResponse = array('status' => false, 'msg' => 'No se encontraron datos.');
+            $arrResponse = array('status' => false, 'msg' => 'No se encontraron registros previos.');
         } else {
             $arrResponse = array('status' => true, 'data' => $arrData);
         }
@@ -529,7 +541,7 @@ class Configuracion extends Controllers
         $arrData = $this->model->Modulos();
 
         if (empty($arrData)) {
-            $arrResponse = array('status' => false, 'msg' => 'No se encontraron datos.');
+            $arrResponse = array('status' => false, 'msg' => 'No se encontraron registros previos.');
         } else {
             $arrResponse = array('status' => true, 'data' => $arrData);
         }
@@ -553,7 +565,7 @@ class Configuracion extends Controllers
         $arrData = $this->model->grupoCorreos();
 
         if (empty($arrData)) {
-            $arrResponse = array('status' => false, 'msg' => 'No se encontraron datos.');
+            $arrResponse = array('status' => false, 'msg' => 'No se encontraron registros previos.');
         } else {
             $arrResponse = array('status' => true, 'data' => $arrData);
         }
@@ -564,32 +576,49 @@ class Configuracion extends Controllers
     public function setGrupoCorreo()
     {
         if ($_POST) {
-            $nombre = $_POST['nombre_grupo'];
-            $area = $_POST['area'];
-            $categoria = $_POST['categoria'];
+            $nombre = trim($_POST['nombre_grupo'] ?? '');
+            $area = $_POST['area'] ?? '';
+            $categoria = $_POST['categoria'] ?? '';
             $estado = "Activo";
 
             if (empty($nombre) || empty($area) || empty($categoria)) {
-                $arrResponse = ["status" => false, "msg" => "Todos los campos son obligatorios"];
-            } else {
-                $requestInsert = $this->model->insertGrupoCorreo(
-                    $nombre,
-                    $area,
-                    $categoria,
-                    $estado
-                );
+                $arrResponse = [
+                    "status" => false,
+                    "msg" => "Todos los campos son obligatorios"
+                ];
+                echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+                die();
+            }
 
-                if ($requestInsert > 0) {
-                    $arrResponse = ["status" => true, "msg" => "Detalle agregado correctamente"];
-                } else {
-                    $arrResponse = ["status" => false, "msg" => "Error al insertar el detalle"];
-                }
+            $existe = $this->model->verificarGrupoCorreoPorAreaYCategoria($area, $categoria);
+            if ($existe) {
+                $arrResponse = [
+                    "status" => false,
+                    "msg" => "El área seleccionada ya tiene un grupo con esa categoría. No se permiten duplicados."
+                ];
+                echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+                die();
+            }
+
+            $requestInsert = $this->model->insertGrupoCorreo($nombre, $area, $categoria, $estado);
+
+            if ($requestInsert > 0) {
+                $arrResponse = [
+                    "status" => true,
+                    "msg" => "Grupo de correos agregado correctamente."
+                ];
+            } else {
+                $arrResponse = [
+                    "status" => false,
+                    "msg" => "Error al insertar el grupo de correos."
+                ];
             }
 
             echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
         }
         die();
     }
+
 
     public function getSelectCategoriaCorreos()
     {
@@ -707,7 +736,29 @@ class Configuracion extends Controllers
         ]);
         exit;
     }
+    public function updatePermissions()
+    {
+        $data = json_decode(file_get_contents("php://input"), true); // Obtener los datos JSON
 
+        $idRol = $data['idRol'];
+        $permisos = $data['permisos'];
+
+        foreach ($permisos as $permiso) {
+            // Aquí deberías tener lógica para actualizar los permisos en la base de datos
+            $moduloNombre = $permiso['moduloNombre'];
+            $crear = $permiso['crear'];
+            $acceder = $permiso['acceder'];
+            $editar = $permiso['editar'];
+            $eliminar = $permiso['eliminar'];
+
+            // Actualiza los permisos en la base de datos (asegúrate de tener el método adecuado)
+            // Por ejemplo:
+            $this->model->updatePermiso($idRol, $moduloNombre, $crear, $acceder, $editar, $eliminar);
+        }
+
+        // Respuesta
+        echo json_encode(['status' => true, 'msg' => 'Permisos actualizados con éxito.']);
+    }
 
 
 

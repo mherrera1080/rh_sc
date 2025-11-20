@@ -3,7 +3,7 @@
 <div class="main p-3">
 
     <div class="page-header">
-        <h3 class="fw-bold mb-3"><?= $_SESSION['PersonalData']['nombre_area'] ?? 'N/A' ?></h3>
+        <h3 class="fw-bold mb-3">Facturas</h3>
         <ul class="breadcrumbs mb-3">
             <li class="nav-home">
                 <a href="<?= base_url(); ?>/Dashboard">
@@ -16,6 +16,12 @@
             <li class="nav-item">
                 <a href="#"><?= $_SESSION['PersonalData']['nombre_area'] ?? 'N/A' ?></a>
             </li>
+            <li class="separator">
+                <i class="icon-arrow-right"></i>
+            </li>
+            <li class="nav-item">
+                <a href="#"> Facturas</a>
+            </li>
         </ul>
     </div>
     <div class="row">
@@ -24,10 +30,9 @@
                 <div class="card-header">
                     <div class="d-flex align-items-center">
                         <h4 class="card-title">Facturas</h4>
-
                     </div>
                 </div>
-                <div class="card-body border-bottom pb-3">
+                <!-- <div class="card-body border-bottom pb-3">
                     <div class="row g-3">
                         <div class="col-md-3">
                             <label for="filtroArea" class="form-label">Área</label>
@@ -57,11 +62,11 @@
                             </button>
                         </div>
                     </div>
-                </div>
+                </div> -->
                 <div class="card-body">
                     <div class="table-responsive">
                         <table id="tableFacturas" class="display table table-striped table-hover">
-                            <thead>
+                            <thead class="table-light">
                                 <tr>
                                     <th>ID</th>
                                     <th>Contraseña</th>

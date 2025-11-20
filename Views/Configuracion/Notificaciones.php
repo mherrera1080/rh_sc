@@ -2,7 +2,7 @@
 <div class="main p-3">
     <div class="page-header d-flex justify-content-between align-items-center">
         <div>
-            <h3 class="fw-bold mb-3">Áreas</h3>
+            <h3 class="fw-bold mb-3">Correos</h3>
             <ul class="breadcrumbs mb-0">
                 <li class="nav-home">
                     <a href="<?= base_url(); ?>/Dashboard">
@@ -21,7 +21,7 @@
         <div>
             <button class="btn btn-primary  shadow-sm d-flex align-items-center" data-bs-toggle="modal"
                 data-bs-target="#modalNuevaArea">
-                <i class="fas fa-plus me-2"></i> Nueva Modulo
+                <i class="fas fa-plus me-2"></i> Nueva Grupo
             </button>
         </div>
     </div>
@@ -115,11 +115,12 @@
         <div class="modal-content shadow">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title fw-semibold" id="modalGrupoCorreosLabel">
-                    <i class="fas fa-envelope me-2"></i>Crear Grupo de Correos
+                    <i class="fas fa-envelope me-2"></i>Editar Grupo de Correos
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                     aria-label="Cerrar"></button>
             </div>
+            
             <form id="formGrupoCorreos">
                 <input type="hidden" id="edit_id_grupo" name="id_grupo">
                 <div class="modal-body">
@@ -167,3 +168,8 @@
         </div>
     </div>
 </div>
+
+<script>
+    let role_id = <?= json_encode($_SESSION['rol_usuario'] ?? 0); ?>;
+    let permisos = <?= json_encode($_SESSION['permisos'] ?? []); ?>;
+</script>

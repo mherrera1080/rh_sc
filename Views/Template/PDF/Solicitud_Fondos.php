@@ -85,7 +85,8 @@ class PDF extends FPDF
         $this->SetXY(18, 76);
         $this->Cell(35, 5, number_format($arrData['inpuestos']['total'], 2, '.', ','), 0, 0, 'R');
         $this->Cell(8, 5, null, 0, 'C');
-        $this->Cell(62, 5, "( " . $arrData['monto_letras'] . " )", 0, 'C');
+        $monto_letras = utf8_decode($arrData['monto_letras']);
+        $this->Cell(62, 5, "( " . $monto_letras . " )", 0, 'C');
     }
 
     function listado($arrData)
@@ -183,7 +184,7 @@ class PDF extends FPDF
         $this->SetX(5);
         $this->Cell(170, 5, "SUBTOTAL", "LTRB", 0, 'L');
         $this->Text(176, $y + 4, "Q. ");
-        $this->Cell(30, 5, number_format($arrData['inpuestos']['monto_total'], 2), "LTRB", 1, 'R');
+        $this->Cell(30, 5, number_format($arrData['inpuestos']['subtotal'], 2), "LTRB", 1, 'R');
         $y += 5;
 
         // 12% IVA
@@ -213,7 +214,7 @@ class PDF extends FPDF
 
         $this->SetY($y);
         $this->SetX(5);
-        $this->Cell(170, 5, "ANTICIPO", "LTRB", 0, 'L');
+        $this->Cell(170, 5, "ANTICIPO : " . $arrData['anticipo']['correlativo'], "LTRB", 0, 'L');
         $this->Text(176, $y + 4, "Q. ");
         // Mostramos el anticipo como negativo
         $this->Cell(30, 5, '- ' . number_format($arrData['anticipo']['monto_total'], 2), "LTRB", 1, 'R');

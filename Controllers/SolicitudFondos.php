@@ -19,7 +19,6 @@ class SolicitudFondos extends Controllers
         $data['page_title'] = "Solicitud_Fondos";
         $data['page_name'] = "Solicitud_Fondos";
         $data['page_functions_js'] = "functions_solicitud_fondos.js";
-
         $this->views->getView($this, "Solicitud_Fondos", $data);
     }
     public function getSolucitudesFondos()
@@ -27,7 +26,7 @@ class SolicitudFondos extends Controllers
         $arrData = $this->model->selectSolicitudFondos();
 
         if (empty($arrData)) {
-            $arrResponse = array('status' => false, 'msg' => 'No se encontraron datos.');
+            $arrResponse = array('status' => false, 'msg' => 'No se encontraron registros previos.');
         } else {
             $arrResponse = array('status' => true, 'data' => $arrData);
         }
@@ -70,7 +69,7 @@ class SolicitudFondos extends Controllers
         error_log(print_r($arrData, true));
 
         if (empty($arrData)) {
-            $arrResponse = array('status' => false, 'msg' => 'No se encontraron datos.');
+            $arrResponse = array('status' => false, 'msg' => 'No se encontraron registros previos.');
         } else {
             $arrResponse = array('status' => true, 'data' => $arrData);
         }
@@ -85,7 +84,7 @@ class SolicitudFondos extends Controllers
         error_log(print_r($arrData, true));
 
         if (empty($arrData)) {
-            $arrResponse = array('status' => false, 'msg' => 'No se encontraron datos.');
+            $arrResponse = array('status' => false, 'msg' => 'No se encontraron registros previos.');
         } else {
             $arrResponse = array('status' => true, 'data' => $arrData);
         }
@@ -213,8 +212,11 @@ class SolicitudFondos extends Controllers
             }
 
             $arrData = [
-                'solicitud' => $this->model->getSolisinContra($idSolicitud),
+                'anticipo' => $this->model->getSolisinContra($idSolicitud),
+                'correos' => $this->model->getCorreosArea($area, $estado_solicitud, $categoria),
+                'respuesta' => $estado_solicitud
             ];
+
             $sendcorreoEmpleado = 'Views/Template/Email/sendAnticipo.php';
             try {
                 ob_start();
@@ -255,6 +257,7 @@ class SolicitudFondos extends Controllers
                 echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
                 return;
             }
+
             if ($informe['regimen'] == 1) {
                 $inpuestos = $this->model->getImpuestosRegimen($contraseña);
             } else {
@@ -303,15 +306,25 @@ class SolicitudFondos extends Controllers
                     $mes = "Mes no identificado";
                     break;
             }
+
             $idArea = $informe['area_id'];
-            $grupo = $this->model->getGrupo($idArea);
+
+            if ($monto_total > LIMITE_COMPRA) {
+                $categoria = "Mayor";
+            } else if ($monto_total < LIMITE_COMPRA) {
+                $categoria = "Menor";
+            }
+
+            $grupo = $this->model->getGrupo($idArea, $categoria);
+
             if (empty($grupo)) {
                 $arrResponse = ['status' => false, 'msg' => 'No se encontró grupo de firmas.'];
                 echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
                 return;
             }
-            $id_grupo = is_array($grupo) ? $grupo['id_grupo'] : $grupo;
-            $firmas = $this->model->getFirmas($id_grupo);
+
+            $id_grupo = $grupo[0]['id_grupo']; // ✅ primer registro
+            $firmas = $this->model->getFirmas((int) $id_grupo);
             $ruta_pdf = 'Views/Template/PDF/Solicitud_Fondos.php';
             $arrData['contraseña'] = $informe;
             $arrData['anticipo'] = $anticipo;
@@ -391,7 +404,8 @@ class SolicitudFondos extends Controllers
             }
 
             $idArea = $informe['id_area'];
-            $grupo = $this->model->getGrupo($idArea);
+            $categoria = "Anticipo";
+            $grupo = $this->model->getGrupo($idArea, $categoria);
 
             if (empty($grupo)) {
                 $arrResponse = ['status' => false, 'msg' => 'No se encontró grupo de firmas.'];
@@ -399,7 +413,7 @@ class SolicitudFondos extends Controllers
                 return;
             }
 
-            $id_grupo = is_array($grupo) ? $grupo['id_grupo'] : $grupo;
+            $id_grupo = $grupo['id_grupo'];
 
             $firmas = $this->model->getFirmas($id_grupo);
 
@@ -523,7 +537,7 @@ class SolicitudFondos extends Controllers
         error_log(print_r($arrData, true));
 
         if (empty($arrData)) {
-            $arrResponse = array('status' => false, 'msg' => 'No se encontraron datos.');
+            $arrResponse = array('status' => false, 'msg' => 'No se encontraron registros previos.');
         } else {
             $arrResponse = array('status' => true, 'data' => $arrData);
         }
@@ -531,132 +545,239 @@ class SolicitudFondos extends Controllers
         echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
         die();
     }
-
-    
     public function validarSolicitud()
     {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $id_solicitud = $_POST['id_solicitud'] ?? null;
-            $respuesta = $_POST['respuesta'] ?? null;
-
-            // Validación básica
-            if (empty($id_solicitud) || empty($respuesta)) {
-                echo json_encode(["status" => false, "message" => "Datos incompletos."]);
-                exit;
-            }
-
-            // Actualizar solicitud
-            $result = $this->model->udapteSolicitud($id_solicitud, $respuesta);
-
-            if (!$result) {
-                echo json_encode([
-                    "status" => false,
-                    "message" => "Error al actualizar la solicitud."
-                ]);
-                exit;
-            }
-
-            $contra = $this->model->getContraSoli($id_solicitud);
-
-            $contraseña = $contra['contraseña'];
-
-            // Enviar correo
-            $arrData = [
-                'solicitud' => $this->model->getContraseña($contraseña),
-                'estado' => $respuesta
-            ];
-            $sendcorreoEmpleado = 'Views/Template/Email/sentSolicitudFondos.php';
-            try {
-                ob_start();
-                require $sendcorreoEmpleado;
-                ob_end_clean();
-            } catch (Exception $e) {
-                echo json_encode([
-                    "status" => false,
-                    "message" => "Error al enviar el correo: " . $e->getMessage()
-                ]);
-                exit;
-            }
-
-            // Respuesta según estado
-            if ($respuesta == 'Descartado') {
-                echo json_encode([
-                    "status" => true,
-                    "message" => "Solicitud descartada y correo enviado correctamente."
-                ]);
-            } else {
-                echo json_encode([
-                    "status" => true,
-                    "message" => "Solicitud validada y correo enviado correctamente."
-                ]);
-            }
+        // Solo permitir método POST
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode([
+                "status" => false,
+                "message" => "Método no permitido."
+            ]);
+            exit;
         }
+
+        // Recibir datos y sanitizar
+        $id_solicitud = isset($_POST['id_solicitud']) ? intval($_POST['id_solicitud']) : 0;
+        $area = isset($_POST['area']) ? trim($_POST['area']) : '';
+        $respuesta = isset($_POST['respuesta']) ? trim($_POST['respuesta']) : '';
+
+        // 🔹 Validación básica de campos obligatorios
+        if ($id_solicitud <= 0 || empty($respuesta)) {
+            echo json_encode([
+                "status" => false,
+                "message" => "Faltan datos obligatorios (solicitud o respuesta)."
+            ]);
+            exit;
+        }
+
+        // 🔹 Verificar si la solicitud existe antes de actualizar
+        $solicitudExistente = $this->model->getContraSoli($id_solicitud);
+        if (empty($solicitudExistente)) {
+            echo json_encode([
+                "status" => false,
+                "message" => "La solicitud no existe o fue eliminada."
+            ]);
+            exit;
+        }
+
+        // 🔹 Actualizar solicitud
+        $result = $this->model->udapteSolicitud($id_solicitud, $respuesta);
+        if (!$result) {
+            echo json_encode([
+                "status" => false,
+                "message" => "Error al actualizar la solicitud."
+            ]);
+            exit;
+        }
+
+        // 🔹 Obtener la contraseña de la solicitud
+        $contraseña = $solicitudExistente['contraseña'] ?? null;
+        if (empty($contraseña)) {
+            echo json_encode([
+                "status" => false,
+                "message" => "No se pudo obtener la contraseña de la solicitud."
+            ]);
+            exit;
+        }
+
+        // 🔹 Obtener datos para el correo
+        $categoria = 'Solicitud Fondos';
+        $arrData = [
+            'solicitud' => $this->model->getContraseña($contraseña),
+            'correos' => $this->model->getCorreosArea($area, $respuesta, $categoria),
+            'respuesta' => $respuesta
+        ];
+
+        // Validar datos del correo
+        if (empty($arrData['solicitud'])) {
+            echo json_encode([
+                "status" => false,
+                "message" => "2."
+            ]);
+            exit;
+        }
+
+        if (empty($arrData['correos'])) {
+            echo json_encode([
+                "status" => false,
+                "message" => "5"
+            ]);
+            exit;
+        }
+
+        // 🔹 Intentar enviar el correo
+        $sendCorreoEmpleado = 'Views/Template/Email/sentSolicitudFondos.php';
+        try {
+            ob_start();
+            require $sendCorreoEmpleado;
+            ob_end_clean();
+        } catch (Exception $e) {
+            echo json_encode([
+                "status" => false,
+                "message" => "Error al enviar el correo: " . $e->getMessage()
+            ]);
+            exit;
+        }
+
+        // 🔹 Respuesta final según el estado
+        $mensaje = ($respuesta === 'Descartado')
+            ? "Solicitud descartada y correo enviado correctamente."
+            : "Solicitud validada y correo enviado correctamente.";
+
+        echo json_encode([
+            "status" => true,
+            "message" => $mensaje
+        ]);
     }
+
 
     public function finalizarSolicitud()
     {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $id_solicitud = $_POST['id_solicitud'];
-            $respuesta = $_POST['respuesta'];
-            $no_transferencia = $_POST['no_transferencia'] ?? null;
-            $fecha_pago = $_POST['fecha_pago'] ?? null;
-            $observacion = $_POST['observacion'] ?? null;
-
-            if ($respuesta == 'Pagado') {
-                if (empty($id_solicitud) || empty($no_transferencia) || empty($fecha_pago)) {
-                    echo json_encode(["status" => false, "message" => "Datos incompletos."]);
-                    exit;
-                }
-            }
-
-            $result = $this->model->endSolicitud($id_solicitud, $respuesta, $no_transferencia, $fecha_pago, $observacion);
-            if (!$result) {
-                echo json_encode([
-                    "status" => false,
-                    "message" => "Error al actualizar la solicitud."
-                ]);
-                exit;
-            }
-            $contra = $this->model->getContraSoli($id_solicitud);
-
-            $contraseña = $contra['contraseña'];
-
-            // Enviar correo
-            $arrData = [
-                'solicitud' => $this->model->getContraseña($contraseña),
-                'estado' => $respuesta
-            ];
-            $sendcorreoEmpleado = 'Views/Template/Email/sentSolicitudFondos.php';
-            try {
-                ob_start();
-                require $sendcorreoEmpleado;
-                ob_end_clean();
-            } catch (Exception $e) {
-                echo json_encode([
-                    "status" => false,
-                    "message" => "Error al enviar el correo: " . $e->getMessage()
-                ]);
-                exit;
-            }
-
-            // Respuesta según estado
-            if ($respuesta == 'Descartado') {
-                echo json_encode([
-                    "status" => true,
-                    "message" => "Solicitud descartada"
-                ]);
-            } else {
-                echo json_encode([
-                    "status" => true,
-                    "message" => "Solicitud Pagada"
-                ]);
-            }
+        // 🔒 Verificar método HTTP
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode([
+                "status" => false,
+                "message" => "Método no permitido."
+            ]);
+            exit;
         }
+
+        // 🔹 Sanitizar y validar datos de entrada
+        $id_solicitud = isset($_POST['id_solicitud']) ? intval($_POST['id_solicitud']) : 0;
+        $area = isset($_POST['area']) ? trim($_POST['area']) : '';
+        $respuesta = isset($_POST['respuesta']) ? trim($_POST['respuesta']) : '';
+        $no_transferencia = isset($_POST['no_transferencia']) ? trim($_POST['no_transferencia']) : null;
+        $fecha_pago = isset($_POST['fecha_pago']) ? trim($_POST['fecha_pago']) : null;
+        $observacion = isset($_POST['observacion']) ? trim($_POST['observacion']) : null;
+
+        // 🔹 Validación de campos básicos
+        if ($id_solicitud <= 0 || empty($respuesta)) {
+            echo json_encode([
+                "status" => false,
+                "message" => "Faltan datos obligatorios (ID de solicitud o respuesta)."
+            ]);
+            exit;
+        }
+
+        // 🔹 Validar tipo de respuesta permitido
+        $respuestasValidas = ['Pagado', 'Descartado'];
+        if (!in_array($respuesta, $respuestasValidas)) {
+            echo json_encode([
+                "status" => false,
+                "message" => "Tipo de respuesta no válida."
+            ]);
+            exit;
+        }
+
+        // 🔹 Validaciones específicas para "Pagado"
+        if ($respuesta === 'Pagado') {
+            if (empty($no_transferencia) || empty($fecha_pago)) {
+                echo json_encode([
+                    "status" => false,
+                    "message" => "Debe ingresar número de transferencia y fecha de pago."
+                ]);
+                exit;
+            }
+
+            // Validar formato de fecha (YYYY-MM-DD)
+            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $fecha_pago)) {
+                echo json_encode([
+                    "status" => false,
+                    "message" => "El formato de la fecha de pago no es válido. Use AAAA-MM-DD."
+                ]);
+                exit;
+            }
+
+        }
+
+        // 🔹 Verificar si la solicitud existe
+        $solicitudExistente = $this->model->getContraSoli($id_solicitud);
+        if (empty($solicitudExistente)) {
+            echo json_encode([
+                "status" => false,
+                "message" => "La solicitud no existe o fue eliminada."
+            ]);
+            exit;
+        }
+
+        // 🔹 Actualizar solicitud
+        $result = $this->model->endSolicitud($id_solicitud, $respuesta, $no_transferencia, $fecha_pago, $observacion);
+        if (!$result) {
+            echo json_encode([
+                "status" => false,
+                "message" => "Error al actualizar la solicitud."
+            ]);
+            exit;
+        }
+
+        // 🔹 Obtener contraseña de la solicitud
+        $contraseña = $solicitudExistente['contraseña'] ?? null;
+        if (empty($contraseña)) {
+            echo json_encode([
+                "status" => false,
+                "message" => "No se pudo obtener la contraseña de la solicitud."
+            ]);
+            exit;
+        }
+
+        // 🔹 Datos para el correo
+        $categoria = 'Solicitud Fondos';
+        $arrData = [
+            'solicitud' => $this->model->getContraseña($contraseña),
+            'correos' => $this->model->getCorreosArea($area, $respuesta, $categoria),
+            'respuesta' => $respuesta
+        ];
+
+        // 🔹 Enviar correo con plantilla
+        $sendCorreoEmpleado = 'Views/Template/Email/sentSolicitudFondos.php';
+        try {
+            ob_start();
+            require $sendCorreoEmpleado;
+            ob_end_clean();
+        } catch (Exception $e) {
+            echo json_encode([
+                "status" => false,
+                "message" => "Error al enviar el correo: " . $e->getMessage()
+            ]);
+            exit;
+        }
+
+        // 🔹 Respuesta final según el estado
+        $mensaje = ($respuesta === 'Descartado')
+            ? "Solicitud descartada correctamente."
+            : "Solicitud pagada y correo enviado correctamente.";
+
+        echo json_encode([
+            "status" => true,
+            "message" => $mensaje
+        ]);
     }
+
     public function finalizarSolicitudSinContra()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id_solicitud = $_POST['id_solicitud'];
+            $area = $_POST['area'];
             $respuesta = $_POST['respuesta'];
             $no_transferencia = $_POST['no_transferencia'] ?? null;
             $fecha_pago = $_POST['fecha_pago'] ?? null;
@@ -671,10 +792,14 @@ class SolicitudFondos extends Controllers
 
             $result = $this->model->endSolicitudSinContra($id_solicitud, $respuesta, $no_transferencia, $fecha_pago, $observacion);
 
+            $categoria = 'Anticipo';
             // Enviar correo
             $arrData = [
-                'solicitud' => $this->model->getSolisinContra($id_solicitud),
+                'anticipo' => $this->model->getSolisinContra($id_solicitud),
+                'correos' => $this->model->getCorreosArea($area, $respuesta, $categoria),
+                'respuesta' => $respuesta
             ];
+
             $sendcorreoEmpleado = 'Views/Template/Email/sendAnticipo.php';
             try {
                 ob_start();
@@ -701,7 +826,7 @@ class SolicitudFondos extends Controllers
         $arrData = $this->model->getSolisinContra($contraseña);
 
         if (empty($arrData)) {
-            $arrResponse = array('status' => false, 'msg' => 'No se encontraron datos 505');
+            $arrResponse = array('status' => false, 'msg' => 'No se encontraron registros previos ');
         } else {
             $arrData['no_factura'] = explode(",", $arrData['no_factura']);
             $arrData['tipo'] = explode(",", $arrData['tipo']);
@@ -718,6 +843,7 @@ class SolicitudFondos extends Controllers
             $id_solicitud = $_POST['id_solicitud']; // ID o código de la contraseña
             $fecha_pago = $_POST['fecha_pago'];
             $proveedor = intval($_POST['proveedor']);
+            $area = intval($_POST['area']);
             $estado = $_POST['respuesta'];
 
             $facturas = $_POST['factura'];
@@ -764,6 +890,28 @@ class SolicitudFondos extends Controllers
 
             if (!empty($errores)) {
                 echo json_encode(["status" => false, "message" => $errores, "errors" => $errores]);
+                exit;
+            }
+
+
+            $categoria = 'Anticipo';
+            // Enviar correo
+            $arrData = [
+                'anticipo' => $this->model->getSolisinContra($id_solicitud),
+                'correos' => $this->model->getCorreosArea($area, $estado, $categoria),
+                'respuesta' => $estado
+            ];
+
+            $sendcorreoEmpleado = 'Views/Template/Email/sendAnticipo.php';
+            try {
+                ob_start();
+                require $sendcorreoEmpleado;
+                ob_end_clean();
+            } catch (Exception $e) {
+                echo json_encode([
+                    "status" => false,
+                    "message" => "Error al enviar el correo: " . $e->getMessage()
+                ]);
                 exit;
             }
 

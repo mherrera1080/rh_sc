@@ -5,6 +5,18 @@ document.addEventListener("DOMContentLoaded", function () {
   tableContraseña = $("#tableContraseña").DataTable({
     ajax: {
       url: base_url + "/Contraseñas/registroContra",
+      dataSrc: function (json) {
+        // Si no hay datos, muestra swal y evita error
+        if (!json.status) {
+          Swal.fire({
+            icon: "info",
+            title: "Sin registros",
+            text: json.msg,
+          });
+          return []; // Retornar arreglo vacío para que DataTables no falle
+        }
+        return json.data;
+      },
     },
     autoWidth: false,
     colReorder: true,
@@ -24,20 +36,19 @@ document.addEventListener("DOMContentLoaded", function () {
       { data: "fecha_pago", title: "Fecha Pago" },
       {
         data: "estado",
-        title: "Estado",
         render: function (data, type, row, meta) {
           let html = "";
           data = data.toLowerCase();
           if (data.includes("pendiente")) {
-            html = '<span class="badge badge-warning">' + data + "</span>";
+            html = '<span class="badge badge-warning">PENDIENTE</span>';
           } else if (data.includes("validado")) {
             html = '<span class="badge badge-success">VALIDADO</span>';
           } else if (data.includes("corregir")) {
             html = '<span class="badge badge-danger">CORREGIR</span>';
-          } else if (data.includes("descartado")) {
+          } else if (data.includes("corregido")) {
+            html = '<span class="badge badge-info">CORREGIDO</span>';
+          }else if (data.includes("descartado")) {
             html = '<span class="badge badge-danger">DESCARTADO</span>';
-          } else if (data.includes("finalizado")) {
-            html = '<span class="badge badge-success">FINALIZADO</span>';
           }
           return html;
         },
@@ -72,6 +83,10 @@ document.addEventListener("DOMContentLoaded", function () {
         className: "btn btn-secondary btn-sm rounded fw-bold text-white",
       },
     ],
+    language: {
+  url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json",
+},
+
   });
 
   $(document).on("click", ".btn-password", function () {

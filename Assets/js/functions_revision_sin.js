@@ -9,6 +9,18 @@ document.addEventListener("DOMContentLoaded", function () {
   tableFacturas = $("#tableFacturas").DataTable({
     ajax: {
       url: base_url + "/SolicitudFondos/getFacturasSolicitud/" + id_solicitud,
+      dataSrc: function (json) {
+        // Si no hay datos, muestra swal y evita error
+        if (!json.status) {
+          Swal.fire({
+            icon: "info",
+            title: "Sin registros",
+            text: json.msg,
+          });
+          return []; // Retornar arreglo vacío para que DataTables no falle
+        }
+        return json.data;
+      },
     },
     autoWidth: false,
     colReorder: true,
@@ -41,6 +53,10 @@ document.addEventListener("DOMContentLoaded", function () {
         className: "btn btn-secondary btn-sm rounded fw-bold text-white",
       },
     ],
+    language: {
+  url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json",
+},
+
   });
 
   // =============================
@@ -102,7 +118,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function cargarDatosEdicion(data) {
     // Llenar los campos de la solicitud principal
     $("#edit_id_solicitud").val(data.id_solicitud);
-    $("#edit_proveedor").val(data.proveedor);
+    $("#edit_proveedor").val(data.proveedor_id);
     $("#edit_observacion").val(data.observacion);
     $("#edit_fecha_creacion").val(data.fecha_creacion);
     $("#edit_fecha_pago").val(data.fecha_pago);

@@ -29,8 +29,5 @@ class ContabilidadModel extends Mysql
         $request = $this->select($sql, array($contraseña));
         return $request;
     }
-    
-
-
 
 }

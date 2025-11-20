@@ -1,8 +1,26 @@
 let tableFirmas;
 document.addEventListener("DOMContentLoaded", function () {
+  let permisosMod = permisos[10] || {
+    acceder: 0,
+    crear: 0,
+    editar: 0,
+    eliminar: 0,
+  };
   tableFirmas = $("#tableFirmas").DataTable({
     ajax: {
       url: base_url + "/Configuracion/getGrupoFirmas",
+      dataSrc: function (json) {
+        // Si no hay datos, muestra swal y evita error
+        if (!json.status) {
+          Swal.fire({
+            icon: "info",
+            title: "Sin registros",
+            text: json.msg,
+          });
+          return []; // Retornar arreglo vacío para que DataTables no falle
+        }
+        return json.data;
+      },
     },
     columns: [
       {
@@ -13,15 +31,28 @@ document.addEventListener("DOMContentLoaded", function () {
       },
       { data: "nombre_grupo" },
       { data: "nombre_area" },
+      { data: "categoria" },
       { data: "total_firmas" },
       { data: "estado_grupo" },
       {
         data: null,
         render: function (data, type, row) {
-          return `
+          let botones = "";
+
+          // Botón Editar
+          if (permisosMod.editar == 1) {
+            botones += `
             <button type="button" class="btn btn-warning update-btn" data-bs-toggle="modal" data-bs-target="#modalGrupoFirmasEdit" data-id="${row.id_grupo}">
                 <i class="fas fa-pencil-square"></i>
             </button>`;
+          } else {
+            botones += `
+            <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+              <i class="fas fa-pencil-square"></i>
+            </button>`;
+          }
+
+          return botones;
         },
       },
     ],
@@ -45,6 +76,9 @@ document.addEventListener("DOMContentLoaded", function () {
         className: "btn btn-secondary btn-sm rounded fw-bold text-white",
       },
     ],
+    language: {
+      url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json",
+    },
   });
 
   if (document.querySelector("#areas")) {
@@ -70,47 +104,79 @@ document.addEventListener("DOMContentLoaded", function () {
   const contenedorFirmantes = document.getElementById("contenedorFirmantes");
   const btnAgregar = document.getElementById("btnAgregarFirmante");
 
-  const cargarUsuarios = (selectElement) => {
-    let ajaxUrl = base_url + "/Configuracion/getUsers";
-    let request = window.XMLHttpRequest
-      ? new XMLHttpRequest()
-      : new ActiveXObject("Microsoft.XMLHTTP");
+  function cargarUsuarios(selectElement, callback) {
+    $.ajax({
+      url: `${base_url}/Configuracion/getUsers`,
+      method: "GET",
+      dataType: "html",
+      success: function (responseText) {
+        $(selectElement).html(responseText);
+        if (callback) callback();
+      },
+      error: function () {
+        alert("Error al cargar los usuarios.");
+      },
+    });
+  }
 
-    request.open("GET", ajaxUrl, true);
-    request.send();
+  function habilitarBusquedaSelect(select) {
+    // Creamos un input temporal que simulará la búsqueda
+    const input = document.createElement("input");
+    input.type = "text";
+    input.placeholder = "Buscar...";
+    input.classList.add("form-control", "mb-1");
 
-    request.onreadystatechange = function () {
-      if (request.readyState === 4) {
-        if (request.status === 200) {
-          selectElement.innerHTML = request.responseText;
-          $(selectElement);
-        } else {
-          console.error("Error al cargar usuarios:", request.status);
-        }
+    // Insertamos el input justo antes del select
+    select.parentNode.insertBefore(input, select);
+
+    // Guardamos todas las opciones originales
+    const opcionesOriginales = Array.from(select.options);
+
+    // Filtramos mientras el usuario escribe
+    input.addEventListener("input", () => {
+      const filtro = input.value.toLowerCase();
+      select.innerHTML = ""; // limpiar select
+
+      const filtradas = opcionesOriginales.filter((opt) =>
+        opt.text.toLowerCase().includes(filtro)
+      );
+
+      if (filtradas.length === 0) {
+        const noOpt = document.createElement("option");
+        noOpt.textContent = "Sin resultados";
+        noOpt.disabled = true;
+        select.appendChild(noOpt);
+      } else {
+        filtradas.forEach((opt) => select.appendChild(opt.cloneNode(true)));
       }
-    };
-  };
+    });
+  }
 
   const agregarFirma = () => {
     const ordenActual = contenedorFirmantes.children.length + 1;
     const card = document.createElement("div");
     card.classList.add("card", "shadow-sm", "p-3", "position-relative");
     card.style.width = "300px";
+
     card.innerHTML = `
     <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1 btnRemoveFirmante">
       <i class="fas fa-times"></i>
     </button>
     <div class="mb-3">
       <label class="form-label small fw-semibold">Usuario</label>
-      <select class="form-select selectpicker" data-live-search="true" name="usuarios[]" required title="Seleccione usuario"></select>
-    </div>
-      <div class="mb-2">
-          <label class="form-label small fw-semibold">Nombres</label>
-          <input type="text" name="nombres[]" class="form-control"  placeholder="Ing. Nombre" required>
+      <div class="buscador-select">
+        <select class="form-select" name="usuarios[]" required>
+          <option value="">Cargando usuarios...</option>
+        </select>
       </div>
+    </div>
     <div class="mb-2">
-      <label class="form-label small fw-semibold">Rol / Cargo</label>
-      <input type="text" name="roles[]" class="form-control" placeholder="Ej: Gerente" required>
+      <label class="form-label small fw-semibold">Nombres</label>
+      <input type="text" name="nombres[]" class="form-control" placeholder="Ej. Juan Pérez" required>
+    </div>
+    <div class="mb-2">
+      <label class="form-label small fw-semibold">Cargo</label>
+      <input type="text" name="roles[]" class="form-control" placeholder="Ej. Gerente" required>
     </div>
     <div>
       <label class="form-label small fw-semibold">Orden de Firma</label>
@@ -121,7 +187,9 @@ document.addEventListener("DOMContentLoaded", function () {
     contenedorFirmantes.appendChild(card);
 
     const selectUsuario = card.querySelector('select[name="usuarios[]"]');
-    cargarUsuarios(selectUsuario);
+    cargarUsuarios(selectUsuario, () => {
+      habilitarBusquedaSelect(selectUsuario); // Activa buscador después de cargar
+    });
   };
 
   btnAgregar.addEventListener("click", (e) => {
@@ -275,16 +343,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
       <div class="mb-3">
         <label class="form-label small fw-semibold">Usuario</label>
-        <select class="form-select selectpicker" data-live-search="true" name="usuarios[]"></select>
+        <div class="buscador-select">
+          <select class="form-select" name="usuarios[]" required>
+            <option value="">Cargando usuarios...</option>
+          </select>
+        </div>
       </div>
+
       <div class="mb-2">
         <label class="form-label small fw-semibold">Nombre</label>
         <input type="text" name="nombres[]" class="form-control" value="${firma.nombre_usuario}">
       </div>
+
       <div class="mb-2">
         <label class="form-label small fw-semibold">Rol / Cargo</label>
         <input type="text" name="roles[]" class="form-control" value="${firma.cargo_usuario}">
       </div>
+
       <div>
         <label class="form-label small fw-semibold">Orden de Firma</label>
         <input type="number" name="orden[]" class="form-control" value="${firma.orden}" readonly>
@@ -293,9 +368,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
       contenedor[0].appendChild(card);
 
-      // Inicializar select de usuarios
       const selectUsuario = card.querySelector('select[name="usuarios[]"]');
-      cargarUsuariosEdit(selectUsuario, firma.id_usuario);
+      cargarUsuariosEdit(selectUsuario, firma.id_usuario, () => {
+        habilitarBusquedaSelect(selectUsuario);
+      });
     });
   }
 
@@ -307,7 +383,7 @@ document.addEventListener("DOMContentLoaded", function () {
     cargarDatosGrupo(id_grupo);
   });
 
-  function cargarUsuariosEdit(selectElement, idSeleccionado = null) {
+  function cargarUsuariosEdit(selectElement, idSeleccionado = null, callback) {
     $.ajax({
       url: `${base_url}/Configuracion/getUsers`,
       method: "GET",
@@ -315,7 +391,7 @@ document.addEventListener("DOMContentLoaded", function () {
       success: function (responseText) {
         $(selectElement).html(responseText);
         if (idSeleccionado) $(selectElement).val(idSeleccionado);
-        $(selectElement);
+        if (callback) callback();
       },
       error: function () {
         alert("Error al cargar los usuarios.");
@@ -340,9 +416,11 @@ document.addEventListener("DOMContentLoaded", function () {
     <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1 btnRemoveFirmante">
       <i class="fas fa-times"></i>
     </button>
-    <div class="mb-3">
+    <div class="mb-3 buscador-select">
       <label class="form-label small fw-semibold">Usuario</label>
-      <select class="form-select selectpicker" data-live-search="true" name="usuarios[]" required title="Seleccione usuario"></select>
+      <select class="form-select" name="usuarios[]" required>
+        <option value="">Cargando usuarios...</option>
+      </select>
     </div>
     <div class="mb-2">
       <label class="form-label small fw-semibold">Nombres</label>
@@ -354,15 +432,17 @@ document.addEventListener("DOMContentLoaded", function () {
     </div>
     <div>
       <label class="form-label small fw-semibold">Orden de Firma</label>
-      <input type="number" name="orden[]" class="form-control" value="0" readonly>
+      <input type="number" name="orden[]" class="form-control" readonly>
     </div>
   `;
 
     contenedorFirmantesEdit.appendChild(card);
 
     const selectUsuario = card.querySelector('select[name="usuarios[]"]');
-    $(selectUsuario).selectpicker();
-    cargarUsuarios(selectUsuario);
+    cargarUsuarios(selectUsuario, () => {
+      habilitarBusquedaSelect(selectUsuario);
+    });
+
     recalcularOrdenFirmas();
   };
 
@@ -391,7 +471,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const card = $(this).closest(".card");
     const idFirma = card.data("id-firma");
 
-    if (confirm("¿Desea eliminar esta firma?")) {
+    if (confirm("¿Desea eliminar esta firma?")) {+
       card.addClass("border-danger opacity-50");
       if (idFirma) {
         const eliminadasInput = $("#firmas_eliminadas");

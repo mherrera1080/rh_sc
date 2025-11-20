@@ -136,7 +136,7 @@
                         <div class="table-responsive">
                             <input type="hidden" id="contraseña" value="<?= $data['facturas']['contraseña']; ?>">
                             <table id="tableFacturas" class="display table table-striped table-hover">
-                                <thead>
+                                <thead class="table-light">
                                     <tr>
                                         <th>ID</th>
                                         <th>No. Factura</th>
@@ -204,6 +204,7 @@
                                     <label class="form-label">Área</label>
                                     <input type="text" class="form-control"
                                         value="<?= $data['facturas']['area'] ?? 'N/A'; ?>" disabled>
+                                    <input type="hidden" name="area" value="<?= $data['facturas']['id_area']; ?>">
                                 </div>
                                 <div class="col-md-3 mb-3">
                                     <label class="form-label">Fecha Registro</label>
@@ -246,14 +247,13 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <form id="descartarContraseña">
-
                     <input type="hidden" class="form-control" name="contraseña"
                         value="<?= $data['facturas']['contraseña']; ?>">
-
+                    <input type="hidden" class="form-control" name="area" value="<?= $data['facturas']['id_area']; ?>">
                     <!-- Encabezado -->
                     <div class="modal-header bg-dark text-white">
                         <h5 class="modal-title" id="corregirModalLabel">
-                            Corrección de Contraseña de Pago
+                            Descartar Contraseña de Pago
                         </h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                             aria-label="Cerrar">
@@ -323,6 +323,8 @@
                         value="<?= $data['facturas']['contraseña']; ?>">
                     <input type="hidden" class="form-control" name="realizador"
                         value="<?= $data['facturas']['realizador']; ?>">
+                    <input type="hidden" class="form-control" name="area"
+                        value="<?= $data['facturas']['id_area']; ?>">
                     <!-- Encabezado -->
                     <div class="modal-header bg-dark text-white">
                         <h5 class="modal-title" id="corregirModalLabel">
@@ -407,11 +409,10 @@
                 <form id="validarForm">
                     <input type="hidden" class="form-control" name="contraseña"
                         value="<?= $data['facturas']['contraseña']; ?>">
-                    <input type="hidden" class="form-control" name="area"
-                        value="<?= $data['facturas']['id_area']; ?>">
+                    <input type="hidden" class="form-control" name="area" value="<?= $data['facturas']['id_area']; ?>">
                     <input type="hidden" class="form-control" name="area_user"
                         value="<?= $_SESSION['PersonalData']['nombre_completo'] ?>">
-                        
+
                     <!-- Encabezado -->
                     <div class="modal-header bg-dark text-white">
                         <h5 class="modal-title" id="corregirModalLabel">
@@ -521,10 +522,13 @@
                 <form id="validarContaForm">
                     <input type="hidden" class="form-control" name="contraseña"
                         value="<?= $data['facturas']['contraseña']; ?>">
+                    <input type="hidden" class="form-control" name="area" value="<?= $data['facturas']['id_area']; ?>">
+                    <input type="hidden" class="form-control" name="conta_user"
+                        value="<?= $_SESSION['PersonalData']['nombre_completo'] ?>">
                     <!-- Encabezado -->
                     <div class="modal-header bg-dark text-white">
                         <h5 class="modal-title" id="corregirModalLabel">
-                            Revision Contraseña de Pago
+                            Revision Contabilidad
                         </h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                             aria-label="Cerrar">
@@ -613,6 +617,8 @@
                     <input type="hidden" class="form-control" name="contraseña"
                         value="<?= $data['facturas']['contraseña']; ?>">
                     <input type="hidden" class="form-control" name="area" value="<?= $data['facturas']['id_area']; ?>">
+                    <input type="hidden" class="form-control" name="solicitante"
+                        value="<?= $_SESSION['PersonalData']['nombre_completo'] ?>">
                     <div class="modal-header bg-dark text-white">
                         <h5 class="modal-title" id="corregirModalLabel">
                             Solicitud de Fondos - <?= $data['facturas']['area']; ?>
@@ -659,20 +665,6 @@
                                     <input type="date" class="form-control btn-input"
                                         value="<?= $data['facturas']['fecha_pago'] ?? ''; ?>" disabled>
                                 </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="categoria" class="form-label">Categoría<i
-                                            style="color: red;">*</i><i>-</i><i style="color: dimgrey;"> seleccione N/A
-                                            si
-                                            no es de vehiculos</i>
-                                    </label>
-                                    <select class="form-select" id="categoria" name="categoria" required>
-                                        <option value="" selected disabled>Seleccione una categoría</option>
-                                        <option value="N/A">N/A</option>
-                                        <option value="Combustible">Combustible</option>
-                                        <option value="Servicios">Servicios</option>
-                                        <option value="Arrendamiento">Arrendamiento</option>
-                                    </select>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -718,6 +710,7 @@
                                 <select class="form-control valor-select" id="edit_estado" name="edit_estado" required>
                                     <option value="Validado">Validado</option>
                                     <option value="Corregir">Corregir</option>
+                                    <option value="Descartar">Descartar</option>
                                 </select>
                             </div>
                             <div class="col-md-12 mb-3">
@@ -1150,37 +1143,37 @@
     </style>
 
     <div class="modal fade" id="correosModal" tabindex="-1" aria-labelledby="correosModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <form id="formCorreos">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="correosModalLabel">Seleccionar destinatarios de notificación</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-
-                <div class="modal-body">
-                    <div class="table-responsive">
-                        <table id="tableCorreos" class="table table-bordered table-hover text-center align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Usuario</th>
-                                    <th>Correo</th>
-                                    <th>Notificar</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Aquí se insertarán las filas con AJAX -->
-                            </tbody>
-                        </table>
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form id="formCorreos">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="correosModalLabel">Seleccionar destinatarios de notificación</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                </div>
 
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                    <button id="btnEnviarCorreos" class="btn btn-primary">Enviar correos</button>
-                </div>
-            </form>
+                    <div class="modal-body">
+                        <div class="table-responsive">
+                            <table id="tableCorreos" class="table table-bordered table-hover text-center align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Usuario</th>
+                                        <th>Correo</th>
+                                        <th>Notificar</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Aquí se insertarán las filas con AJAX -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        <button id="btnEnviarCorreos" class="btn btn-primary">Enviar correos</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
-</div>

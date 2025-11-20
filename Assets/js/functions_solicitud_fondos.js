@@ -5,6 +5,18 @@ document.addEventListener("DOMContentLoaded", function () {
   tableSolicitudes = $("#tableSolicitudes").DataTable({
     ajax: {
       url: base_url + "/SolicitudFondos/getSolucitudesFondos",
+      dataSrc: function (json) {
+        // Si no hay datos, muestra swal y evita error
+        if (!json.status) {
+          Swal.fire({
+            icon: "info",
+            title: "Sin registros",
+            text: json.msg,
+          });
+          return []; // Retornar arreglo vacío para que DataTables no falle
+        }
+        return json.data;
+      },
     },
     columns: [
       {
@@ -78,6 +90,9 @@ document.addEventListener("DOMContentLoaded", function () {
     bDestroy: true,
     iDisplayLength: 5,
     order: [[0, "desc"]],
+    language: {
+      url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json",
+    },
   });
 
   $(document).on("click", ".btn-password", function () {
@@ -153,7 +168,7 @@ document.addEventListener("DOMContentLoaded", function () {
     .addEventListener("submit", function (e) {
       e.preventDefault();
 
-      const formData = new FormData(this); // Ya incluye todos los input[name="...[]"]
+      const formData = new FormData(this);
 
       const spinner = document.querySelector("#spinerSubmit");
       const submitButton = document.querySelector("#btnSubmit");
@@ -186,7 +201,7 @@ document.addEventListener("DOMContentLoaded", function () {
           }
           submitButton.disabled = false;
           spinner.classList.add("d-none");
-        })
+        });
     });
 
   // no pasarse

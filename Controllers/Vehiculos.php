@@ -42,7 +42,7 @@ class Vehiculos extends Controllers
         $arrData = $this->model->selectVehiculos();
 
         if (empty($arrData)) {
-            $arrResponse = array('status' => false, 'msg' => 'No se encontraron datos.');
+            $arrResponse = array('status' => false, 'msg' => 'No se encontraron registros previos.');
         } else {
             $arrResponse = array('status' => true, 'data' => $arrData);
         }
@@ -83,6 +83,28 @@ class Vehiculos extends Controllers
                 exit;
             }
 
+            $datos = $this->model->getContraseña($contraseña);
+            $area = $datos['id_area'];
+
+            $categoria = "Contraseña";
+            $arrData = [
+                'contraseña' => $this->model->getContraseña($contraseña),
+                'correos' => $this->model->getCorreosArea($area, $estado, $categoria)
+            ];
+
+            $sendcorreoEmpleado = 'Views/Template/Email/sendContraseña.php';
+            try {
+                ob_start();
+                require $sendcorreoEmpleado;
+                ob_end_clean();
+            } catch (Exception $e) {
+                echo json_encode([
+                    "status" => false,
+                    "message" => "Error al enviar el correo: " . $e->getMessage()
+                ]);
+                exit;
+            }
+
             echo json_encode(["status" => true, "message" => "Contraseña registrada correctamente."]);
         }
     }
@@ -102,7 +124,7 @@ class Vehiculos extends Controllers
                 exit;
             }
 
-            if ($categoria === null && $estado === "Finalizado" ) {
+            if ($categoria === null && $estado === "Finalizado") {
                 echo json_encode(["status" => false, "message" => "Seleccione una categoria antes"]);
                 exit;
             }
@@ -125,7 +147,7 @@ class Vehiculos extends Controllers
             }
 
             // Si el estado es Finalizado, crear el fondo
-            if ($estado === "Finalizado") {
+            if ($estado === "Validado") {
 
                 $this->model->solicitudFondoVehiculos($contraseña, $area, $categoria);
 
@@ -139,6 +161,31 @@ class Vehiculos extends Controllers
                     "message" => "Contraseña descartada."
                 ]);
             }
+
+
+            $datos = $this->model->getContraseña($contraseña);
+            $area = $datos['id_area'];
+
+            $categoria = "Contraseña";
+            $arrData = [
+                'contraseña' => $this->model->getContraseña($contraseña),
+                'correos' => $this->model->getCorreosArea($area, $estado, $categoria)
+            ];
+
+            $sendcorreoEmpleado = 'Views/Template/Email/sendContraseña.php';
+            try {
+                ob_start();
+                require $sendcorreoEmpleado;
+                ob_end_clean();
+            } catch (Exception $e) {
+                echo json_encode([
+                    "status" => false,
+                    "message" => "Error al enviar el correo: " . $e->getMessage()
+                ]);
+                exit;
+            }
+
+
         } else {
             // Si no es POST
             echo json_encode([
@@ -147,6 +194,7 @@ class Vehiculos extends Controllers
             ]);
         }
     }
+    
 
     // no
 }

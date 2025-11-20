@@ -19,21 +19,31 @@ try {
     $mail->setFrom('notificacionescontrasenagt@carsoca.com', 'noreply@');
 
     // Destinatario (Cámbialo por tu correo para probar)
-    foreach ($arrData['correos'] as $correo) {
-        $mail->addAddress($correo);
+    foreach ($arrData['correos'] as $correoItem) {
+        // Si es array (getCorreosArea)
+        if (is_array($correoItem) && isset($correoItem['correos'])) {
+            $mail->addAddress($correoItem['correos']);
+        } 
+        // Si es array (getCorreobyName)  
+        else if (is_array($correoItem) && isset($correoItem['correo'])) {
+            $mail->addAddress($correoItem['correo']);
+        }
+        // Si es string directo
+        else if (is_string($correoItem)) {
+            $mail->addAddress($correoItem);
+        }
     }
 
 
     // Contenido del correo
     $mail->isHTML(true);
-    $mail->Subject = '🚀 noreply';
+    $mail->Subject = '🚀 Notificacion de Contraseñas';
 
     $contraseña = $arrData['contraseña']['contraseña'];
     $realizador = $arrData['contraseña']['realizador'];
     $area = $arrData['contraseña']['area'];
     $proveedor = $arrData['contraseña']['proveedor'];
-    $monto = $arrData['contraseña']['monto_total'];
-    $valor_letras = "Doce mil cuatrocientos cincuenta quetzales exactos";
+    $monto_formato = $arrData['contraseña']['monto_formato'];
     $fecha_registro = $arrData['contraseña']['fecha_registro'];
 
     $mensaje_estado = "Se ha creado la siguiente contraseña";

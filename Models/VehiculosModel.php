@@ -45,10 +45,14 @@ class VehiculosModel extends Mysql
             tc.valor_letras,
             tc.monto_total AS monto_registrado,
             ta.id_area,
+            tc.id_proveedor,
             ta.nombre_area AS area,
-            ROUND(SUM(td.valor_documento), 2) AS monto_total,
+            FORMAT(SUM(td.valor_documento), 2) AS monto_formato,
+            SUM(td.valor_documento) AS monto_total,
             tc.fecha_pago,
-            tc.estado
+            tc.estado,
+            tc.anticipo,
+            tc.correcciones
         FROM tb_contraseña tc
         INNER JOIN tb_proveedor tp ON tc.id_proveedor = tp.id_proveedor
         INNER JOIN tb_areas ta ON tc.area = ta.id_area
@@ -57,6 +61,20 @@ class VehiculosModel extends Mysql
         WHERE tc.contraseña = ? 
         GROUP BY tc.id_contraseña;";
         $request = $this->select($sql, array($contraseña));
+        return $request;
+    }
+
+        public function getCorreosArea($area, $estado, $categoria)
+    {
+        $sql = "SELECT 
+        tu.correo as correos
+        FROM tb_fase_correos tfc
+        INNER JOIN tb_grupo_correos tg ON tfc.grupo = tg.id_grupo_correo
+        INNER JOIN tb_usuarios tu ON tfc.usuario = tu.id_usuario
+        INNER JOIN tb_fases tf ON tfc.fase = tf.id_fase
+        INNER JOIN tb_categoria tc ON tf.categoria = tc.id_categoria
+        WHERE tg.area = ? AND tf.nombre_base = ? AND tc.nombre_categoria = ?";
+        $request = $this->select_multi($sql, array($area, $estado, $categoria));
         return $request;
     }
 
@@ -111,7 +129,7 @@ class VehiculosModel extends Mysql
             $contraseña,
             $area,
             $categoria,
-            'Validado'
+            'Pendiente'
         ];
 
         $request = $this->insert($sql, $arrData);

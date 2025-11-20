@@ -15,6 +15,18 @@ document.addEventListener("DOMContentLoaded", function () {
     },
     ajax: {
       url: base_url + "/Contraseñas/getFacturas/" + contraseña,
+      dataSrc: function (json) {
+        // Si no hay datos, muestra swal y evita error
+        if (!json.status) {
+          Swal.fire({
+            icon: "info",
+            title: "Sin registros",
+            text: json.msg,
+          });
+          return []; // Retornar arreglo vacío para que DataTables no falle
+        }
+        return json.data;
+      },
     },
     columnDefs: [
       {
@@ -75,6 +87,10 @@ document.addEventListener("DOMContentLoaded", function () {
     bDestroy: true,
     iDisplayLength: 5, // cantidad de registros por página
     order: [[0, "desc"]],
+    language: {
+  url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json",
+},
+
   });
 
   $(document).on("input", ".factura", function () {

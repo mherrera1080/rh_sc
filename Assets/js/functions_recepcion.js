@@ -1,10 +1,28 @@
 let tableContraseña;
 
 document.addEventListener("DOMContentLoaded", function () {
+  let permisosMod = permisos[3] || {
+    acceder: 0,
+    crear: 0,
+    editar: 0,
+    eliminar: 0,
+  };
   // Tabla principal con datos AJAX
   tableContraseña = $("#tableContraseña").DataTable({
     ajax: {
-      url: base_url + "/Contraseñas/registroContra",
+      url: base_url + "/Contraseñas/contraseñasRecepcion",
+      dataSrc: function (json) {
+        // Si no hay datos, muestra swal y evita error
+        if (!json.status) {
+          Swal.fire({
+            icon: "info",
+            title: "Sin registros",
+            text: json.msg,
+          });
+          return []; // Retornar arreglo vacío para que DataTables no falle
+        }
+        return json.data;
+      },
     },
     autoWidth: false,
     colReorder: true,
@@ -33,6 +51,8 @@ document.addEventListener("DOMContentLoaded", function () {
             html = '<span class="badge badge-success">VALIDADO</span>';
           } else if (data.includes("corregir")) {
             html = '<span class="badge badge-danger">CORREGIR</span>';
+          } else if (data.includes("corregido")) {
+            html = '<span class="badge badge-info">CORREGIDO</span>';
           } else if (data.includes("descartado")) {
             html = '<span class="badge badge-danger">DESCARTADO</span>';
           }
@@ -42,8 +62,11 @@ document.addEventListener("DOMContentLoaded", function () {
       {
         data: "estado",
         render: function (data, type, row) {
-          if (data && data.trim().includes("Pendiente")) {
-            html = `
+          let html = "";
+
+          if (permisosMod.editar == 1) {
+            if (data && data.trim().includes("Pendiente")) {
+              html = `
           <button class="btn btn-primary btn-round ms-auto update-btn" 
                   data-bs-toggle="modal" 
                   data-id="${row.contraseña}"
@@ -54,27 +77,32 @@ document.addEventListener("DOMContentLoaded", function () {
                   onclick="window.open('${base_url}/Contraseñas/generarContraseña/${row.contraseña}', '_blank')">
             <i class="far fa-file-pdf"></i>
           </button>`;
-          } else if (data && data.trim().includes("Corregir")) {
-            html = `
+            } else if (data && data.trim().includes("Corregir")) {
+              html = `
           <button class="btn btn-danger correccion-btn" data-bs-toggle="modal" data-id="${row.contraseña}"
           data-bs-target="#correccionContraseñaModal">
             <i class="fas fa-chalkboard-teacher"></i>
           </button>`;
-          } else if (data && data.trim().includes("Corregido")) {
-            html = `
+            } else if (data && data.trim().includes("Corregido")) {
+              html = `
           <button class="btn btn-danger btn-pdf btn-round ms-auto" 
                   onclick="window.open('${base_url}/Contraseñas/generarContraseña/${row.contraseña}', '_blank')">
             <i class="far fa-file-pdf"></i>
           </button>`;
-          } else if (data && data.trim().includes("Validado")) {
-            html = `
+            } else if (data && data.trim().includes("Validado")) {
+              html = `
           <button class="btn btn-danger btn-pdf btn-round ms-auto" 
                   onclick="window.open('${base_url}/Contraseñas/generarContraseña/${row.contraseña}', '_blank')">
             <i class="far fa-file-pdf"></i>
           </button>`;
+            }
           } else {
-            html = ``;
+            html += `
+            <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+              <i class="fas fa-pencil-square"></i>
+            </button>`;
           }
+
           return html;
         },
       },
@@ -99,6 +127,9 @@ document.addEventListener("DOMContentLoaded", function () {
         className: "btn btn-secondary btn-sm rounded fw-bold text-white",
       },
     ],
+    language: {
+      url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json",
+    },
   });
 
   $(document).on("click", ".btn-password", function () {
@@ -292,7 +323,9 @@ document.addEventListener("DOMContentLoaded", function () {
               confirmButtonText: "Entendido",
             }).then((result) => {
               if (result.isConfirmed) {
-                location.reload();
+                // Recargar la página al presionar "Aceptar"
+                submitButton.disabled = false;
+                spinner.classList.add("d-none");
               }
             });
           }
@@ -421,6 +454,7 @@ document.addEventListener("DOMContentLoaded", function () {
     $("#c_fecha_registro").val(data.fecha_registro);
     $("#c_id_proveedor").val(data.id_proveedor);
     $("#c_area").val(data.area);
+    $("#c_area_dos").val(data.area);
     $("#c_fecha_pago").val(data.fecha_pago);
     $("#c_correcciones").val(data.correcciones);
 

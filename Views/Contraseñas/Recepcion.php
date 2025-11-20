@@ -24,17 +24,19 @@
                 <div class="card-header">
                     <div class="d-flex align-items-center">
                         <h4 class="card-title">Contraseñas</h4>
-                        <button class="btn btn-primary btn-round ms-auto btn-password" data-bs-toggle="modal"
-                            data-bs-target="#setContraseñaModal">
-                            <i class="fa fa-plus"></i>
-                            Añadir Contraseña
-                        </button>
+                            <button class="btn btn-primary btn-round ms-auto btn-password" data-bs-toggle="modal"
+                                data-bs-target="#setContraseñaModal">
+                                <i class="fa fa-plus"></i>
+                                Añadir Contraseña
+                            </button>
+
+
                     </div>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
                         <table id="tableContraseña" class="display table table-striped table-hover">
-                            <thead>
+                            <thead class="table-light">
                                 <tr>
                                     <th>ID</th>
                                     <th>Contraseña</th>
@@ -65,7 +67,8 @@
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <form id="setContraseña">
-                <input type="hidden" id="realizador" name="realizador" value="<?= $_SESSION['PersonalData']['nombre_completo'] ?>">
+                <input type="hidden" id="realizador" name="realizador"
+                    value="<?= $_SESSION['PersonalData']['nombre_completo'] ?>">
                 <div class="modal-header ">
                     <h5 class="modal-title" id="setUserModalLabel">Crear Contraseña</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -291,6 +294,8 @@
                                 <label class="form-label">Area</label>
                                 <select class="form-select" id="c_area" disabled>
                                 </select>
+                                <input type="hidden" class="form-control" id="c_area_dos" name="area">
+
                             </div>
                             <div class="col-md-5 mb-3">
                                 <label class="form-label">Proveedor</label>
@@ -358,3 +363,8 @@
         </div>
     </div>
 </div>
+
+<script>
+    let role_id = <?= json_encode($_SESSION['rol_usuario'] ?? 0); ?>;
+    let permisos = <?= json_encode($_SESSION['permisos'] ?? []); ?>;
+</script>
