@@ -323,7 +323,7 @@ class SolicitudFondos extends Controllers
                 return;
             }
 
-            $id_grupo = $grupo[0]['id_grupo']; // ✅ primer registro
+            $id_grupo = $grupo['id_grupo']; // ✅ primer registro
             $firmas = $this->model->getFirmas((int) $id_grupo);
             $ruta_pdf = 'Views/Template/PDF/Solicitud_Fondos.php';
             $arrData['contraseña'] = $informe;

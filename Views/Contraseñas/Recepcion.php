@@ -24,13 +24,13 @@
                 <div class="card-header">
                     <div class="d-flex align-items-center">
                         <h4 class="card-title">Contraseñas</h4>
+                        <?php if (!empty($_SESSION['permisos'][RECEPCION]['crear'])) { ?>
                             <button class="btn btn-primary btn-round ms-auto btn-password" data-bs-toggle="modal"
                                 data-bs-target="#setContraseñaModal">
                                 <i class="fa fa-plus"></i>
                                 Añadir Contraseña
                             </button>
-
-
+                        <?php } ?>
                     </div>
                 </div>
                 <div class="card-body">

@@ -17,30 +17,16 @@
                     <?php $_SESSION['PersonalData']['area'] ?>
                     <div class="ms-auto d-flex align-items-center gap-2">
 
-                        <?php if ($data['facturas']['estado'] === "Pendiente" || $data['facturas']['estado'] === "Corregido") { ?>
+                        <?php if ($data['facturas']['estado'] === "Validado Area" && $_SESSION['PersonalData']['area'] == 4) { ?>
                             <button class="btn btn-success btn-round ms-auto btn-password" id="btnValidar"
-                                data-bs-toggle="modal" data-bs-target="#validarModal"
+                                data-bs-toggle="modal" data-bs-target="#validarConta"
                                 data-id="<?= $data['facturas']['contraseña']; ?>">
-                                <i class="fas fa-check"></i> Validacion
-                            </button>
-                            <button class="btn btn-secondary btn-round ms-auto btn-corregir" id="btnCorregir"
-                                data-bs-toggle="modal" data-bs-target="#regresarModal"
-                                data-id="<?= $data['facturas']['contraseña']; ?>">
-                                <i class="fas fa-ban"></i> Corregir
-                            </button>
-                        <?php } ?>
-
-
-                        <?php if ($data['facturas']['estado'] === "Validado Conta") { ?>
-                            <button class="btn btn-success btn-round ms-auto btn-password" id="btnValidar"
-                                data-bs-toggle="modal" data-bs-target="#solicitarFondos"
-                                data-id="<?= $data['facturas']['contraseña']; ?>">
-                                <i class="fas fa-check"></i> Solicitar Fondos
+                                <i class="fas fa-check"></i> Validar Contraseña
                             </button>
                             <button class="btn btn-danger btn-round ms-auto btn-corregir" id="btnCorregir"
-                                data-bs-toggle="modal" data-bs-target="#descartarModal"
+                                data-bs-toggle="modal" data-bs-target="#corregirModal"
                                 data-id="<?= $data['facturas']['contraseña']; ?>">
-                                <i class="fas fa-ban"></i> Descartar
+                                <i class="fas fa-ban"></i> Regresar
                             </button>
                             <?php if ($data['facturas']['anticipo'] != null) { ?>
                                 <button class="btn-warning-circle ms-auto" id="btnValidar" data-bs-toggle="modal"
@@ -50,7 +36,6 @@
                                 </button>
                             <?php } ?>
                         <?php } ?>
-
 
                     </div>
                 </div>

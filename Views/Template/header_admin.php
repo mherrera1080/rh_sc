@@ -106,7 +106,7 @@
 									<span class="sidebar-mini-icon">
 										<i class="fa fa-ellipsis-h"></i>
 									</span>
-									<h4 class="text-section">Contraseñas -
+									<h4 class="text-section">Area -
 										<?= $_SESSION['PersonalData']['nombre_area'] ?? "N/A" ?>
 									</h4>
 								</li>
@@ -134,6 +134,39 @@
 
 						<?php } ?>
 
+						<?php if (!empty($_SESSION['permisos'][CONTRASEÑAS]['acceder'])) { ?>
+							<ul class="nav nav-primary">
+								<li class="nav-section">
+									<span class="sidebar-mini-icon">
+										<i class="fa fa-ellipsis-h"></i>
+									</span>
+									<h4 class="text-section">Aprobacion Contabilidad
+									</h4>
+								</li>
+								<li class="nav-item">
+									<a href="<?= base_url(); ?>/Contabilidad/Contraseñas">
+										<i class="fas fa-file-contract"></i>
+										<p>Contraseñas</p>
+										<!-- <span class="badge badge-secondary">1</span> -->
+									</a>
+								</li>
+								<li class="nav-item">
+									<a href="<?= base_url(); ?>/Contabilidad/Facturas">
+										<i class="fas fa-file-contract"></i>
+										<p>Facturas</p>
+										<!-- <span class="badge badge-secondary">1</span> -->
+									</a>
+								</li>
+								<li class="nav-item">
+									<a href="<?= base_url(); ?>/Contabilidad/SolicitudFondos">
+										<i class="fas fa-file-contract"></i>
+										<p>Solitud de Fondos</p>
+									</a>
+								</li>
+							</ul>
+
+						<?php } ?>
+
 						<?php if (!empty($_SESSION['permisos'][VEHICULOS]['acceder'])) { ?>
 							<li class="nav-section">
 								<span class="sidebar-mini-icon">
@@ -147,6 +180,19 @@
 									<p>Contraseñas</p>
 								</a>
 							</li>
+							<li class="nav-item">
+									<a href="<?= base_url(); ?>/Contabilidad/Facturas">
+										<i class="fas fa-file-contract"></i>
+										<p>Facturas</p>
+										<!-- <span class="badge badge-secondary">1</span> -->
+									</a>
+								</li>
+								<li class="nav-item">
+									<a href="<?= base_url(); ?>/Contabilidad/SolicitudFondos">
+										<i class="fas fa-file-contract"></i>
+										<p>Solitud de Fondos</p>
+									</a>
+								</li>
 						<?php } ?>
 
 

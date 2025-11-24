@@ -19,10 +19,15 @@
         </div>
         <!-- Botón de agregar -->
         <div>
-            <button class="btn btn-primary  shadow-sm d-flex align-items-center" data-bs-toggle="modal"
-                data-bs-target="#modalNuevaArea">
-                <i class="fas fa-plus me-2"></i> Nueva Área
-            </button>
+            <?php if (!empty($_SESSION['permisos'][AREAS]['crear'])) { ?>
+                <button class="btn btn-primary  shadow-sm d-flex align-items-center" data-bs-toggle="modal"
+                    data-bs-target="#modalNuevaArea">
+                    <i class="fas fa-plus me-2"></i> Nueva Área
+                </button>
+            <?php } ?>
+
+
+
         </div>
     </div>
 

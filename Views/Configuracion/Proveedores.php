@@ -19,10 +19,13 @@
     </div>
     <!-- Botón agregar -->
     <div>
-      <button class="btn btn-primary shadow-sm d-flex align-items-center" id="btnNuevoProveedor" data-bs-toggle="modal"
+      <?php if (!empty($_SESSION['permisos'][PROVEEDORES]['crear'])) { ?>
+<button class="btn btn-primary shadow-sm d-flex align-items-center" id="btnNuevoProveedor" data-bs-toggle="modal"
         data-bs-target="#modalNuevoProveedor">
         <i class="fas fa-plus me-2"></i> Nuevo Proveedor
       </button>
+            <?php } ?>
+      
     </div>
   </div>
 

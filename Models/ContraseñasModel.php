@@ -32,7 +32,7 @@ class ContraseñasModel extends Mysql
     public function selectContras()
     {
         $area = intval($_SESSION['PersonalData']['area']);
-        $where = ($area == 4) ? "" : "WHERE tc.area = $area";
+        // $where = ($area == 4) ? "" : "";
 
         $sql = "SELECT
             tc.id_contraseña,
@@ -49,7 +49,7 @@ class ContraseñasModel extends Mysql
         INNER JOIN tb_proveedor tp ON tc.id_proveedor = tp.id_proveedor
         INNER JOIN tb_areas ta ON tc.area = ta.id_area
         INNER JOIN tb_detalles td ON tc.contraseña = td.contraseña
-        $where
+        WHERE tc.area = $area
         GROUP BY tc.id_contraseña";
 
         return $this->select_all($sql);

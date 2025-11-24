@@ -19,10 +19,13 @@
             </ul>
         </div>
         <div>
-            <button class="btn btn-primary shadow-sm" type="button" data-bs-toggle="modal"
+            <?php if (!empty($_SESSION['permisos'][FIRMAS]['crear'])) { ?>
+<button class="btn btn-primary shadow-sm" type="button" data-bs-toggle="modal"
                 data-bs-target="#modalGrupoFirmas">
                 <i class="fas fa-plus me-1"></i> Nuevo Grupo de Firmas
             </button>
+            <?php } ?>
+            
         </div>
     </div>
 

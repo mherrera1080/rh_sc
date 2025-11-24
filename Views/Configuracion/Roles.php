@@ -19,10 +19,13 @@
         </div>
         <!-- Botón de agregar -->
         <div>
-            <button class="btn btn-primary  shadow-sm d-flex align-items-center" data-bs-toggle="modal"
+            <?php if (!empty($_SESSION['permisos'][ROLES]['crear'])) { ?>
+<button class="btn btn-primary  shadow-sm d-flex align-items-center" data-bs-toggle="modal"
                 data-bs-target="#modalnuevoRol">
                 <i class="fas fa-plus me-2"></i> Agregar Rol
             </button>
+            <?php } ?>
+            
         </div>
     </div>
     <div class="row">

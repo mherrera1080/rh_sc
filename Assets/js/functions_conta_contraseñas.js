@@ -1,16 +1,10 @@
 let tableContraseña;
 
 document.addEventListener("DOMContentLoaded", function () {
-  let permisosMod = permisos[2] || {
-    acceder: 0,
-    crear: 0,
-    editar: 0,
-    eliminar: 0,
-  };
   // Tabla principal con datos AJAX
   tableContraseña = $("#tableContraseña").DataTable({
     ajax: {
-      url: base_url + "/Contraseñas/contraseñasRecepcion",
+      url: base_url + "/Contabilidad/registroContra",
       dataSrc: function (json) {
         // Si no hay datos, muestra swal y evita error
         if (!json.status) {
@@ -29,17 +23,17 @@ document.addEventListener("DOMContentLoaded", function () {
     columns: [
       {
         data: null,
+        title: "#",
         render: function (data, type, row, meta) {
-          // Mostrar el número de ítem (índice + 1)
-          return meta.row + 1;
+          return meta.row + 1; // contador
         },
       },
-      { data: "contraseña" },
-      { data: "area" },
-      { data: "fecha_registro" },
-      { data: "proveedor" },
-      { data: "monto_total" },
-      { data: "fecha_pago" },
+      { data: "contraseña", title: "Contraseña" },
+      { data: "area", title: "Área" },
+      { data: "fecha_registro", title: "Registro" },
+      { data: "proveedor", title: "Proveedor" },
+      { data: "monto_total", title: "Total" },
+      { data: "fecha_pago", title: "Fecha Pago" },
       {
         data: "estado",
         render: function (data, type, row, meta) {
@@ -60,50 +54,12 @@ document.addEventListener("DOMContentLoaded", function () {
         },
       },
       {
-        data: "estado",
-        render: function (data, type, row) {
-          let html = "";
-
-          if (permisosMod.editar == 1) {
-            if (data && data.trim().includes("Pendiente")) {
-              html = `
-          <button class="btn btn-primary btn-round ms-auto update-btn" 
-                  data-bs-toggle="modal" 
-                  data-id="${row.contraseña}"
-                  data-bs-target="#setContraseñaEditModal">
-            <i class="fa fa-plus"></i>
-          </button>
-          <button class="btn btn-danger btn-pdf btn-round ms-auto" 
-                  onclick="window.open('${base_url}/Contraseñas/generarContraseña/${row.contraseña}', '_blank')">
-            <i class="far fa-file-pdf"></i>
-          </button>`;
-            } else if (data && data.trim().includes("Corregir")) {
-              html = `
-          <button class="btn btn-danger correccion-btn" data-bs-toggle="modal" data-id="${row.contraseña}"
-          data-bs-target="#correccionContraseñaModal">
-            <i class="fas fa-chalkboard-teacher"></i>
-          </button>`;
-            } else if (data && data.trim().includes("Corregido")) {
-              html = `
-          <button class="btn btn-danger btn-pdf btn-round ms-auto" 
-                  onclick="window.open('${base_url}/Contraseñas/generarContraseña/${row.contraseña}', '_blank')">
-            <i class="far fa-file-pdf"></i>
-          </button>`;
-            } else if (data && data.trim().includes("Validado")) {
-              html = `
-          <button class="btn btn-danger btn-pdf btn-round ms-auto" 
-                  onclick="window.open('${base_url}/Contraseñas/generarContraseña/${row.contraseña}', '_blank')">
-            <i class="far fa-file-pdf"></i>
-          </button>`;
-            }
-          } else {
-            html += `
-            <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#exampleModal">
-              <i class="fas fa-pencil-square"></i>
-            </button>`;
-          }
-
-          return html;
+        title: "Acciones",
+        data: "contraseña",
+        render: function (data) {
+          return `<button class="btn btn-info btn-sm" onclick="window.location.href='${base_url}/Contabilidad/Detalles/${data}'">
+                      <i class="fas fa-archive"></i>
+                    </button>`;
         },
       },
     ],
@@ -315,6 +271,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 location.reload();
               }
             });
+            $("#setContraseñaModal").modal("hide");
+            tableContraseña.ajax.reload();
           } else {
             Swal.fire({
               title: "Advertencia",
@@ -336,13 +294,8 @@ document.addEventListener("DOMContentLoaded", function () {
             text: "Ocurrió un problema al procesar la solicitud.",
             icon: "error",
             confirmButtonText: "Entendido",
-          }).then((result) => {
-            if (result.isConfirmed) {
-              // Recargar la página al presionar "Aceptar"
-              submitButton.disabled = false;
-              spinner.classList.add("d-none");
-            }
           });
+          console.error("Error:", error);
         });
     });
 
@@ -454,7 +407,6 @@ document.addEventListener("DOMContentLoaded", function () {
     $("#c_fecha_registro").val(data.fecha_registro);
     $("#c_id_proveedor").val(data.id_proveedor);
     $("#c_area").val(data.area);
-    $("#c_area_dos").val(data.area);
     $("#c_fecha_pago").val(data.fecha_pago);
     $("#c_correcciones").val(data.correcciones);
 

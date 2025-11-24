@@ -18,11 +18,14 @@
             </ul>
         </div>
         <div>
-            <button class="btn btn-primary  shadow-sm d-flex align-items-center" data-bs-toggle="modal"
-                data-bs-target="#setUserModal">
-                <i class="fa fa-plus"></i>
-                Agregar Usuario
-            </button>
+            <?php if (!empty($_SESSION['permisos'][USUARIOS]['crear'])) { ?>
+                <button class="btn btn-primary  shadow-sm d-flex align-items-center" data-bs-toggle="modal"
+                    data-bs-target="#setUserModal">
+                    <i class="fa fa-plus"></i>
+                    Agregar Usuario
+                </button>
+            <?php } ?>
+
         </div>
 
     </div>
