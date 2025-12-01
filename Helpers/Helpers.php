@@ -100,12 +100,27 @@ function sessionStart()
     $_SESSION['timeout'] = time();
 }
 
+function log_Actividad($no_empleado, $empleado, $modulo, $accion)
+{
+    require_once("Models/ConfiguracionModel.php");
+    $model = new ConfiguracionModel();
+
+    // Datos automáticos
+    $ip = $_SERVER['REMOTE_ADDR'] ?? 'desconocida';
+    $hostname = gethostbyaddr($ip);
+    $fecha = date('Y-m-d H:i:s');
+
+    // Guardar
+    $model->registroActividad($no_empleado, $empleado, $modulo, $accion, $fecha, $ip, $hostname);
+}
+
+
 function getPermisos(int $modulo_id)
 {
     require_once("Models/ConfiguracionModel.php");
     $objPermisos = new ConfiguracionModel();
     if (!empty($_SESSION['PersonalData'])) {
-        $role_id = $_SESSION['PersonalData']['rol_usuario']; 
+        $role_id = $_SESSION['PersonalData']['rol_usuario'];
         $arrPermisos = $objPermisos->permisosModulo($role_id);
         $permisos = '';
         $permisosMod = '';

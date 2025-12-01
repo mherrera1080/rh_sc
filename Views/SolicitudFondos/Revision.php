@@ -30,14 +30,6 @@
                                     onclick="window.open('<?= base_url() ?>/SolicitudFondos/generarSolicitud/<?= $data['facturas']['contraseña']; ?>', '_blank')">
                                     <i class="far fa-file-pdf"></i> PDF
                                 </button>
-                            <?php } else if ($data['facturas']['solicitud_estado'] === "Validado Area" && $_SESSION['PersonalData']['area'] == 4) { ?>
-                                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#finalizarModal">
-                                        <i class="fas fa-check"></i> Pagar
-                                    </button>
-                                    <button class="btn btn-danger btn-sm"
-                                        onclick="window.open('<?= base_url() ?>/SolicitudFondos/generarSolicitud/<?= $data['facturas']['contraseña']; ?>', '_blank')">
-                                        <i class="far fa-file-pdf"></i> PDF
-                                    </button>
                             <?php } ?>
                         <?php } else if ($data['facturas']['area_id'] == 2) { ?>
                             <?php if ($data['facturas']['solicitud_estado'] === "Pendiente" && $_SESSION['PersonalData']['area'] == 4) { ?>
@@ -48,14 +40,6 @@
                                         onclick="window.open('<?= base_url() ?>/SolicitudFondos/generarSolicitud/<?= $data['facturas']['contraseña']; ?>', '_blank')">
                                         <i class="far fa-file-pdf"></i> PDF
                                     </button>
-                            <?php } else if ($data['facturas']['solicitud_estado'] === "Validado Conta" && $_SESSION['PersonalData']['area'] == 4) { ?>
-                                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#finalizarModal">
-                                            <i class="fas fa-check"></i> Pagar
-                                        </button>
-                                        <button class="btn btn-danger btn-sm"
-                                            onclick="window.open('<?= base_url() ?>/SolicitudFondos/generarSolicitud/<?= $data['facturas']['contraseña']; ?>', '_blank')">
-                                            <i class="far fa-file-pdf"></i> PDF
-                                        </button>
                             <?php } ?>
                         <?php } ?>
                     </div>
@@ -213,6 +197,16 @@
                                     <label for="fecha_pago" class="form-label">Fecha Pago</label>
                                     <input type="date" class="form-control btn-input"
                                         value="<?= $data['facturas']['fecha_pago'] ?? ''; ?>" disabled>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="mb-4">
+                                <h6 class="fw-bold text-dark mb-3">Comentario de Revision</h6>
+                                <div class="row">
+                                    <div class="col-12 mb-3">
+                                        <textarea class="form-control" name="observacion" rows="4"
+                                            placeholder="Escribe aquí tus observaciones..."></textarea>
+                                    </div>
                                 </div>
                             </div>
                         </div>

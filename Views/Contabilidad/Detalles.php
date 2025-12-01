@@ -37,6 +37,26 @@
                             <?php } ?>
                         <?php } ?>
 
+                        <?php if ($data['facturas']['estado'] === "Validado Conta") { ?>
+                            <button class="btn btn-success btn-round ms-auto btn-password" id="btnValidar"
+                                data-bs-toggle="modal" data-bs-target="#solicitarFondos"
+                                data-id="<?= $data['facturas']['contraseña']; ?>">
+                                <i class="fas fa-check"></i> Solicitar Fondos
+                            </button>
+                            <button class="btn btn-danger btn-round ms-auto btn-corregir" id="btnCorregir"
+                                data-bs-toggle="modal" data-bs-target="#descartarModal"
+                                data-id="<?= $data['facturas']['contraseña']; ?>">
+                                <i class="fas fa-ban"></i> Descartar
+                            </button>
+                            <?php if ($data['facturas']['anticipo'] != null) { ?>
+                                <button class="btn-warning-circle ms-auto" id="btnValidar" data-bs-toggle="modal"
+                                    data-bs-target="#anticipoModal" data-id="<?= $data['facturas']['contraseña']; ?>"
+                                    title="Solicitar Fondos">
+                                    <i class="fas fa-exclamation"></i>
+                                </button>
+                            <?php } ?>
+                        <?php } ?>
+
                     </div>
                 </div>
                 <div class="card-body">

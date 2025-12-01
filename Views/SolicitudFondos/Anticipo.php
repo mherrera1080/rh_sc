@@ -10,13 +10,13 @@
                         <h2 class="mb-1 fs-4 fw-bold">Solicitud de Fondos sin contraseña</h2>
                     </div>
                     <div class="d-flex gap-2">
+                                                    <button class="btn btn-danger btn-sm"
+                                onclick="window.open('<?= base_url() ?>/SolicitudFondos/generarAnticipo/<?= $data['facturas']['id_solicitud']; ?>', '_blank')">
+                                <i class="far fa-file-pdf"></i> PDF
+                            </button>
                         <?php if ($data['facturas']['solicitud_estado'] === "Pendiente" && $_SESSION['PersonalData']['area'] == 4 || $data['facturas']['solicitud_estado'] === "Corregido" && $_SESSION['PersonalData']['area'] == 4 ) { ?>
                             <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#finalizarModal">
                                 <i class="fas fa-check"></i> Pagar
-                            </button>
-                            <button class="btn btn-danger btn-sm"
-                                onclick="window.open('<?= base_url() ?>/SolicitudFondos/generarAnticipo/<?= $data['facturas']['id_solicitud']; ?>', '_blank')">
-                                <i class="far fa-file-pdf"></i> PDF
                             </button>
                         <?php } else if ($data['facturas']['solicitud_estado'] === "Corregir") { ?>
                                 <button type="button" class="btn btn-primary m-0 d-flex justify-content-left btnFacturaEditar"
@@ -131,7 +131,7 @@
                                 <div class="col-md-3 mb-3">
                                     <label class="form-label">Monto Total</label>
                                     <input type="text" class="form-control"
-                                        value="<?= $data['facturas']['total_calc'] ?? 'N/A'; ?>" disabled>
+                                        value="<?= $data['facturas']['total'] ?? 'N/A'; ?>" disabled>
                                 </div>
                                 <div class="col-md-3 mb-3">
                                     <label class="form-label">Área</label>

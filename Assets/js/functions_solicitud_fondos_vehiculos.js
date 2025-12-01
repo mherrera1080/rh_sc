@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // Tabla principal con datos AJAX
   tableSolicitudes = $("#tableSolicitudes").DataTable({
     ajax: {
-      url: base_url + "/SolicitudFondos/getSolucitudesFondos",
+      url: base_url + "/SolicitudFondos/getSolucitudesFondosVehiculos",
       dataSrc: function (json) {
         // Si no hay datos, muestra swal y evita error
         if (!json.status) {
@@ -60,7 +60,7 @@ document.addEventListener("DOMContentLoaded", function () {
             html = '<span class="badge badge-danger">CORREGIR</span>';
           } else if (data.includes("descartado")) {
             html = '<span class="badge badge-danger">DESCARTADO</span>';
-          }
+          } 
           return html;
         },
       },

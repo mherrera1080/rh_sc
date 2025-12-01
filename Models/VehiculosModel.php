@@ -29,6 +29,35 @@ class VehiculosModel extends Mysql
         return $request;
     }
 
+        public function selectDetalles()
+    {
+
+        $sql = "SELECT 
+        tc.id_detalle,
+        tc.contraseña,
+        tc.no_factura,
+        tc.registro_ax,
+        tc.bien_servicio,
+        tc.valor_documento,
+        tc.isr_valor,
+        tc.iva_valor,
+        tc.iva,
+        tc.isr,
+        tc.reten_iva,
+        tc.base,
+        tc.total,
+        tc.fecha_registro,
+        tc.observacion,
+        tc.estado,
+        ta.nombre_area as area
+        FROM tb_detalles tc
+        INNER JOIN tb_contraseña td ON tc.contraseña = td.contraseña
+        INNER JOIN tb_areas ta ON td.area = ta.id_area
+        WHERE td.area = 2";
+
+        return $this->select_all($sql);
+    }
+
     public function getContraseña($contraseña)
     {
 

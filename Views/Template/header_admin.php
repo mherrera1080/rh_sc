@@ -6,8 +6,6 @@
 	<title><?= $data['page_title']; ?></title>
 	<meta content='width=device-width, initial-scale=1.0, shrink-to-fit=no' name='viewport' />
 	<link rel="icon" href="<?= media(); ?>/img/kaiadmin/favicon.ico" type="image/x-icon" />
-
-	<!-- Fonts and icons -->
 	<script src="<?= media(); ?>/js/plugin/webfont/webfont.min.js"></script>
 	<script>
 		WebFont.load({
@@ -18,17 +16,12 @@
 			}
 		});
 	</script>
-
-	<!-- CSS Files -->
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-
-
 	<link rel="stylesheet" href="<?= media(); ?>/css/plugins.min.css">
 	<link rel="stylesheet" href="<?= media(); ?>/css/kaiadmin.min.css">
 	<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
 	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-
 </head>
 
 <body>
@@ -53,30 +46,24 @@
 					<button class="topbar-toggler more">
 						<i class="gg-more-vertical-alt"></i>
 					</button>
-
 				</div>
 				<!-- End Logo Header -->
 			</div>
 			<div class="sidebar-wrapper scrollbar scrollbar-inner">
 				<div class="sidebar-content">
 					<ul class="nav nav-secondary">
-						<li class="nav-item active">
-							<a data-bs-toggle="collapse" href="#dashboard" class="collapsed" aria-expanded="false">
+						<li class="nav-item">
+							<a href="<?= base_url(); ?>/Dashboard">
 								<i class="fas fa-home"></i>
 								<p>Dashboard</p>
-								<span class="caret"></span>
 							</a>
-							<div class="collapse" id="dashboard">
-								<ul class="nav nav-collapse">
-									<li>
-										<a href="<?= base_url(); ?>/Contraseñas">
-											<span class="sub-item">Dashboard </span>
-										</a>
-									</li>
-								</ul>
-							</div>
+							<?php if (!empty($_SESSION['permisos'][REPORTES]['acceder'])) { ?>
+								<a href="<?= base_url(); ?>/Dashboard/Reportes">
+									<i class="fa-solid fa-file-export"></i>
+									<p>Reportes</p>
+								</a>
+							<?php } ?>
 						</li>
-
 						<?php if (!empty($_SESSION['permisos'][RECEPCION]['acceder'])) { ?>
 							<li class="nav-section">
 								<span class="sidebar-mini-icon">
@@ -86,21 +73,19 @@
 							</li>
 							<li class="nav-item">
 								<a href="<?= base_url(); ?>/Contraseñas/Recepcion">
-									<i class="fas fa-file-contract"></i>
+									<i class="fa-solid fa-file-circle-plus"></i>
 									<p>Contraseñas</p>
-									<!-- <span class="badge badge-secondary">1</span> -->
 								</a>
 							</li>
 							<li class="nav-item">
 								<a href="<?= base_url(); ?>/Contraseñas/Facturas">
-									<i class="fas fa-file-contract"></i>
+									<i class="fa-solid fa-file-invoice-dollar"></i>
 									<p>Facturas</p>
-									<!-- <span class="badge badge-secondary">1</span> -->
 								</a>
 							</li>
 						<?php } ?>
 
-						<?php if (!empty($_SESSION['permisos'][CONTRASEÑAS]['acceder'])) { ?>
+						<?php if (!empty($_SESSION['permisos'][AREAS]['acceder'])) { ?>
 							<ul class="nav nav-primary">
 								<li class="nav-section">
 									<span class="sidebar-mini-icon">
@@ -112,29 +97,27 @@
 								</li>
 								<li class="nav-item">
 									<a href="<?= base_url(); ?>/Contraseñas">
-										<i class="fas fa-file-contract"></i>
+										<i class="fa-solid fa-people-arrows"></i>
 										<p>Contraseñas</p>
-										<!-- <span class="badge badge-secondary">1</span> -->
 									</a>
 								</li>
 								<li class="nav-item">
 									<a href="<?= base_url(); ?>/Contraseñas/Facturas">
-										<i class="fas fa-file-contract"></i>
+										<i class="fa-solid fa-file-invoice-dollar"></i>
 										<p>Facturas</p>
-										<!-- <span class="badge badge-secondary">1</span> -->
 									</a>
 								</li>
 								<li class="nav-item">
 									<a href="<?= base_url(); ?>/SolicitudFondos">
-										<i class="fas fa-file-contract"></i>
-										<p>Solitud de Fondos</p>
+										<i class="fa-solid fa-hand-holding-dollar"></i>
+										<p>Anticipos</p>
 									</a>
 								</li>
 							</ul>
 
 						<?php } ?>
 
-						<?php if (!empty($_SESSION['permisos'][CONTRASEÑAS]['acceder'])) { ?>
+						<?php if (!empty($_SESSION['permisos'][CONTABILIDAD]['acceder'])) { ?>
 							<ul class="nav nav-primary">
 								<li class="nav-section">
 									<span class="sidebar-mini-icon">
@@ -145,21 +128,20 @@
 								</li>
 								<li class="nav-item">
 									<a href="<?= base_url(); ?>/Contabilidad/Contraseñas">
-										<i class="fas fa-file-contract"></i>
+										<i class="fa-solid fa-user-check"></i>
 										<p>Contraseñas</p>
-										<!-- <span class="badge badge-secondary">1</span> -->
+
 									</a>
 								</li>
 								<li class="nav-item">
 									<a href="<?= base_url(); ?>/Contabilidad/Facturas">
-										<i class="fas fa-file-contract"></i>
+										<i class="fa-solid fa-file-invoice-dollar"></i>
 										<p>Facturas</p>
-										<!-- <span class="badge badge-secondary">1</span> -->
 									</a>
 								</li>
 								<li class="nav-item">
-									<a href="<?= base_url(); ?>/Contabilidad/SolicitudFondos">
-										<i class="fas fa-file-contract"></i>
+									<a href="<?= base_url(); ?>/SolicitudFondos/Contabilidad">
+										<i class="fa-solid fa-hand-holding-dollar"></i>
 										<p>Solitud de Fondos</p>
 									</a>
 								</li>
@@ -181,18 +163,17 @@
 								</a>
 							</li>
 							<li class="nav-item">
-									<a href="<?= base_url(); ?>/Contabilidad/Facturas">
-										<i class="fas fa-file-contract"></i>
-										<p>Facturas</p>
-										<!-- <span class="badge badge-secondary">1</span> -->
-									</a>
-								</li>
-								<li class="nav-item">
-									<a href="<?= base_url(); ?>/Contabilidad/SolicitudFondos">
-										<i class="fas fa-file-contract"></i>
-										<p>Solitud de Fondos</p>
-									</a>
-								</li>
+								<a href="<?= base_url(); ?>/Vehiculos/Facturas">
+									<i class="fa-solid fa-file-invoice-dollar"></i>
+									<p>Facturas</p>
+								</a>
+							</li>
+							<li class="nav-item">
+								<a href="<?= base_url(); ?>/SolicitudFondos/Vehiculos">
+									<i class="fa-solid fa-hand-holding-dollar"></i>
+									<p>Solitud de Fondos</p>
+								</a>
+							</li>
 						<?php } ?>
 
 

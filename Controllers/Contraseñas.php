@@ -6,6 +6,7 @@ class Contraseñas extends Controllers
     public function __construct()
     {
         parent::__construct();
+
         if (empty($_SESSION['login'])) {
             header('Location: ' . base_url() . '/login');
             die();
@@ -14,7 +15,7 @@ class Contraseñas extends Controllers
 
     public function Contraseñas()
     {
-        $data['page_id'] = CONTRASEÑAS;
+        $data['page_id'] = CONTABILIDAD;
         $data['page_tag'] = "Contraseñas";
         $data['page_title'] = "Contraseñas";
         $data['page_name'] = "Contraseñas";
@@ -36,7 +37,7 @@ class Contraseñas extends Controllers
 
     public function Facturas()
     {
-        $data['page_id'] = CONTRASEÑAS;
+        $data['page_id'] = CONTABILIDAD;
         $data['page_tag'] = "Facturas";
         $data['page_title'] = "Facturas";
         $data['page_name'] = "Facturas";
@@ -89,8 +90,6 @@ class Contraseñas extends Controllers
     public function getFacturas($contraseña)
     {
         $arrData = $this->model->getFacturasbyContra($contraseña);
-        error_log(print_r($arrData, true));
-
         if (empty($arrData)) {
             $arrResponse = array('status' => false, 'msg' => 'No se encontraron registros previos.');
         } else {
@@ -461,6 +460,13 @@ class Contraseñas extends Controllers
                 exit;
             }
 
+            log_Actividad(
+                $_SESSION['PersonalData']['no_empleado'],
+                $_SESSION['PersonalData']['nombre_completo'],
+                "Contraseñas",
+                "Registro de contraseña"
+            );
+
             $categoria = "Contraseña";
             $arrData = [
                 'contraseña' => $this->model->getContraseña($contraseña),
@@ -638,6 +644,14 @@ class Contraseñas extends Controllers
                 exit;
             }
 
+            log_Actividad(
+                $_SESSION['PersonalData']['no_empleado'],
+                $_SESSION['PersonalData']['nombre_completo'],
+                "Contraseñas",
+                "Actualizacion de contraseña: " . $contraseña
+            );
+
+
             $arrData = [
                 'contraseña' => $this->model->getContraseña($contraseña),
             ];
@@ -673,6 +687,13 @@ class Contraseñas extends Controllers
 
             // Llamar al modelo para eliminar el detalle
             $result = $this->model->deleteDetallesFactura($contraseña, $factura);
+
+            log_Actividad(
+                $_SESSION['PersonalData']['no_empleado'],
+                $_SESSION['PersonalData']['nombre_completo'],
+                "Contraseñas",
+                "Se elimino la factura" . $factura
+            );
 
             if ($result) {
                 echo json_encode(["status" => true, "message" => "Factura eliminada correctamente."]);
@@ -720,6 +741,13 @@ class Contraseñas extends Controllers
                 ]);
                 exit;
             }
+
+            log_Actividad(
+                $_SESSION['PersonalData']['no_empleado'],
+                $_SESSION['PersonalData']['nombre_completo'],
+                "Contraseñas",
+                "Se mando a corregir la contraseña: " . $contraseña
+            );
 
             $categoria = "Contraseña";
             $arrData = [
@@ -829,6 +857,13 @@ class Contraseñas extends Controllers
                 echo json_encode(["status" => false, "message" => $errores]);
                 exit;
             }
+            
+            log_Actividad(
+                $_SESSION['PersonalData']['no_empleado'],
+                $_SESSION['PersonalData']['nombre_completo'],
+                "Contraseñas",
+                "Se corrigio la contraseña: " . $contraseña
+            );
 
             $datos = $this->model->getContraseña($contraseña);
             $id_area = $datos['id_area'];
@@ -899,6 +934,13 @@ class Contraseñas extends Controllers
                 exit;
             }
 
+            log_Actividad(
+                $_SESSION['PersonalData']['no_empleado'],
+                $_SESSION['PersonalData']['nombre_completo'],
+                "Contraseñas",
+                "Area valido la contraseña: " . $contraseña
+            );
+
             $categoria = "Contraseña";
             $arrData = [
                 'contraseña' => $this->model->getContraseña($contraseña),
@@ -954,6 +996,13 @@ class Contraseñas extends Controllers
                 ]);
                 exit;
             }
+
+            log_Actividad(
+                $_SESSION['PersonalData']['no_empleado'],
+                $_SESSION['PersonalData']['nombre_completo'],
+                "Contraseñas",
+                "Contabilidad valido la contraseña: " . $contraseña
+            );
 
             $categoria = "Contraseña";
             $arrData = [
@@ -1028,6 +1077,13 @@ class Contraseñas extends Controllers
                 exit;
             }
 
+            log_Actividad(
+                $_SESSION['PersonalData']['no_empleado'],
+                $_SESSION['PersonalData']['nombre_completo'],
+                "Solicitud Fondos",
+                "Incio una solicitud de fondos de la contraseña: " . $contraseña
+            );
+
             $categoria = "Contraseña";
             $arrData = [
                 'contraseña' => $this->model->getContraseña($contraseña),
@@ -1092,6 +1148,13 @@ class Contraseñas extends Controllers
                         ]);
                         exit;
                     }
+
+                    log_Actividad(
+                        $_SESSION['PersonalData']['no_empleado'],
+                        $_SESSION['PersonalData']['nombre_completo'],
+                        "Contraseñas",
+                        "Contraseña Descartada: " . $contraseña
+                    );
 
                     echo json_encode([
                         "status" => true,

@@ -213,7 +213,7 @@ class PDF extends FPDF
         $this->SetXY($x, $y + 20);
 
         // Primer cuadro fijo
-        $this->Cell($ancho, 6, utf8_decode("Usuario solicitante"), "LTRB", 0, 'C');
+        $this->Cell($ancho, 6, utf8_decode($arrData['solicitante']['nombre_completo']), "LTRB", 0, 'C');
 
         // Nombres dinámicos
         foreach ($firmas as $f) {

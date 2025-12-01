@@ -23,6 +23,30 @@ class Vehiculos extends Controllers
         $this->views->getView($this, "Vehiculos", $data);
     }
 
+    public function Facturas()
+    {
+        $data['page_id'] = "Facturas";
+        $data['page_tag'] = "Facturas";
+        $data['page_title'] = "Facturas";
+        $data['page_name'] = "Facturas";
+        $data['page_functions_js'] = "functions_vehiculos_facturas.js";
+
+        $this->views->getView($this, "Facturas", $data);
+    }
+
+    public function getDetalles()
+    {
+        $arrData = $this->model->selectDetalles();
+
+        if (empty($arrData)) {
+            $arrResponse = array('status' => false, 'msg' => 'No se encontraron registros previos.');
+        } else {
+            $arrResponse = array('status' => true, 'data' => $arrData);
+        }
+        echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+        die();
+    }
+
     public function Detalles($contraseña)
     {
         $facturas = $this->model->getContraseña($contraseña);
@@ -82,6 +106,13 @@ class Vehiculos extends Controllers
                 ]);
                 exit;
             }
+
+            log_Actividad(
+                $_SESSION['PersonalData']['no_empleado'],
+                $_SESSION['PersonalData']['nombre_completo'],
+                "Vehiculos",
+                "Se valido la contraseña: " . $contraseña
+            );
 
             $datos = $this->model->getContraseña($contraseña);
             $area = $datos['id_area'];
@@ -155,11 +186,25 @@ class Vehiculos extends Controllers
                     "status" => true,
                     "message" => "Solicitud iniciada correctamente."
                 ]);
+
+                log_Actividad(
+                    $_SESSION['PersonalData']['no_empleado'],
+                    $_SESSION['PersonalData']['nombre_completo'],
+                    "Vehiculos",
+                    "Solicitud de fondos creada: " . $contraseña
+                );
             } else {
                 echo json_encode([
                     "status" => true,
                     "message" => "Contraseña descartada."
                 ]);
+
+                log_Actividad(
+                    $_SESSION['PersonalData']['no_empleado'],
+                    $_SESSION['PersonalData']['nombre_completo'],
+                    "Configuracion",
+                    "Se descarto la contraseña: " . $contraseña
+                );
             }
 
 
@@ -194,7 +239,7 @@ class Vehiculos extends Controllers
             ]);
         }
     }
-    
+
 
     // no
 }

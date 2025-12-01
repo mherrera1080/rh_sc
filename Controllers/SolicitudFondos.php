@@ -21,9 +21,60 @@ class SolicitudFondos extends Controllers
         $data['page_functions_js'] = "functions_solicitud_fondos.js";
         $this->views->getView($this, "Solicitud_Fondos", $data);
     }
+
     public function getSolucitudesFondos()
     {
         $arrData = $this->model->selectSolicitudFondos();
+
+        if (empty($arrData)) {
+            $arrResponse = array('status' => false, 'msg' => 'No se encontraron registros previos.');
+        } else {
+            $arrResponse = array('status' => true, 'data' => $arrData);
+        }
+        echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+        die();
+    }
+
+
+    public function Contabilidad()
+    {
+        $data['page_id'] = DASHBOARD;
+        $data['page_tag'] = "Solicitud_Fondos";
+        $data['page_title'] = "Solicitud_Fondos";
+        $data['page_name'] = "Solicitud_Fondos";
+        $data['page_functions_js'] = "functions_solicitud_fondos_conta.js";
+        $this->views->getView($this, "Contabilidad", $data);
+    }
+
+
+    public function getSolucitudesFondosConta()
+    {
+        $arrData = $this->model->selectSolicitudFondosConta();
+
+        if (empty($arrData)) {
+            $arrResponse = array('status' => false, 'msg' => 'No se encontraron registros previos.');
+        } else {
+            $arrResponse = array('status' => true, 'data' => $arrData);
+        }
+        echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+        die();
+    }
+
+
+    public function Vehiculos()
+    {
+        $data['page_id'] = DASHBOARD;
+        $data['page_tag'] = "Solicitud_Fondos";
+        $data['page_title'] = "Solicitud_Fondos";
+        $data['page_name'] = "Solicitud_Fondos";
+        $data['page_functions_js'] = "functions_solicitud_fondos_vehiculos.js";
+        $this->views->getView($this, "Vehiculos", $data);
+    }
+
+
+    public function getSolucitudesFondosVehiculos()
+    {
+        $arrData = $this->model->selectSolicitudFondosVehiculos();
 
         if (empty($arrData)) {
             $arrResponse = array('status' => false, 'msg' => 'No se encontraron registros previos.');
@@ -230,6 +281,12 @@ class SolicitudFondos extends Controllers
                 exit;
             }
 
+            log_Actividad(
+                $_SESSION['PersonalData']['no_empleado'],
+                $_SESSION['PersonalData']['nombre_completo'],
+                "Solicitud Fondos",
+                "Se genero el anticipo: " . $contraseña
+            );
             echo json_encode([
                 "status" => true,
                 "message" => "Anticipo Creado"
@@ -352,8 +409,18 @@ class SolicitudFondos extends Controllers
         if ($solicitud) {
             $informe = $this->model->getSolicitud($solicitud);
             $facturas = $this->model->getDetallesAnticipo($solicitud);
+            $usuario = $informe["realizador"];
+
+            $solicitante = $this->model->selectUsuario($usuario);
+
             if (empty($informe)) {
                 $arrResponse = array('status' => false, 'msg' => 'Seleccione una solicitud válida.');
+                echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+                return;
+            }
+
+            if (empty($solicitante)) {
+                $arrResponse = ['status' => false, 'msg' => 'No se encontró el solicitante'];
                 echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
                 return;
             }
@@ -425,7 +492,7 @@ class SolicitudFondos extends Controllers
             $arrData['monto_letras'] = $monto_letras;
             $arrData['grupo'] = $grupo;
             $arrData['firmas'] = $firmas;
-
+            $arrData['solicitante'] = $solicitante;
             if (empty($arrData)) {
                 $arrResponse = array('status' => false, 'msg' => 'Datos no encontrados.');
             } else {
@@ -556,12 +623,11 @@ class SolicitudFondos extends Controllers
             exit;
         }
 
-        // Recibir datos y sanitizar
         $id_solicitud = isset($_POST['id_solicitud']) ? intval($_POST['id_solicitud']) : 0;
         $area = isset($_POST['area']) ? trim($_POST['area']) : '';
         $respuesta = isset($_POST['respuesta']) ? trim($_POST['respuesta']) : '';
+        $observacion = $_POST['observacion'];
 
-        // 🔹 Validación básica de campos obligatorios
         if ($id_solicitud <= 0 || empty($respuesta)) {
             echo json_encode([
                 "status" => false,
@@ -570,7 +636,6 @@ class SolicitudFondos extends Controllers
             exit;
         }
 
-        // 🔹 Verificar si la solicitud existe antes de actualizar
         $solicitudExistente = $this->model->getContraSoli($id_solicitud);
         if (empty($solicitudExistente)) {
             echo json_encode([
@@ -580,8 +645,7 @@ class SolicitudFondos extends Controllers
             exit;
         }
 
-        // 🔹 Actualizar solicitud
-        $result = $this->model->udapteSolicitud($id_solicitud, $respuesta);
+        $result = $this->model->udapteSolicitud($id_solicitud, $respuesta, $observacion);
         if (!$result) {
             echo json_encode([
                 "status" => false,
@@ -590,7 +654,6 @@ class SolicitudFondos extends Controllers
             exit;
         }
 
-        // 🔹 Obtener la contraseña de la solicitud
         $contraseña = $solicitudExistente['contraseña'] ?? null;
         if (empty($contraseña)) {
             echo json_encode([
@@ -600,7 +663,6 @@ class SolicitudFondos extends Controllers
             exit;
         }
 
-        // 🔹 Obtener datos para el correo
         $categoria = 'Solicitud Fondos';
         $arrData = [
             'solicitud' => $this->model->getContraseña($contraseña),
@@ -608,24 +670,22 @@ class SolicitudFondos extends Controllers
             'respuesta' => $respuesta
         ];
 
-        // Validar datos del correo
-        if (empty($arrData['solicitud'])) {
-            echo json_encode([
-                "status" => false,
-                "message" => "2."
-            ]);
-            exit;
+        $contraseña = $arrData['solicitud']['contraseña'];
+
+        if ($respuesta === 'Descartado') {
+            $this->model->descartarContra($contraseña, $respuesta, $observacion);
+            $this->model->descartarDetalles($contraseña, $respuesta);
+
         }
 
         if (empty($arrData['correos'])) {
             echo json_encode([
-                "status" => false,
-                "message" => "5"
+                "status" => true,
+                "message" => "Validado sin enviar correo"
             ]);
             exit;
         }
 
-        // 🔹 Intentar enviar el correo
         $sendCorreoEmpleado = 'Views/Template/Email/sentSolicitudFondos.php';
         try {
             ob_start();
@@ -639,7 +699,6 @@ class SolicitudFondos extends Controllers
             exit;
         }
 
-        // 🔹 Respuesta final según el estado
         $mensaje = ($respuesta === 'Descartado')
             ? "Solicitud descartada y correo enviado correctamente."
             : "Solicitud validada y correo enviado correctamente.";
@@ -679,16 +738,6 @@ class SolicitudFondos extends Controllers
             exit;
         }
 
-        // 🔹 Validar tipo de respuesta permitido
-        $respuestasValidas = ['Pagado', 'Descartado'];
-        if (!in_array($respuesta, $respuestasValidas)) {
-            echo json_encode([
-                "status" => false,
-                "message" => "Tipo de respuesta no válida."
-            ]);
-            exit;
-        }
-
         // 🔹 Validaciones específicas para "Pagado"
         if ($respuesta === 'Pagado') {
             if (empty($no_transferencia) || empty($fecha_pago)) {
@@ -707,7 +756,16 @@ class SolicitudFondos extends Controllers
                 ]);
                 exit;
             }
+        }
 
+        if ($respuesta === 'Descartado') {
+            if (empty($observacion)) {
+                echo json_encode([
+                    "status" => false,
+                    "message" => "Debe ingresar un comentario de descarte."
+                ]);
+                exit;
+            }
         }
 
         // 🔹 Verificar si la solicitud existe
@@ -740,6 +798,8 @@ class SolicitudFondos extends Controllers
             exit;
         }
 
+
+
         // 🔹 Datos para el correo
         $categoria = 'Solicitud Fondos';
         $arrData = [
@@ -747,6 +807,11 @@ class SolicitudFondos extends Controllers
             'correos' => $this->model->getCorreosArea($area, $respuesta, $categoria),
             'respuesta' => $respuesta
         ];
+
+        $contraseña = $arrData['solicitud']['contraseña'];
+        $this->model->descartarContra($contraseña, $respuesta, $observacion);
+        $this->model->descartarDetalles($contraseña, $respuesta);
+
 
         // 🔹 Enviar correo con plantilla
         $sendCorreoEmpleado = 'Views/Template/Email/sentSolicitudFondos.php';
@@ -765,7 +830,14 @@ class SolicitudFondos extends Controllers
         // 🔹 Respuesta final según el estado
         $mensaje = ($respuesta === 'Descartado')
             ? "Solicitud descartada correctamente."
-            : "Solicitud pagada y correo enviado correctamente.";
+            : "Solicitud pagada correctamente.";
+
+        log_Actividad(
+            $_SESSION['PersonalData']['no_empleado'],
+            $_SESSION['PersonalData']['nombre_completo'],
+            "Configuracion",
+            $mensaje
+        );
 
         echo json_encode([
             "status" => true,
@@ -812,6 +884,13 @@ class SolicitudFondos extends Controllers
                 ]);
                 exit;
             }
+
+            log_Actividad(
+                $_SESSION['PersonalData']['no_empleado'],
+                $_SESSION['PersonalData']['nombre_completo'],
+                "Configuracion",
+                "Se reviso el anticipo: " . $contraseña
+            );
 
             if ($result) {
                 echo json_encode(["status" => true, "message" => "Factura eliminada correctamente."]);

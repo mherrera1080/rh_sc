@@ -2,7 +2,7 @@
 <div class="main p-3">
     <div class="page-header d-flex justify-content-between align-items-center">
         <div>
-            <h3 class="fw-bold mb-3">Correos</h3>
+            <h3 class="fw-bold mb-3">Configuracion de notificaciones</h3>
             <ul class="breadcrumbs mb-0">
                 <li class="nav-home">
                     <a href="<?= base_url(); ?>/Dashboard">
@@ -17,18 +17,7 @@
                 </li>
             </ul>
         </div>
-        <!-- Botón de agregar -->
-        <div>
-            <?php if (!empty($_SESSION['permisos'][EMAILS]['crear'])) { ?>
- <button class="btn btn-primary  shadow-sm d-flex align-items-center" data-bs-toggle="modal"
-                data-bs-target="#modalNuevaArea">
-                <i class="fas fa-plus me-2"></i> Nueva Grupo
-            </button>
-            <?php } ?>
-           
-        </div>
     </div>
-
     <div class="row mt-3">
         <div class="col-md-12">
             <div class="card shadow-sm border-0">
@@ -36,14 +25,7 @@
                     <div class="table-responsive">
                         <table id="tableGrupoCorreos" class="display table table-striped table-hover align-middle">
                             <thead class="table-light">
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Nombre</th>
-                                    <th>Área</th>
-                                    <th>Categoria</th>
-                                    <th>Estado</th>
-                                    <th></th>
-                                </tr>
+
                             </thead>
                             <tbody>
                                 <!-- Aquí se llenan los datos dinámicamente -->
@@ -55,124 +37,233 @@
         </div>
     </div>
 </div>
-
 <?php footerAdmin($data); ?>
 
-<!-- Modal Crear Área -->
-<div class="modal fade" id="modalNuevaArea" tabindex="-1" aria-labelledby="modalNuevaAreaLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content shadow-lg border-0">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title fw-bold" id="modalNuevaAreaLabel">
-                    <i class="fas fa-plus-circle me-2"></i> Nuevo Grupo de Correos
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                    aria-label="Cerrar"></button>
-            </div>
-            <form id="formGrupoCorreo">
-                <input type="hidden" name="id_area" value="0">
-                <input type="hidden" name="estado" value="Activo">
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="nombre_grupo" class="form-label">Nombre Grupo <span
-                                class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="set_nombre" name="nombre_grupo"
-                            placeholder="Ejemplo: Recursos Humanos" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="areas" class="form-label fw-semibold mb-1 d-block">Area</label>
-                        <select class="form-control selectpicker w-100" data-live-search="true" id="set_area"
-                            name="area" required title="Seleccione una categoria" data-width="100%">
-                        </select>
-                        <div class="form-text mt-1">
-                            Puedes seleccionar varias áreas (Ej: Finanzas, Recursos Humanos, TI)
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="areas" class="form-label fw-semibold mb-1 d-block">Categoria</label>
-                        <select class="form-control selectpicker w-100" data-live-search="true" id="set_categoria"
-                            name="categoria" required title="Seleccione una categoria" data-width="100%">
-                        </select>
-                        <div class="form-text mt-1">
-                            Puedes seleccionar varias áreas (Ej: Finanzas, Recursos Humanos, TI)
-                        </div>
-                    </div>
-
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save me-1"></i> Guardar
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Editar Área -->
-<!-- Modal Crear/Editar Grupo de Correos -->
-<div class="modal fade" id="modalGrupoCorreos" tabindex="-1" data-bs-backdrop="static"
-    aria-labelledby="modalGrupoCorreosLabel" aria-hidden="true">
+<div class="modal fade" id="modalGrupoCorreos" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
-        <div class="modal-content shadow">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title fw-semibold" id="modalGrupoCorreosLabel">
-                    <i class="fas fa-envelope me-2"></i>Editar Grupo de Correos
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                    aria-label="Cerrar"></button>
+        <div class="modal-content">
+            <div class="modal-header bg-black text-white">
+                <h5 class="modal-title">Configuración de Notificaciones por Área</h5>
+                <button type="button" class="btn-close text-white" data-bs-dismiss="modal"></button>
             </div>
-            
-            <form id="formGrupoCorreos">
-                <input type="hidden" id="edit_id_grupo" name="id_grupo">
-                <div class="modal-body">
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6">
-                            <label for="nombre_grupo" class="form-label fw-semibold mb-1">Nombre del grupo</label>
-                            <input type="text" class="form-control" id="edit_nombre_grupo" name="nombre_grupo"
-                                placeholder="Ej: Grupo de Autorizaciones de Compras" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="areas" class="form-label fw-semibold mb-1 d-block">Área</label>
-                            <select class="form-control w-100" data-live-search="true" id="edit_areas" name="areas"
-                                required title="Seleccione una o varias áreas" data-width="100%">
-                                <!-- Cargar áreas desde tb_areas -->
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="categoria" class="form-label fw-semibold mb-1 d-block">Categoría</label>
-                            <select class="form-control w-100" data-live-search="true" id="edit_categoria"
-                                name="categoria" required title="Seleccione una categoría" data-width="100%" disabled>
-                                <!-- Cargar categorías desde tb_categoria -->
-                            </select>
-                        </div>
-                    </div>
-                    <hr>
-                    <div id="contenedorFasesCorreos" style="
-                            max-height: 400px; /* Ajusta según necesites */
-                            overflow-y: auto;
-                            padding-right: 5px; /* opcional, para que no corte contenido con scrollbar */
-                        ">
-                    </div>
+            <div class="modal-body p-3">
+                <input type="hidden" id="id_area" name="area">
+                <input type="hidden" id="contraseña" name="grupo">
+                <input type="hidden" id="anticipo" name="grupo">
+                <input type="hidden" id="solicitud" name="grupo">
 
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label for="areas" class="form-label fw-semibold mb-1 d-block">Área</label>
+                        <input type="text" class="form-control w-100" id="nombre_area" readonly>
+                    </div>
                 </div>
+                <div class="container-fluid py-3">
+                    <ul class="nav nav-tabs mb-3" id="tipoTabs">
+                        <li class="nav-item">
+                            <button class="nav-link active" data-type="1" data-bs-toggle="tab"
+                                data-bs-target="#tabContraseña">Contraseña</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-type="2" data-bs-toggle="tab"
+                                data-bs-target="#tabSolicitud">Solicitud</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-type="3" data-bs-toggle="tab"
+                                data-bs-target="#tabAnticipo">Anticipo</button>
+                        </li>
+                    </ul>
 
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="fas fa-arrow-left me-1"></i>Cancelar
-                    </button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save me-1"></i>Guardar Grupo
-                        <span id="spinnerGrupo" class="spinner-border spinner-border-sm d-none" role="status"></span>
-                    </button>
+                    <div class="tab-content">
+
+                        <!-- TEMPLATE: cada tab lleva exactamente lo mismo -->
+                        <div class="tab-pane fade show active" id="tabContraseña">
+                            <div class="row">
+
+                                <!-- COLUMNA IZQUIERDA – Fases -->
+                                <div class="col-md-8">
+                                    <div class="card shadow-sm">
+                                        <div class="card-header bg-primary text-white">
+                                            <strong>Fases</strong>
+                                        </div>
+                                        <div id="contenedorFasesContraseña" class="contenedor-fases-scroll">
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                                <!-- COLUMNA DERECHA – Usuarios -->
+                                <div class="col-md-4">
+                                    <div class="card shadow-sm">
+                                        <div class="card-header bg-secondary text-white">
+                                            <strong>Usuarios</strong>
+                                        </div>
+                                        <div class="card-body" id="contenedorUsuariosContraseña">
+                                            <!-- ESPERA DATOS DINÁMICOS -->
+                                            <!-- Aquí va la lista de usuarios disponibles -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- TAB Solicitud -->
+                        <div class="tab-pane fade" id="tabSolicitud">
+                            <div class="row">
+
+                                <div class="col-md-8">
+                                    <div class="card shadow-sm">
+                                        <div class="card-header bg-primary text-white">
+                                            <strong>Fases</strong>
+                                        </div>
+                                        <div id="contenedorFasesSolicitud" class="contenedor-fases-scroll">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="card shadow-sm">
+                                        <div class="card-header bg-secondary text-white">
+                                            <strong>Usuarios</strong>
+                                        </div>
+                                        <div class="card-body" id="contenedorUsuariosSolicitud">
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- TAB Anticipo -->
+                        <div class="tab-pane fade" id="tabAnticipo">
+                            <div class="row">
+
+                                <div class="col-md-8">
+                                    <div class="card shadow-sm">
+                                        <div class="card-header bg-primary text-white">
+                                            <strong>Fases</strong>
+                                        </div>
+                                        <div id="contenedorFasesAnticipo" class="contenedor-fases-scroll">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="card shadow-sm">
+                                        <div class="card-header bg-secondary text-white">
+                                            <strong>Usuarios</strong>
+                                        </div>
+                                        <div class="card-body" id="contenedorUsuariosAnticipo">
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
-            </form>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
         </div>
     </div>
 </div>
+
 
 <script>
     let role_id = <?= json_encode($_SESSION['rol_usuario'] ?? 0); ?>;
     let permisos = <?= json_encode($_SESSION['permisos'] ?? []); ?>;
 </script>
+
+<style>
+    .contenedor-fases-scroll {
+        max-height: 550px;
+        /* Ajustable: Aumenta o reduce la altura */
+        overflow-y: auto;
+        /* Scroll vertical */
+        padding-right: 5px;
+        /* Evita que el scroll tape contenido */
+    }
+
+    .fase-item {
+        width: 100%;
+        max-width: 700px;
+        /* aumenta si quieres más ancho */
+        background: #ffffff;
+    }
+
+    .titulo-fase {
+        font-size: 1.1rem;
+        display: block;
+        margin-bottom: 6px;
+    }
+
+    .usuarios-asignados {
+        min-height: 70px;
+        /* antes 120px */
+        max-height: 160px;
+        /* antes 260px */
+        overflow-y: auto;
+        width: 100%;
+        border: 1px solid #d1d1d1;
+        background: #f8f9fa;
+        border-radius: 6px;
+    }
+
+
+    /* Opcional: mejorar apariencia visual */
+    .usuarios-asignados::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .usuarios-asignados::-webkit-scrollbar-thumb {
+        background: #bbb;
+        border-radius: 8px;
+    }
+
+    /* Contenedor de usuarios dentro de cada fase */
+    .usuarios-asignados {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        min-height: 50px;
+    }
+
+    /* Chip pequeño */
+    .usuario-chip {
+        display: flex;
+        align-items: center;
+        background: #e3f2fd;
+        border: 1px solid #90caf9;
+        color: #0d47a1;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 13px;
+        max-width: 200px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    /* Nombre del usuario */
+    .chip-nombre {
+        margin-right: 6px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Botón de eliminar */
+    .chip-remove {
+        background: transparent;
+        border: none;
+        color: #d32f2f;
+        font-size: 14px;
+        cursor: pointer;
+        padding: 0;
+        line-height: 1;
+    }
+</style>

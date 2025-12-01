@@ -9,7 +9,7 @@ class SolicitudFondosModel extends Mysql
     public function selectSolicitudFondos()
     {
         $area = intval($_SESSION['PersonalData']['area']);
-        $where = ($area == 4) ? "" : "WHERE area = $area";
+        $where = "WHERE tc.area = $area";
 
         $sql = "SELECT
             tc.id_solicitud,
@@ -29,6 +29,50 @@ class SolicitudFondosModel extends Mysql
         $request = $this->select_all($sql);
         return $request;
     }
+
+    public function selectSolicitudFondosConta()
+    {
+        $sql = "SELECT
+            tc.id_solicitud,
+            tc.contraseña,
+            ta.nombre_area AS area,
+            tc.categoria,
+            tc.fecha_creacion,
+            ts.fecha_pago as fecha_pago,
+            tc.fecha_pago as fecha_pago_sf,
+            tc.no_transferencia,
+            tc.fecha_transaccion,
+            tc.estado
+        FROM tb_solicitud_fondos tc
+        INNER JOIN tb_areas ta ON tc.area = ta.id_area
+        LEFT JOIN tb_contraseña ts ON tc.contraseña = ts.contraseña
+        ";
+        $request = $this->select_all($sql);
+        return $request;
+    }
+
+    public function selectSolicitudFondosVehiculos()
+    {
+        $sql = "SELECT
+            tc.id_solicitud,
+            tc.contraseña,
+            ta.nombre_area AS area,
+            tc.categoria,
+            tc.fecha_creacion,
+            ts.fecha_pago as fecha_pago,
+            tc.fecha_pago as fecha_pago_sf,
+            tc.no_transferencia,
+            tc.fecha_transaccion,
+            tc.estado
+        FROM tb_solicitud_fondos tc
+        INNER JOIN tb_areas ta ON tc.area = ta.id_area
+        LEFT JOIN tb_contraseña ts ON tc.contraseña = ts.contraseña
+        WHERE tc.area = 2
+        ";
+        $request = $this->select_all($sql);
+        return $request;
+    }
+
 
     public function getContraseña($contraseña)
     {
@@ -127,6 +171,7 @@ class SolicitudFondosModel extends Mysql
         $sql = "SELECT
             tc.id_solicitud,
             tc.contraseña,
+            CONCAT(tu.nombres, ' ', tu.primer_apellido, ' ', tu.segundo_apellido) as realizador,
             tp.nombre_proveedor AS proveedor,
             ta.id_area,
             ta.nombre_area AS area,
@@ -141,6 +186,7 @@ class SolicitudFondosModel extends Mysql
         INNER JOIN tb_proveedor tp ON tc.proveedor = tp.id_proveedor
         INNER JOIN tb_areas ta ON tc.area = ta.id_area
         INNER JOIN tb_detalles td ON tc.id_solicitud = td.no_factura
+        INNER JOIN tb_usuarios tu ON tc.usuario = tu.id_usuario
         WHERE tc.id_solicitud = ?
         GROUP BY tc.id_solicitud;
         ";
@@ -361,12 +407,34 @@ class SolicitudFondosModel extends Mysql
         $request = $this->select($sql, array($id));
         return $request;
     }
-    public function udapteSolicitud($id_solicitud, $respuesta)
+    public function udapteSolicitud($id_solicitud, $respuesta, $observacion)
     {
         $sql = "UPDATE tb_solicitud_fondos 
-                SET estado = ?
+                SET 
+                estado = ?,
+                observacion = ?
                 WHERE id_solicitud = ?";
-        $arrData = [$respuesta, $id_solicitud];
+        $arrData = [$respuesta, $observacion, $id_solicitud];
+        return $this->update($sql, $arrData);
+    }
+
+    public function descartarContra($contraseña, $respuesta, $observacion)
+    {
+        $sql = "UPDATE tb_contraseña 
+                SET 
+                estado = ?,
+                correcciones = ?
+                WHERE contraseña = ?";
+        $arrData = [$respuesta, $observacion, $contraseña];
+        return $this->update($sql, $arrData);
+    }
+    public function descartarDetalles($contraseña, $respuesta, $observacion)
+    {
+        $sql = "UPDATE tb_detalles 
+                SET 
+                estado = ?
+                WHERE contraseña = ?";
+        $arrData = [$respuesta, $contraseña];
         return $this->update($sql, $arrData);
     }
 
@@ -406,7 +474,7 @@ class SolicitudFondosModel extends Mysql
                 ORDER BY id_grupo DESC 
                 LIMIT 1";
 
-        $request = $this->select($sql, array($idArea, $categoria)); 
+        $request = $this->select($sql, array($idArea, $categoria));
         return $request;
     }
     public function getFirmas(int $id_grupo)

@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", function () {
           let html = "";
           data = data.toLowerCase();
           if (data.includes("pendiente")) {
-            html = '<span class="badge badge-warning"> PENDIENTE</span>';
+            html = '<span class="badge badge-warning"> ' + data + ' </span>';
           } else if (data.includes("validado")) {
             html = '<span class="badge badge-success">VALIDADO</span>';
           } else if (data.includes("corregir")) {
@@ -58,6 +58,8 @@ document.addEventListener("DOMContentLoaded", function () {
             html = '<span class="badge badge-danger">DESCARTADO</span>';
           } else if (data.includes("finalizado")) {
             html = '<span class="badge badge-success">FINALIZADO</span>';
+          } else if (data.includes("pagado")) {
+            html = '<span class="badge badge-info">PAGADO</span>';
           }
           return html;
         },
@@ -108,6 +110,8 @@ document.addEventListener("DOMContentLoaded", function () {
       },
     ],
     dom: "Bfrtip",
+    order: [[0, "desc"]],
+
     buttons: [
       {
         extend: "colvis",

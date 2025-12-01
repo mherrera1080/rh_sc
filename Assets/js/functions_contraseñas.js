@@ -40,15 +40,17 @@ document.addEventListener("DOMContentLoaded", function () {
           let html = "";
           data = data.toLowerCase();
           if (data.includes("pendiente")) {
-            html = '<span class="badge badge-warning">PENDIENTE</span>';
+            html = '<span class="badge badge-warning">' + data + "</span>";
           } else if (data.includes("validado")) {
             html = '<span class="badge badge-success">VALIDADO</span>';
           } else if (data.includes("corregir")) {
             html = '<span class="badge badge-danger">CORREGIR</span>';
           } else if (data.includes("corregido")) {
             html = '<span class="badge badge-info">CORREGIDO</span>';
-          }else if (data.includes("descartado")) {
+          } else if (data.includes("descartado")) {
             html = '<span class="badge badge-danger">DESCARTADO</span>';
+          } else if (data.includes("pagado")) {
+            html = '<span class="badge badge-info">PAGADO</span>';
           }
           return html;
         },
@@ -64,6 +66,8 @@ document.addEventListener("DOMContentLoaded", function () {
       },
     ],
     dom: "Bfrtip",
+    order: [[0, "desc"]],
+
     buttons: [
       {
         extend: "colvis",
@@ -84,9 +88,8 @@ document.addEventListener("DOMContentLoaded", function () {
       },
     ],
     language: {
-  url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json",
-},
-
+      url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json",
+    },
   });
 
   $(document).on("click", ".btn-password", function () {

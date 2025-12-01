@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // Tabla principal con datos AJAX
   tableSolicitudes = $("#tableSolicitudes").DataTable({
     ajax: {
-      url: base_url + "/SolicitudFondos/getSolucitudesFondos",
+      url: base_url + "/SolicitudFondos/getSolucitudesFondosConta",
       dataSrc: function (json) {
         // Si no hay datos, muestra swal y evita error
         if (!json.status) {
@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", function () {
           let html = "";
           data = data.toLowerCase();
           if (data.includes("pendiente")) {
-            html = '<span class="badge badge-warning"> ' + data + ' </span>';
+            html = '<span class="badge badge-warning"> ' + data + '</span>';
           } else if (data.includes("validado")) {
             html = '<span class="badge badge-success">VALIDADO</span>';
           } else if (data.includes("pagado")) {
@@ -60,6 +60,8 @@ document.addEventListener("DOMContentLoaded", function () {
             html = '<span class="badge badge-danger">CORREGIR</span>';
           } else if (data.includes("descartado")) {
             html = '<span class="badge badge-danger">DESCARTADO</span>';
+          } else if (data.includes("pagado")) {
+            html = '<span class="badge badge-info">PAGADO</span>';
           }
           return html;
         },
@@ -72,7 +74,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
           if (row.categoria !== "Anticipo") {
             // Si el estado es diferente a Anticipo
-            html = `<button class="btn btn-info btn-sm" onclick="window.location.href='${base_url}/SolicitudFondos/Revision/${row.contraseña}'">
+            html = `<button class="btn btn-info btn-sm" onclick="window.location.href='${base_url}/Contabilidad/Revision/${row.contraseña}'">
                 <i class="fas fa-archive"></i>
               </button>`;
           } else {

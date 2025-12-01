@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // Tabla principal con datos AJAX
   tableFacturas = $("#tableFacturas").DataTable({
     ajax: {
-      url: base_url + "/Contraseñas/getDetalles",
+      url: base_url + "/Contabilidad/getDetalles",
       dataSrc: function (json) {
         // Si no hay datos, muestra swal y evita error
         if (!json.status) {
@@ -70,9 +70,8 @@ document.addEventListener("DOMContentLoaded", function () {
     iDisplayLength: 5, // cantidad de registros por página
     order: [[0, "desc"]],
     language: {
-  url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json",
-},
-
+      url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json",
+    },
   });
 
   // no pasarse

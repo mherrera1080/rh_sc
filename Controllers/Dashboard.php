@@ -36,6 +36,90 @@ class Dashboard extends Controllers
         $this->views->getView($this, "Nada", $data);
     }
 
+    public function Reportes()
+    {
+
+        $data['areas'] = $this->model->getAreas();
+        $data['proveedores'] = $this->model->getProveedores();
+
+        $data['page_id'] = DASHBOARD;
+        $data['page_tag'] = "Reportes";
+        $data['page_title'] = "Reportes";
+        $data['page_name'] = "Reportes";
+        $data['page_functions_js'] = "functions_reportes.js";
+
+        $this->views->getView($this, "Reportes", $data);
+    }
+
+
+    public function registroContra()
+    {
+        $arrData = $this->model->selectContras();
+
+        if (empty($arrData)) {
+            $arrResponse = array('status' => false, 'msg' => 'No se encontraron registros previos.');
+        } else {
+            $arrResponse = array('status' => true, 'data' => $arrData);
+        }
+        echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+        die();
+    }
+
+    public function getSolucitudesFondosConta()
+    {
+        $arrData = $this->model->selectSolicitudFondosConta();
+
+        if (empty($arrData)) {
+            $arrResponse = array('status' => false, 'msg' => 'No se encontraron registros previos.');
+        } else {
+            $arrResponse = array('status' => true, 'data' => $arrData);
+        }
+        echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+        die();
+    }
+
+    public function getDetalles()
+    {
+        $arrData = $this->model->selectDetalles();
+
+        if (empty($arrData)) {
+            $arrResponse = array('status' => false, 'msg' => 'No se encontraron registros previos.');
+        } else {
+            $arrResponse = array('status' => true, 'data' => $arrData);
+        }
+        echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+        die();
+    }
+
+        public function getAnticipos()
+    {
+        $arrData = $this->model->selectAnticipos();
+
+        if (empty($arrData)) {
+            $arrResponse = array('status' => false, 'msg' => 'No se encontraron registros previos.');
+        } else {
+            $arrResponse = array('status' => true, 'data' => $arrData);
+        }
+        echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+        die();
+    }
+
+    public function putFiltros()
+    {
+        $area = strClean($_POST['area']);
+        $proveedor = strClean($_POST['proveedor']);
+        $estado = strClean($_POST['estado']);
+        $categoria = strClean($_POST['categoria']);
+        $desde = strClean($_POST['desde']);
+        $hasta = strClean($_POST['hasta']);
+
+        $arrData = $this->model->filtrarContraseñas($area, $proveedor, $estado, $categoria, $desde, $hasta);
+
+        echo json_encode($arrData, JSON_UNESCAPED_UNICODE);
+        die();
+    }
+
+
     public function actualizarPassword()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {

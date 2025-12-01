@@ -104,6 +104,13 @@ class Usuarios extends Controllers
                         $rol,
                         $password
                     );
+
+                    log_Actividad(
+                        $_SESSION['PersonalData']['no_empleado'],
+                        $_SESSION['PersonalData']['nombre_completo'],
+                        "Usuarios",
+                        "Se creo el usuario" . $nombres . " " . $primer_apellido . " " . $segundo_apellido
+                    );
                 } else {
 
                     $email = $this->model->existenciaCorreoUpdate($correo, $id_usuario);
@@ -139,6 +146,12 @@ class Usuarios extends Controllers
                         $area,
                         $rol,
                         $password
+                    );
+                    log_Actividad(
+                        $_SESSION['PersonalData']['no_empleado'],
+                        $_SESSION['PersonalData']['nombre_completo'],
+                        "Usuarios",
+                        "Se actualizo el usuario" . $nombres . " " . $primer_apellido . " " . $segundo_apellido
                     );
                 }
 

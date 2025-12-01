@@ -50,7 +50,7 @@ document.addEventListener("DOMContentLoaded", function () {
           let html = "";
           data = data.toLowerCase();
           if (data.includes("pendiente")) {
-            html = '<span class="badge badge-warning">PENDIENTE</span>';
+            html = '<span class="badge badge-warning">' + data + '</span>';
           } else if (data.includes("validado")) {
             html = '<span class="badge badge-success">VALIDADO</span>';
           } else if (data.includes("descartar")) {
@@ -59,6 +59,8 @@ document.addEventListener("DOMContentLoaded", function () {
             html = '<span class="badge badge-danger">CORREGIR</span>';
           } else if (data.includes("descartado")) {
             html = '<span class="badge badge-danger">DESCARTADO</span>';
+          } else if (data.includes("pagado")) {
+            html = '<span class="badge badge-info">PAGADO</span>';
           }
           return html;
         },

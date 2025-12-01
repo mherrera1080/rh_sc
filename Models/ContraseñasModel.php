@@ -58,7 +58,7 @@ class ContraseñasModel extends Mysql
     public function selectDetalles()
     {
         $area = intval($_SESSION['PersonalData']['area']);
-        $where = ($area == 4) ? "" : "WHERE td.area = $area";
+        $where = "WHERE td.area = $area";
 
         $sql = "SELECT 
         tc.id_detalle,

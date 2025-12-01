@@ -74,12 +74,25 @@ class Configuracion extends Controllers
                         $nombre_area,
                         $estado
                     );
+                    log_Actividad(
+                        $_SESSION['PersonalData']['no_empleado'],
+                        $_SESSION['PersonalData']['nombre_completo'],
+                        "Configuracion",
+                        "Area Creada: " . $nombre_area
+                    );
                 } else {
                     $option = 2;
                     $request_user = $this->model->updateAreas(
                         $id_area,
                         $nombre_area,
                         $estado
+                    );
+
+                    log_Actividad(
+                        $_SESSION['PersonalData']['no_empleado'],
+                        $_SESSION['PersonalData']['nombre_completo'],
+                        "Configuracion",
+                        "Area actualizada: " . $nombre_area
                     );
                 }
 
@@ -159,6 +172,12 @@ class Configuracion extends Controllers
                         $estado,
                         $regimen
                     );
+                    log_Actividad(
+                        $_SESSION['PersonalData']['no_empleado'],
+                        $_SESSION['PersonalData']['nombre_completo'],
+                        "Configuracion",
+                        "Proveedor Creado: " . $nombre_proveedor
+                    );
                 } else {
                     $option = 2;
                     $request_user = $this->model->updateProveedor(
@@ -169,6 +188,12 @@ class Configuracion extends Controllers
                         $dias_credito,
                         $estado,
                         $regimen
+                    );
+                    log_Actividad(
+                        $_SESSION['PersonalData']['no_empleado'],
+                        $_SESSION['PersonalData']['nombre_completo'],
+                        "Configuracion",
+                        "Proveedor actualizado: " . $nombre_proveedor
                     );
                 }
 
@@ -290,6 +315,12 @@ class Configuracion extends Controllers
                 exit;
             }
 
+            log_Actividad(
+                        $_SESSION['PersonalData']['no_empleado'],
+                        $_SESSION['PersonalData']['nombre_completo'],
+                        "Configuracion",
+                        "Grupo de Firmas creado: " . $nombre_grupo
+                    );
             // ✅ Respuesta final
             echo json_encode([
                 "status" => true,
@@ -317,13 +348,13 @@ class Configuracion extends Controllers
 
         $existe = $this->model->verificarGrupoPorAreaYCategoriabyID($areas, $categoria, $idGrupo);
 
-            if ($existe) {
-                echo json_encode([
-                    "status" => false,
-                    "message" => "Ya existe un grupo de tipo '{$categoria}' en esta área. No se pueden duplicar."
-                ]);
-                exit;
-            }
+        if ($existe) {
+            echo json_encode([
+                "status" => false,
+                "message" => "Ya existe un grupo de tipo '{$categoria}' en esta área. No se pueden duplicar."
+            ]);
+            exit;
+        }
 
 
         // 🧹 Eliminar firmas marcadas
@@ -369,6 +400,13 @@ class Configuracion extends Controllers
                 }
             }
         }
+
+        log_Actividad(
+                        $_SESSION['PersonalData']['no_empleado'],
+                        $_SESSION['PersonalData']['nombre_completo'],
+                        "Configuracion",
+                        "Grupo de Firmas Actualizada: "
+                    );
 
         echo json_encode(["status" => true, "message" => "Grupo actualizado correctamente."]);
         exit;
@@ -510,6 +548,13 @@ class Configuracion extends Controllers
                 $this->model->insertRolModulo($role_id, $modulo['id_modulo']);
             }
 
+            log_Actividad(
+                        $_SESSION['PersonalData']['no_empleado'],
+                        $_SESSION['PersonalData']['nombre_completo'],
+                        "Configuracion",
+                        "Rol ingresado: " . $role_name
+                    );
+
             echo json_encode(["status" => true, "message" => "Rol y permisos creados correctamente."]);
         }
     }
@@ -573,117 +618,29 @@ class Configuracion extends Controllers
         die();
     }
 
-    public function setGrupoCorreo()
+    public function getGruposbyArea($area)
     {
-        if ($_POST) {
-            $nombre = trim($_POST['nombre_grupo'] ?? '');
-            $area = $_POST['area'] ?? '';
-            $categoria = $_POST['categoria'] ?? '';
-            $estado = "Activo";
+        $arrData = $this->model->getGruposAreas($area);
 
-            if (empty($nombre) || empty($area) || empty($categoria)) {
-                $arrResponse = [
-                    "status" => false,
-                    "msg" => "Todos los campos son obligatorios"
-                ];
-                echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
-                die();
-            }
-
-            $existe = $this->model->verificarGrupoCorreoPorAreaYCategoria($area, $categoria);
-            if ($existe) {
-                $arrResponse = [
-                    "status" => false,
-                    "msg" => "El área seleccionada ya tiene un grupo con esa categoría. No se permiten duplicados."
-                ];
-                echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
-                die();
-            }
-
-            $requestInsert = $this->model->insertGrupoCorreo($nombre, $area, $categoria, $estado);
-
-            if ($requestInsert > 0) {
-                $arrResponse = [
-                    "status" => true,
-                    "msg" => "Grupo de correos agregado correctamente."
-                ];
-            } else {
-                $arrResponse = [
-                    "status" => false,
-                    "msg" => "Error al insertar el grupo de correos."
-                ];
-            }
-
-            echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+        if (empty($arrData)) {
+            $arrResponse = array('status' => false, 'msg' => 'No se encontraron registros previos.');
+        } else {
+            $arrResponse = array('status' => true, 'data' => $arrData);
         }
+        echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
         die();
     }
 
-
-    public function getSelectCategoriaCorreos()
+    public function getFases(string $categoria)
     {
-        $htmlOptions = "<option selected disabled>Seleccione un Categoria...</option>";
-        $arrData = $this->model->selectCategoria();
-        if (count($arrData) > 0) {
-            for ($i = 0; $i < count($arrData); $i++) {
-                $htmlOptions .= '<option value="' . $arrData[$i]['id_categoria'] . '">' . $arrData[$i]['nombre_categoria'] . '</option>';
-            }
-        }
-        echo $htmlOptions;
-        die();
+        $fases = $this->model->selectFases($categoria);
+        echo json_encode($fases, JSON_UNESCAPED_UNICODE);
     }
 
-    public function getGruposCorreoByID($id_grupo)
+    public function getUsuarios()
     {
-        $grupo = $this->model->selectGrupoCorreoByID($id_grupo);
-        if (!$grupo) {
-            echo json_encode(["status" => false, "message" => "No se encontró el grupo."]);
-            exit;
-        }
-        $categoria = $grupo["categoria"];
-
-        // Obtener fases con usuarios asignados
-        $fasesConUsuarios = $this->model->selectFasesConUsuarios($categoria, $id_grupo);
-
-        // DEBUG: Log para verificar datos
-        error_log("Fases con usuarios RAW: " . print_r($fasesConUsuarios, true));
-
-        // Organizar los datos por fase
-        $fasesOrganizadas = [];
-        foreach ($fasesConUsuarios as $fila) {
-            $id_fase = $fila['id_fase'];
-
-            // Si la fase no existe en el array, crearla
-            if (!isset($fasesOrganizadas[$id_fase])) {
-                $fasesOrganizadas[$id_fase] = [
-                    'id_fase' => $fila['id_fase'],
-                    'orden_fase' => $fila['orden_fase'],
-                    'nombre_base' => $fila['nombre_base'],
-                    'categoria' => $fila['categoria'],
-                    'usuarios' => []
-                ];
-            }
-
-            // Agregar usuario si existe
-            if ($fila['usuario'] !== null) {
-                $fasesOrganizadas[$id_fase]['usuarios'][] = $fila['usuario'];
-            }
-        }
-
-        // Convertir a array indexado
-        $fases = array_values($fasesOrganizadas);
-
-        // DEBUG: Log final
-        error_log("Fases organizadas: " . print_r($fases, true));
-
-        echo json_encode([
-            "status" => true,
-            "data" => [
-                "grupo" => $grupo,
-                "fases" => $fases
-            ]
-        ]);
-        exit;
+        $usuarios = $this->model->selectUsuarios();
+        echo json_encode($usuarios, JSON_UNESCAPED_UNICODE);
     }
 
     public function getCorreos()
@@ -693,49 +650,89 @@ class Configuracion extends Controllers
         exit;
     }
 
-    public function actualizarGrupoCorreos()
+    public function setFaseCorreo()
     {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            echo json_encode(["status" => false, "message" => "Método no permitido."]);
-            exit;
-        }
-
-        $idGrupo = intval($_POST['id_grupo'] ?? 0);
-        $nombre = trim($_POST['nombre_grupo'] ?? '');
-        $area = intval($_POST['areas'] ?? 0);
-        $usuariosPorFase = json_decode($_POST['usuariosPorFase'] ?? '{}', true);
-
-        if ($idGrupo <= 0) {
-            echo json_encode(["status" => false, "message" => "ID de grupo inválido."]);
-            exit;
-        }
-
-        // 1. Actualizar datos básicos del grupo
-        $this->model->actualizarGrupoCorreos($idGrupo, $nombre, $area);
-
-        // // 2. Eliminar todas las relaciones existentes de fases-correos para este grupo
-        $this->model->eliminarFaseCorreosPorGrupo($idGrupo);
-
-        // 3. Insertar las nuevas relaciones fases-correos
-        $insertados = 0;
-        if (!empty($usuariosPorFase) && is_array($usuariosPorFase)) {
-            foreach ($usuariosPorFase as $idFase => $usuarios) {
-                if (is_array($usuarios)) {
-                    foreach ($usuarios as $idUsuario) {
-                        if ($this->model->insertarFaseCorreo($idUsuario, $idFase, $idGrupo)) {
-                            $insertados++;
-                        }
-                    }
-                }
+        if ($_POST) {
+            $usuario = trim($_POST['usuario'] ?? "");
+            $fase = trim($_POST['fase'] ?? "");
+            $grupo = trim($_POST['grupo'] ?? "");
+            $requestInsert = $this->model->insertarFaseCorreo($usuario, $fase, $grupo);
+            if ($requestInsert > 0) {
+                $arrResponse = [
+                    'status' => true,
+                    'msg' => 'Registro insertado correctamente.'
+                ];
+            } else {
+                $arrResponse = [
+                    'status' => false,
+                    'msg' => 'Error al insertar el registro.'
+                ];
             }
+            echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
         }
-
-        echo json_encode([
-            "status" => true,
-            "message" => "Grupo actualizado correctamente. Se insertaron {$insertados} relaciones de fases-correos."
-        ]);
-        exit;
     }
+
+    public function getUsuariosByGrupoYFase($param)
+    {
+        // $param viene como "7,1"
+        list($grupo, $fase) = explode(",", $param);
+
+        $data = $this->model->getUsuariosByGrupoYFase(
+            intval($grupo),
+            intval($fase)
+        );
+
+        echo json_encode($data, JSON_UNESCAPED_UNICODE);
+    }
+
+    public function addUsuarioFase($param)
+    {
+        // $param = "7,1,23"
+        $parts = array_map('trim', explode(',', $param));
+        if (count($parts) !== 3) {
+            echo json_encode(['status' => false, 'msg' => 'Parámetros incorrectos'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+        [$grupo, $fase, $usuario] = $parts;
+
+        $grupo = intval($grupo);
+        $fase = intval($fase);
+        $usuario = intval($usuario);
+
+        $request = $this->model->insertUsuarioFase($grupo, $fase, $usuario);
+        if ($request > 0) {
+            echo json_encode(['status' => true, 'msg' => 'Usuario asignado correctamente'], JSON_UNESCAPED_UNICODE);
+        } else {
+            echo json_encode(['status' => false, 'msg' => 'No se pudo asignar el usuario'], JSON_UNESCAPED_UNICODE);
+        }
+    }
+
+
+
+    public function removeUsuarioFase($param)
+    {
+        // $param = "7,1,23"
+        $parts = array_map('trim', explode(',', $param));
+        if (count($parts) !== 3) {
+            echo json_encode(['status' => false, 'msg' => 'Parámetros incorrectos'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+        [$grupo, $fase, $usuario] = $parts;
+
+        $grupo = intval($grupo);
+        $fase = intval($fase);
+        $usuario = intval($usuario);
+
+        $request = $this->model->deleteUsuarioFase($grupo, $fase, $usuario);
+
+        if ($request > 0) {
+            echo json_encode(['status' => true, 'msg' => 'Usuario asignado correctamente'], JSON_UNESCAPED_UNICODE);
+        } else {
+            echo json_encode(['status' => false, 'msg' => 'No se pudo asignar el usuario'], JSON_UNESCAPED_UNICODE);
+        }
+    }
+
+
     public function updatePermissions()
     {
         $data = json_decode(file_get_contents("php://input"), true); // Obtener los datos JSON
@@ -756,10 +753,15 @@ class Configuracion extends Controllers
             $this->model->updatePermiso($idRol, $moduloNombre, $crear, $acceder, $editar, $eliminar);
         }
 
+        log_Actividad(
+                        $_SESSION['PersonalData']['no_empleado'],
+                        $_SESSION['PersonalData']['nombre_completo'],
+                        "Configuracion",
+                        "Se actualizaron permisos del rol : " . $idRol
+                    );
         // Respuesta
         echo json_encode(['status' => true, 'msg' => 'Permisos actualizados con éxito.']);
     }
-
 
 
 }

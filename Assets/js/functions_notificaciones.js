@@ -25,15 +25,14 @@ document.addEventListener("DOMContentLoaded", function () {
     columns: [
       {
         data: null,
+        title: "#",
         render: function (data, type, row, meta) {
           // Mostrar el número de ítem (índice + 1)
           return meta.row + 1;
         },
       },
-      { data: "nombre_grupo" },
-      { data: "area" },
-      { data: "categoria" },
-      { data: "estado" },
+      { title: "Area", data: "nombre_area" },
+      { title: "Estado", data: "estado" },
       {
         data: null,
         title: "Acciones",
@@ -43,14 +42,14 @@ document.addEventListener("DOMContentLoaded", function () {
           // Botón Editar
           if (permisosMod.editar == 1) {
             botones += `
-          <button type="button" class="btn btn-warning edit-btn" data-bs-toggle="modal" data-bs-target="#modalGrupoCorreos" data-id="${row.id_grupo_correo}">
-            <i class="fas fa-edit"></i>
-          </button>`;
+            <button type="button" class="btn btn-warning edit-btn" data-bs-toggle="modal" data-bs-target="#modalGrupoCorreos" data-id="${row.id_area}">
+              <i class="fas fa-edit"></i>
+            </button>`;
           } else {
             botones += `
-            <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#exampleModal">
-              <i class="fas fa-pencil-square"></i>
-            </button>`;
+              <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                <i class="fas fa-pencil-square"></i>
+              </button>`;
           }
 
           return botones;
@@ -82,371 +81,372 @@ document.addEventListener("DOMContentLoaded", function () {
     },
   });
 
-  if (document.querySelector("#set_area")) {
-    let ajaxUrl = base_url + "/Contraseñas/getSelectAreas"; // Ajusta la URL según tu ruta
-    let request = window.XMLHttpRequest
-      ? new XMLHttpRequest()
-      : new ActiveXObject("Microsoft.XMLHTTP");
-    request.open("GET", ajaxUrl, true);
-    request.send();
-    request.onreadystatechange = function () {
-      if (request.readyState === 4 && request.status === 200) {
-        document.querySelector("#set_area").innerHTML = request.responseText;
-        $("#set_area");
-      }
-    };
-  }
-
-  if (document.querySelector("#set_categoria")) {
-    let ajaxUrl = base_url + "/Configuracion/getSelectCategoriaCorreos"; // Ajusta la URL según tu ruta
-    let request = window.XMLHttpRequest
-      ? new XMLHttpRequest()
-      : new ActiveXObject("Microsoft.XMLHTTP");
-    request.open("GET", ajaxUrl, true);
-    request.send();
-    request.onreadystatechange = function () {
-      if (request.readyState === 4 && request.status === 200) {
-        document.querySelector("#set_categoria").innerHTML =
-          request.responseText;
-        $("#set_categoria");
-      }
-    };
-  }
-
-  if (document.querySelector("#edit_areas")) {
-    let ajaxUrl = base_url + "/Contraseñas/getSelectAreas"; // Ajusta la URL según tu ruta
-    let request = window.XMLHttpRequest
-      ? new XMLHttpRequest()
-      : new ActiveXObject("Microsoft.XMLHTTP");
-    request.open("GET", ajaxUrl, true);
-    request.send();
-    request.onreadystatechange = function () {
-      if (request.readyState === 4 && request.status === 200) {
-        document.querySelector("#edit_areas").innerHTML = request.responseText;
-        $("#edit_areas");
-      }
-    };
-  }
-
-  if (document.querySelector("#edit_categoria")) {
-    let ajaxUrl = base_url + "/Configuracion/getSelectCategoriaCorreos"; // Ajusta la URL según tu ruta
-    let request = window.XMLHttpRequest
-      ? new XMLHttpRequest()
-      : new ActiveXObject("Microsoft.XMLHTTP");
-    request.open("GET", ajaxUrl, true);
-    request.send();
-    request.onreadystatechange = function () {
-      if (request.readyState === 4 && request.status === 200) {
-        document.querySelector("#edit_categoria").innerHTML =
-          request.responseText;
-        $("#edit_categoria");
-      }
-    };
-  }
-
-  document
-    .querySelector("#formGrupoCorreo")
-    .addEventListener("submit", function (event) {
-      event.preventDefault();
-
-      let formData = new FormData(this);
-      let ajaxUrl = base_url + "/Configuracion/setGrupoCorreo";
-      let request = window.XMLHttpRequest
-        ? new XMLHttpRequest()
-        : new ActiveXObject("Microsoft.XMLHTTP");
-
-      request.open("POST", ajaxUrl, true);
-      request.send(formData);
-
-      request.onreadystatechange = function () {
-        if (request.readyState === 4 && request.status === 200) {
-          let response = JSON.parse(request.responseText);
-          if (response.status) {
-            Swal.fire({
-              title: "Datos guardados correctamente",
-              icon: "success",
-              confirmButtonText: "Aceptar",
-            }).then((result) => {
-              if (result.isConfirmed) {
-                // Recargar la página al presionar "Aceptar"
-                location.reload();
-              }
-            });
-            $("#createModal").modal("hide");
-          } else {
-            Swal.fire("Atención", response.msg, "error"); // Mostrar mensaje de error
-          }
-        }
-      };
-    });
-
   $(document).on("click", ".edit-btn", function () {
-    const id_grupo = $(this).data("id");
-    cargarDatosGrupo(id_grupo);
-  });
+    const idEmpresa = $(this).data("id");
 
-  function cargarDatosGrupo(id_grupo) {
     $.ajax({
-      url: `${base_url}/Configuracion/getGruposCorreoByID/${id_grupo}`,
+      url: `${base_url}/Configuracion/getGruposbyArea/${idEmpresa}`,
       method: "GET",
       dataType: "json",
       success: function (response) {
-        if (response.status && response.data && response.data.grupo) {
-          const grupo = response.data.grupo;
+        if (response.status) {
+          $("#id_area").val(response.data.area);
+          $("#nombre_area").val(response.data.nombre_area);
+          $("#anticipo").val(response.data.anticipo);
+          $("#contraseña").val(response.data.contraseña);
+          $("#solicitud").val(response.data.solicitud);
 
-          // Datos básicos
-          $("#edit_id_grupo").val(grupo.id_grupo_correo);
-          $("#edit_nombre_grupo").val(grupo.nombre_grupo);
-          $("#edit_areas").val(grupo.area);
-          $("#edit_categoria").val(grupo.categoria);
-
-          // Cargar fases
-          const fases = response.data.fases || [];
-          cargarFasesGrupo(fases);
-
-          // Abrir modal
-          $("#modalGrupoCorreos").modal("show");
+          // Cargar la primera pestaña al inicio
+          cargarDatos("1");
         } else {
-          console.error("Error en respuesta:", response); // DEBUG
-          alert(response.message);
+          Swal.fire({
+            title: "Error",
+            text: "Hubo un problema al procesar la solicitud.",
+            icon: "error",
+            confirmButtonText: "Aceptar",
+          });
         }
       },
-      error: function (err) {
-        console.error("Error al cargar grupo:", err);
+      error: function (error) {
+        console.log("Error:", error);
       },
     });
-  }
+  });
 
-  function cargarFasesGrupo(fases) {
-    const contenedor = $("#contenedorFasesCorreos");
-    contenedor.empty();
-
-    if (fases.length === 0) {
-      contenedor.html(
-        '<div class="alert alert-info">No hay fases configuradas para esta categoría.</div>'
-      );
-      return;
-    }
-
-    fases.forEach((fase, index) => {
-      const card = document.createElement("div");
-      card.classList.add("card", "mb-3", "shadow-sm");
-      card.dataset.idFase = fase.id_fase;
-
-      card.innerHTML = `
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <span> <strong>Fase: ${fase.nombre_base}</strong> </span>
-            <button type="button" class="btn-close btn-close-white btn-delete-fase" title="Eliminar fase"></button>
-        </div>
-        <div class="card-body">
-            <div class="usuarios-fase d-flex flex-wrap gap-2">
-                <!-- Usuarios se apilan horizontalmente -->
-            </div>
-            <button type="button" class="btn btn-sm btn-success mt-2 btn-add-usuario">
-                <i class="fas fa-user-plus me-1"></i> Agregar Usuario
-            </button>
-        </div>
-        `;
-
-      contenedor[0].appendChild(card);
-
-      const usuariosContainer = card.querySelector(".usuarios-fase");
-
-      // Función para agregar un select de usuario
-      function agregarUsuario(usuarioId = null) {
-        const usuarioDiv = document.createElement("div");
-        usuarioDiv.classList.add("usuario-card", "position-relative");
-        usuarioDiv.style.minWidth = "250px";
-
-        usuarioDiv.innerHTML = `
-        <button type="button" class="btn-close position-absolute top-0 end-0 btn-delete-usuario"></button>
-
-        <!-- Buscador -->
-        <input type="text" class="form-control mb-1 buscador-usuario" placeholder="Buscar correo...">
-
-        <!-- Select normal -->
-        <select class="form-select" name="usuarios[${fase.id_fase}][]"></select>
-    `;
-
-        usuariosContainer.appendChild(usuarioDiv);
-
-        const selectUsuario = usuarioDiv.querySelector(
-          `select[name="usuarios[${fase.id_fase}][]"]`
-        );
-
-        const buscadorInput = usuarioDiv.querySelector(".buscador-usuario");
-
-        // Cargar correos
-        cargarUsuariosEdit(selectUsuario, usuarioId);
-
-        // 🔍 Filtro + selección automática de la primera coincidencia
-buscadorInput.addEventListener("input", function () {
-    const filtro = this.value.toLowerCase();
-    let primeraCoincidencia = null;
-
-    Array.from(selectUsuario.options).forEach((opt) => {
-        const correo = opt.textContent.toLowerCase();
-        const nombre = (opt.dataset.nombre || "").toLowerCase();
-
-        // Coincide si el filtro aparece en el nombre O en el correo
-        const coincide = correo.includes(filtro) || nombre.includes(filtro);
-
-        opt.style.display = coincide ? "block" : "none";
-
-        if (coincide && !primeraCoincidencia && filtro.length > 1) {
-            primeraCoincidencia = opt;
-        }
+  document.querySelectorAll("#tipoTabs .nav-link").forEach((btn) => {
+    btn.addEventListener("click", function () {
+      const categoria = this.dataset.type; // CONTRASEÑA | SOLICITUD | ANTICIPO
+      cargarDatos(categoria);
     });
-
-    if (primeraCoincidencia) {
-        selectUsuario.value = primeraCoincidencia.value;
-    } else {
-        selectUsuario.value = "";
-    }
+  });
 });
 
+function cargarDatos(tipo) {
+  return Promise.all([cargarFases(tipo), cargarUsuarios(tipo)])
+    .then(() => {
+      prepararDragUsuarios();
+      prepararDropFases();
+    })
+    .catch((err) => console.error("Error cargando datos:", err));
+}
 
-        // Botón eliminar usuario
-        usuarioDiv
-          .querySelector(".btn-delete-usuario")
-          .addEventListener("click", function () {
-            usuarioDiv.remove();
-          });
-      }
+function crearChipUsuarioAsignado(usuario) {
+  const chip = document.createElement("div");
+  chip.classList.add("usuario-chip");
+  chip.dataset.id = usuario.id;
 
-      // Agregar usuarios iniciales si existen
-      if (fase.usuarios && fase.usuarios.length) {
-        fase.usuarios.forEach((usrId) => {
-          agregarUsuario(usrId);
-        });
-      } else {
-        // Agregar un select vacío por defecto
-        agregarUsuario();
-      }
+  chip.innerHTML = `
+    <span class="chip-nombre">${usuario.nombre}</span>
+    <button type="button" class="chip-remove">&times;</button>
+  `;
 
-      // Botón para agregar nuevo usuario
-      card.querySelector(".btn-add-usuario").addEventListener("click", () => {
-        agregarUsuario();
-      });
+  // Agregamos el listener al botón de eliminar, llamando a la función independiente
+  chip.querySelector(".chip-remove").addEventListener("click", () => {
+    eliminarChipUsuario(chip);
+  });
 
-      // Eliminar fase completa
-      card
-        .querySelector(".btn-delete-fase")
-        .addEventListener("click", function () {
-          if (
-            confirm("¿Está seguro de eliminar esta fase y todos sus usuarios?")
-          ) {
-            card.remove();
-          }
-        });
-    });
+  return chip;
+}
+
+function eliminarChipUsuario(chip) {
+  const zone = chip.parentElement;
+  const usuarioId = chip.dataset.id;
+
+  const tipo = document.querySelector("#tipoTabs .nav-link.active").dataset
+    .type;
+
+  // 🔥 Asignar grupo según tipo
+  let id_grupo = null;
+  switch (tipo) {
+    case "1":
+      id_grupo = document.querySelector("#contraseña").value;
+      break;
+    case "2":
+      id_grupo = document.querySelector("#solicitud").value;
+      break;
+    case "3":
+      id_grupo = document.querySelector("#anticipo").value;
+      break;
   }
 
-function cargarUsuariosEdit(selectElement, idSeleccionado = null) {
-    $.ajax({
-        url: `${base_url}/Configuracion/getCorreos`,
-        method: "GET",
-        dataType: "json",
-        success: function (response) {
-            let options = '<option value="">Seleccionar usuario...</option>';
+  const idFase = zone.id.replace("fase-", "");
+  const grupo = id_grupo;
 
-            if (response && response.length > 0) {
-                response.forEach((usuario) => {
-                    const nombreCorreo = `${usuario.nombre} - ${usuario.correo}`;
-                    const selected = usuario.id == idSeleccionado ? "selected" : "";
-                    options += `
-                    <option value="${usuario.id}" data-nombre="${usuario.nombre}">
-                        ${usuario.correo}
-                    </option>`;
-                });
-            }
+  // ⚠ eliminar visual primero
+  chip.remove();
+  actualizarMensajeFase(zone);
 
-            $(selectElement).html(options);
+  // 🔥 eliminar en BD
+  fetch(
+    `${base_url}/Configuracion/removeUsuarioFase/${grupo},${idFase},${usuarioId}`
+  )
+    .then((r) => r.json())
+    .then((res) => {
+      if (!res.status) {
+        Swal.fire("Error", res.msg, "error");
+      }
+    });
+}
 
-            if (idSeleccionado) {
-                $(selectElement).val(idSeleccionado);
-            }
-        },
-        error: function () {
-            alert("Error al cargar los usuarios.");
-        },
+function prepararDragUsuarios() {
+  document.querySelectorAll(".usuario-item").forEach((item) => {
+    // remover listeners previos seguros
+    item.draggable = true;
+    item.removeEventListener("dragstart", item._dragstartHandler);
+    const handler = function (e) {
+      // pasar un JSON con id, nombre, correo
+      const obj = {
+        id: item.dataset.id,
+        nombre:
+          item.dataset.nombre ||
+          item.querySelector(".nombre")?.textContent?.trim() ||
+          item.textContent.trim(),
+        correo:
+          item.dataset.correo ||
+          item.querySelector(".correo")?.textContent?.trim() ||
+          "",
+      };
+      e.dataTransfer.setData("application/json", JSON.stringify(obj));
+      // para que el efecto sea copiar (no mover)
+      try {
+        e.dataTransfer.effectAllowed = "copy";
+      } catch (e) {}
+    };
+    item.addEventListener("dragstart", handler);
+    item._dragstartHandler = handler;
+  });
+}
+
+function actualizarMensajeFase(zone) {
+  const tieneUsuarios = zone.querySelectorAll(".usuario-chip").length > 0;
+
+  let msg = zone.querySelector(".msg-sin-usuarios");
+
+  if (!tieneUsuarios) {
+    if (!msg) {
+      msg = document.createElement("div");
+      msg.classList.add("text-muted", "msg-sin-usuarios");
+      msg.textContent = "Sin usuarios asignados.";
+      zone.appendChild(msg);
+    }
+  } else {
+    if (msg) msg.remove();
+  }
+}
+
+function prepararDropFases() {
+  document.querySelectorAll(".usuarios-asignados").forEach((zone) => {
+    // limpiar handlers previos
+    zone.removeEventListener("dragover", zone._dragover);
+    zone.removeEventListener("dragleave", zone._dragleave);
+    zone.removeEventListener("drop", zone._drop);
+
+    const onDragOver = function (e) {
+      e.preventDefault();
+      zone.classList.add("drop-hover");
+    };
+    const onDragLeave = function (e) {
+      zone.classList.remove("drop-hover");
+    };
+
+    const onDrop = function (e) {
+      e.preventDefault();
+      zone.classList.remove("drop-hover");
+
+      const payload = e.dataTransfer.getData("application/json");
+      if (!payload) return;
+
+      const obj = JSON.parse(payload);
+      const usuarioId = String(obj.id);
+
+      // evitar duplicados
+      if (zone.querySelector(`.usuario-chip[data-id="${usuarioId}"]`)) {
+        return;
+      }
+
+      // Crear chip visual
+      const chip = crearChipUsuarioAsignado({
+        id: usuarioId,
+        nombre: obj.nombre,
+        correo: obj.correo,
+      });
+
+      zone.appendChild(chip);
+      actualizarMensajeFase(zone);
+
+      // 🔥 Obtener el tipo de la pestaña activa
+      const tipo = document.querySelector("#tipoTabs .nav-link.active").dataset
+        .type;
+
+      // 🔥 Asignar grupo según tipo
+      let id_grupo = null;
+      switch (tipo) {
+        case "1":
+          id_grupo = document.querySelector("#contraseña").value;
+          break;
+
+        case "2":
+          id_grupo = document.querySelector("#solicitud").value;
+          break;
+
+        case "3":
+          id_grupo = document.querySelector("#anticipo").value;
+          break;
+      }
+
+      const idFase = zone.id.replace("fase-", "");
+      const grupo = id_grupo;
+
+      fetch(
+        `${base_url}/Configuracion/addUsuarioFase/${grupo},${idFase},${usuarioId}`
+      )
+        .then((r) => r.json())
+        .then((res) => {
+          if (!res.status) {
+            Swal.fire("Error", res.msg, "error");
+            chip.remove();
+            actualizarMensajeFase(zone);
+          }
+        });
+    };
+
+    zone.addEventListener("dragover", onDragOver);
+    zone.addEventListener("dragleave", onDragLeave);
+    zone.addEventListener("drop", onDrop);
+
+    zone._dragover = onDragOver;
+    zone._dragleave = onDragLeave;
+    zone._drop = onDrop;
+  });
+}
+
+function cargarFases(tipo) {
+  let contenedor;
+  let categoria;
+  let grupo;
+
+  switch (tipo) {
+    case "1":
+      contenedor = "#contenedorFasesContraseña";
+      categoria = 1;
+      grupo = document.querySelector("#contraseña").value;
+      break;
+
+    case "2":
+      contenedor = "#contenedorFasesSolicitud";
+      categoria = 2;
+      grupo = document.querySelector("#solicitud").value;
+      break;
+
+    case "3":
+      contenedor = "#contenedorFasesAnticipo";
+      categoria = 3;
+      grupo = document.querySelector("#anticipo").value;
+      break;
+  }
+
+  return fetch(base_url + "/Configuracion/getFases/" + tipo)
+    .then((r) => r.json())
+    .then((data) => {
+      let html = "";
+
+      if (data.length === 0) {
+        html = `<p class="text-muted">No hay fases registradas.</p>`;
+        document.querySelector(contenedor).innerHTML = html;
+        return;
+      }
+
+      data.forEach((f) => {
+        html += `
+          <div class="fase-item mb-3 p-3 border rounded" data-id="${f.id_fase}">
+              <strong class="titulo-fase">${f.nombre_base}</strong>
+
+              <div class="usuarios-asignados mt-3 p-3 bg-light border rounded"
+                  id="fase-${f.id_fase}">
+                  <div class="text-muted small">Cargando usuarios...</div>
+              </div>
+          </div>`;
+      });
+
+      document.querySelector(contenedor).innerHTML = html;
+
+      data.forEach((f) => {
+        cargarUsuariosFase(grupo, f.id_fase);
+      });
+    });
+}
+
+function cargarUsuariosFase(grupo, idFase) {
+  fetch(`${base_url}/Configuracion/getUsuariosByGrupoYFase/${grupo},${idFase}`)
+    .then((r) => r.json())
+    .then((data) => {
+      const target = document.querySelector(`#fase-${idFase}`);
+      target.innerHTML = ""; // Limpiar antes de agregar
+
+      if (data.length === 0) {
+        target.innerHTML = `<div class="text-muted msg-sin-usuarios">Sin usuarios asignados.</div>`;
+      } else {
+        data.forEach((u) => {
+          // Crear el chip usando la función existente
+          const chip = crearChipUsuarioAsignado({
+            id: u.usuario,
+            nombre: u.nombre_completo,
+          });
+          target.appendChild(chip);
+        });
+      }
+
+      actualizarMensajeFase(target);
     });
 }
 
 
-  $(document).on("submit", "#formGrupoCorreos", function (e) {
-    e.preventDefault();
+function cargarUsuarios(tipo) {
+  let contenedor;
+  switch (String(tipo)) {
+    case "1":
+      contenedor = "#contenedorUsuariosContraseña";
+      break;
+    case "2":
+      contenedor = "#contenedorUsuariosSolicitud";
+      break;
+    case "3":
+      contenedor = "#contenedorUsuariosAnticipo";
+      break;
+    default:
+      contenedor = "#contenedorUsuariosContraseña";
+  }
 
-    const formData = new FormData(this);
-    const id_grupo = $("#edit_id_grupo").val();
-
-    // Recolectar datos de usuarios por fase
-    const usuariosPorFase = {};
-
-    $("#contenedorFasesCorreos .card").each(function () {
-      const idFase = $(this).data("idFase");
-      const usuarios = [];
-
-      $(this)
-        .find(`select[name="usuarios[${idFase}][]"]`)
-        .each(function () {
-          const usuarioId = $(this).val();
-          if (usuarioId && usuarioId !== "") {
-            usuarios.push(parseInt(usuarioId));
-          }
+  return fetch(base_url + "/Configuracion/getUsuarios")
+    .then((r) => r.json())
+    .then((data) => {
+      let html = "";
+      if (!data || data.length === 0) {
+        html = `<div class="text-muted">No hay usuarios</div>`;
+      } else {
+        data.forEach((u) => {
+          // Asegúrate que el backend devuelve id, nombre_completo, correo
+          const nombre =
+            u.nombre_completo ||
+            (u.nombres
+              ? u.nombres + " " + (u.primer_apellido || "")
+              : u.nombre || "");
+          const correo = u.correo || u.correo_empresarial || "";
+          html += `<div class="usuario-item p-2 mb-2 border bg-white rounded" draggable="true"
+                       data-id="${u.id || u.id_usuario || u.id_persona}"
+                       data-nombre="${nombre}"
+                       data-correo="${correo}">
+                      <div class="nombre">${nombre}</div>
+                      <div class="correo small text-muted">${correo}</div>
+                   </div>`;
         });
-
-      if (usuarios.length > 0) {
-        usuariosPorFase[idFase] = usuarios;
       }
+
+      document.querySelector(contenedor).innerHTML = html;
+
+      // preparar drag events en los items
+      prepararDragUsuarios();
+
+      return data;
     });
-
-    // Agregar datos al FormData
-    formData.append("usuariosPorFase", JSON.stringify(usuariosPorFase));
-    formData.append("id_grupo", id_grupo);
-
-    $("#spinnerGrupo").removeClass("d-none");
-
-    $.ajax({
-      url: base_url + "/Configuracion/actualizarGrupoCorreos",
-      type: "POST",
-      data: formData,
-      processData: false,
-      contentType: false,
-      dataType: "json",
-      success: function (response) {
-        $("#spinnerGrupo").addClass("d-none");
-        if (response.status) {
-          Swal.fire({
-            icon: "success",
-            title: "Grupo guardado correctamente",
-            timer: 2000,
-            showConfirmButton: false,
-          });
-          $("#modalGrupoCorreos").modal("hide");
-          $("#contenedorFasesCorreos").empty();
-          $("#formGrupoCorreos")[0].reset();
-          tableGrupoCorreos.ajax.reload(null, false);
-        } else {
-          Swal.fire({
-            icon: "error",
-            title: "Error",
-            html: Array.isArray(response.message)
-              ? response.message.join("<br>")
-              : response.message,
-          });
-        }
-      },
-      error: function () {
-        $("#spinnerGrupo").addClass("d-none");
-        Swal.fire({
-          icon: "error",
-          title: "Error de conexión",
-          text: "Ocurrió un problema al enviar los datos.",
-        });
-      },
-    });
-  });
-
-  // no pasarse
-});
+}

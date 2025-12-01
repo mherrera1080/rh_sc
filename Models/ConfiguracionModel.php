@@ -260,7 +260,7 @@ class ConfiguracionModel extends Mysql
         return $request['total'] > 0;
     }
 
-        public function verificarGrupoPorAreaYCategoriabyID($area, $categoria, $idGrupo)
+    public function verificarGrupoPorAreaYCategoriabyID($area, $categoria, $idGrupo)
     {
         $sql = "SELECT COUNT(*) as total 
             FROM tb_grupo_firmas 
@@ -341,6 +341,11 @@ class ConfiguracionModel extends Mysql
                     $item['disabled_editar'] = true;
                     $item['disabled_eliminar'] = true;
                     break;
+                case 11:
+                    $item['disabled_crear'] = true;
+                    $item['disabled_editar'] = true;
+                    $item['disabled_eliminar'] = true;
+                    break;
             }
         }
 
@@ -369,98 +374,30 @@ class ConfiguracionModel extends Mysql
 
     public function grupoCorreos()
     {
-        $sql = "SELECT
-            tr.id_grupo_correo,
-            tr.nombre_grupo,
-            ta.nombre_area as area,
-            tc.nombre_categoria as categoria,
-            tr.estado
-            FROM tb_grupo_correos tr
-            INNER JOIN tb_areas ta ON tr.area = ta.id_area
-            INNER JOIN tb_categoria tc ON tr.categoria = tc.id_categoria
+        $sql = "SELECT 
+            id_area, 
+            nombre_area, 
+            estado 
+            FROM tb_areas
             ";
         $request = $this->select_all($sql);
         return $request;
     }
 
-    public function selectCategoria()
+    public function getGruposAreas($area)
     {
         $sql = "SELECT 
-        id_categoria, 
-        nombre_categoria, 
-        estado
-        FROM tb_categoria";
-        $request = $this->select_all($sql);
+            tgc.area,
+            ta.nombre_area,
+            MAX(CASE WHEN tgc.categoria = '1' THEN tgc.id_grupo_correo END) AS contraseña,
+            MAX(CASE WHEN tgc.categoria = '2' THEN tgc.id_grupo_correo END) AS solicitud,
+            MAX(CASE WHEN tgc.categoria = '3' THEN tgc.id_grupo_correo END) AS anticipo
+        FROM tb_grupo_correos tgc
+        INNER JOIN tb_areas ta ON tgc.area = ta.id_area
+        WHERE tgc.area = ?
+        ";
+        $request = $this->select($sql, [$area]);
         return $request;
-    }
-
-    public function insertGrupoCorreo($nombre, $area, $categoria, $estado)
-    {
-        $sql = "INSERT INTO tb_grupo_correos (
-                nombre_grupo,
-                area,
-                categoria,
-                estado
-            )
-            VALUES (?, ?, ?, ?)";
-        $arrData = [
-            $nombre,
-            $area,
-            $categoria,
-            $estado
-        ];
-        $request = $this->insert($sql, $arrData);
-        return $request;
-    }
-
-    public function verificarGrupoCorreoPorAreaYCategoria($area, $categoria)
-    {
-        $sql = "SELECT COUNT(*) AS total 
-            FROM tb_grupo_correos 
-            WHERE area = ? AND categoria = ? AND estado = 'Activo'";
-        $arrData = [$area, $categoria];
-        $request = $this->select($sql, $arrData);
-
-        return $request && $request['total'] > 0;
-    }
-
-
-
-    public function selectGrupoCorreoByID($id_grupo)
-    {
-        $sql = "SELECT 
-        id_grupo_correo, 
-        nombre_grupo, 
-        area, 
-        categoria,
-        estado 
-        FROM tb_grupo_correos
-        WHERE id_grupo_correo = ?";
-        return $this->select($sql, [$id_grupo]);
-    }
-
-    public function selectFasesConUsuarios($categoria, $id_grupo)
-    {
-        $sql = "SELECT 
-                f.id_fase, 
-                f.orden_fase, 
-                f.nombre_base, 
-                f.categoria,
-                fc.usuario,
-                u.nombres,
-                u.correo
-            FROM tb_fases f
-            LEFT JOIN tb_fase_correos fc ON f.id_fase = fc.fase AND fc.grupo = ?
-            LEFT JOIN tb_usuarios u ON fc.usuario = u.id_usuario
-            WHERE f.categoria = ?
-            ORDER BY f.orden_fase, u.nombres";
-
-        $result = $this->select_multi_parameters($sql, [$id_grupo, $categoria]);
-
-        // DEBUG: Verificar resultado de la consulta
-        error_log("Resultado de selectFasesConUsuarios: " . print_r($result, true));
-
-        return $result;
     }
 
     public function selectFases($categoria)
@@ -472,19 +409,20 @@ class ConfiguracionModel extends Mysql
         categoria
         FROM tb_fases 
         WHERE categoria = ?";
-        return $this->select_multi_parameters($sql, [$categoria]);
+        return $this->select_multi($sql, [$categoria]);
     }
 
-    public function actualizarGrupoCorreos($idGrupo, $nombre, $area)
+    public function selectUsuarios()
     {
-        $sql = "UPDATE tb_grupo_correos SET nombre_grupo = ?, area = ? WHERE id_grupo_correo = ?";
-        return $this->update($sql, [$nombre, $area, $idGrupo]);
-    }
-
-    public function eliminarFaseCorreosPorGrupo($id_grupo)
-    {
-        $sql = "DELETE FROM tb_fase_correos WHERE grupo = ?";
-        return $this->deletebyid($sql, [$id_grupo]);
+        $sql = "SELECT 
+            e.id_usuario AS id,
+            CONCAT(e.nombres, ' ', e.primer_apellido, ' ', e.segundo_apellido) AS nombre_completo,
+            e.correo,
+            e.estado as estado
+        FROM tb_usuarios e
+        WHERE e.estado = 'Activo'
+        ORDER BY e.primer_apellido, e.segundo_apellido ASC"; // opcional
+        return $this->select_all($sql);
     }
 
     public function insertarFaseCorreo($usuario, $fase, $grupo)
@@ -548,6 +486,73 @@ class ConfiguracionModel extends Mysql
         $params = [$crear, $leer, $editar, $eliminar, $idRol, $moduloNombre];
         return $this->update($sql, $params);
     }
+
+    public function registroActividad(string $no_empleado, string $empleado, string $modulo, string $accion, string $fecha, string $ip, string $hostname)
+    {
+        if (empty($request)) {
+            // Insertar nuevo usuario
+            $columnas = "no_empleado, empleado, modulo, accion, fecha, ip, hostname";
+            $query_insert = "INSERT INTO tb_actividad($columnas) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            $arrData = array(
+                $no_empleado,
+                $empleado,
+                $modulo,
+                $accion,
+                $fecha,
+                $ip,
+                $hostname
+            );
+            $request_insert = $this->insert($query_insert, $arrData);
+            $return = $request_insert;
+        } else {
+            $return = "exist";
+        }
+        return $return;
+    }
+
+    public function getFasesByCategoria(int $categoria)
+    {
+        $sql = "SELECT * FROM tb_fases WHERE categoria = ? ORDER BY orden_fase ASC";
+        return $this->select_multi($sql, [$categoria]);
+    }
+
+    public function getUsuariosByGrupoYFase($grupo, $fase)
+    {
+        $sql = "SELECT 
+                fc.usuario,
+                CONCAT(e.nombres, ' ', e.primer_apellido, ' ', e.segundo_apellido) AS nombre_completo,
+                fc.fase
+            FROM tb_fase_correos fc
+            INNER JOIN tb_usuarios e ON fc.usuario = e.id_usuario
+            WHERE fc.grupo = ? AND fc.fase = ?";
+
+        return $this->select_multi($sql, [$grupo, $fase]);
+    }
+    public function getAllUsuarios()
+    {
+        $sql = "SELECT id_usuario, nombres, primer_apellido, segundo_apellido, correo
+            FROM tb_usuarios
+            WHERE estado = 'Activo'";
+        return $this->select_all($sql);
+    }
+
+
+    public function insertUsuarioFase($idGrupo, $idFase, $idUsuario)
+    {
+        $sql = "INSERT INTO tb_fase_correos (grupo, fase, usuario)
+            VALUES (?, ?, ?)";
+        $arrData = [$idGrupo, $idFase, $idUsuario];
+        return $this->insert($sql, $arrData);
+    }
+
+    public function deleteUsuarioFase($idGrupo, $idFase, $idUsuario)
+    {
+        $sql = "DELETE FROM tb_fase_correos
+            WHERE grupo = ? AND fase = ? AND usuario = ?";
+        $arrData = [$idGrupo, $idFase, $idUsuario];
+        return $this->deletebyid($sql, $arrData);
+    }
+
 
 
 
