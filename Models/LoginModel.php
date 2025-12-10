@@ -101,10 +101,11 @@ class LoginModel extends Mysql
 
     public function guardarToken($correo, $token, $expires_at)
     {
-        $sql = "INSERT INTO auth_tokens (correo_empresarial, token, created_at, expires_at) VALUES (?, ?, NOW(), ?)";
+        $sql = "INSERT INTO login_tokens (correo_empresarial, token, expires_at) VALUES (?, ?, ?)";
         $arrData = [$correo, $token, $expires_at];
         return $this->insert($sql, $arrData);
     }
+
 
     public function getTokenValido($correo_empresarial, $token)
     {
