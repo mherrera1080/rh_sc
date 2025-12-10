@@ -109,12 +109,18 @@ class LoginModel extends Mysql
 
     public function getTokenValido($correo_empresarial, $token)
     {
+        date_default_timezone_set('America/Guatemala'); // Ajusta según tu zona horaria
+
+        // Obtener la fecha y hora actual en la zona correcta
+        $query = date("Y-m-d H:i:s");
+
+
         $sql = "SELECT * FROM auth_tokens 
             WHERE correo_empresarial = ? 
             AND token = ? 
-            AND expires_at >= NOW()
+            AND expires_at > ?
             ORDER BY id DESC LIMIT 1";
-        $arrData = [$correo_empresarial, $token];
+        $arrData = [$correo_empresarial, $token, $query];
         return $this->select($sql, $arrData);
     }
 
