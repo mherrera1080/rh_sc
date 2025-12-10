@@ -33,8 +33,7 @@
 				<div class="logo-header" data-background-color="dark">
 
 					<a href="<?= base_url(); ?>/Dashboard" class="logo">
-						<img src="<?= media(); ?>/img/carso_logo.png" alt="navbar brand" class="navbar-brand"
-							height="50">
+						<img src="<?= media(); ?>/img/carso_logo" alt="navbar brand" class="navbar-brand" height="50">
 					</a>
 					<div class="nav-toggle">
 						<button class="btn btn-toggle toggle-sidebar">
