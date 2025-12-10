@@ -139,7 +139,7 @@ class ConfiguracionModel extends Mysql
             g.estado AS estado_grupo,
             COUNT(f.id_firma) AS total_firmas
         FROM tb_grupo_firmas g
-        INNER JOIN tb_firmas f ON f.id_grupo = g.id_grupo
+        LEFT JOIN tb_firmas f ON f.id_grupo = g.id_grupo
         INNER JOIN tb_areas ta ON g.area_grupo = ta.id_area
         GROUP BY g.id_grupo";
         $request = $this->select_all($sql);

@@ -34,11 +34,11 @@
                                     <th>ID</th>
                                     <th>Contraseña</th>
                                     <th>Area</th>
-                                    <th>Registro</th>
-                                    <th>id_proveedor</th>
+                                    <th>Fecha Registro</th>
+                                    <th>Provedor</th>
                                     <th>Total</th>
                                     <th>Fecha Pago</th>
-                                    <th></th>
+                                    <th>Estado</th>
                                     <th></th>
                                 </tr>
                             </thead>

@@ -24,7 +24,7 @@
                             </button>
                         <?php } ?>
                         <?php if (
-                            $data['facturas']['estado'] === "Pendiente" || $data['facturas']['estado'] === "Corregido" 
+                            $data['facturas']['estado'] === "Pendiente" || $data['facturas']['estado'] === "Corregido"
                         ) { ?>
                             <button class="btn btn-success btn-round ms-auto btn-password" id="btnValidar"
                                 data-bs-toggle="modal" data-bs-target="#validarModal"

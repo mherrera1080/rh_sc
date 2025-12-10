@@ -10,11 +10,11 @@
                         <h2 class="mb-1 fs-4 fw-bold">Solicitud de Fondos sin contraseña</h2>
                     </div>
                     <div class="d-flex gap-2">
-                                                    <button class="btn btn-danger btn-sm"
-                                onclick="window.open('<?= base_url() ?>/SolicitudFondos/generarAnticipo/<?= $data['facturas']['id_solicitud']; ?>', '_blank')">
-                                <i class="far fa-file-pdf"></i> PDF
-                            </button>
-                        <?php if ($data['facturas']['solicitud_estado'] === "Pendiente" && $_SESSION['PersonalData']['area'] == 4 || $data['facturas']['solicitud_estado'] === "Corregido" && $_SESSION['PersonalData']['area'] == 4 ) { ?>
+                        <button class="btn btn-danger btn-sm"
+                            onclick="window.open('<?= base_url() ?>/SolicitudFondos/generarAnticipo/<?= $data['facturas']['id_solicitud']; ?>', '_blank')">
+                            <i class="far fa-file-pdf"></i> PDF
+                        </button>
+                        <?php if ($data['facturas']['solicitud_estado'] === "Pendiente" && $_SESSION['PersonalData']['area'] == 4 || $data['facturas']['solicitud_estado'] === "Corregido" && $_SESSION['PersonalData']['area'] == 4) { ?>
                             <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#finalizarModal">
                                 <i class="fas fa-check"></i> Pagar
                             </button>

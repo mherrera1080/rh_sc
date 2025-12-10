@@ -251,6 +251,7 @@ class PDF extends FPDF
         // Texto "Valor en letras"
         $this->Text(10, $start_y + 11, utf8_decode('Valor en letras: __________________________________________________________________________.'));
         // Líneas y texto dentro de los cuadros
+        $this->Text(45, $start_y + 28, utf8_decode($arrData['contraseña']['fecha_pago']));
         $this->Text(20, $start_y + 28, utf8_decode('________________________________'));
         $this->Text(41, $start_y + 32, utf8_decode('Fecha de Pago'));
 

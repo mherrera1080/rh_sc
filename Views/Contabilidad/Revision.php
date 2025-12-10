@@ -21,27 +21,17 @@
                         <?php } ?>
                     </div>
                     <div class="d-flex gap-2">
-                        <?php if ($data['facturas']['area_id'] != 2) { ?>
-                            <?php if ($data['facturas']['solicitud_estado'] === "Pendiente" && $_SESSION['PersonalData']['area'] == 4) { ?>
-                                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#finalizarModal">
-                                    <i class="fas fa-check"></i> Pagar
-                                </button>
-                                <button class="btn btn-danger btn-sm"
-                                    onclick="window.open('<?= base_url() ?>/SolicitudFondos/generarSolicitud/<?= $data['facturas']['contraseña']; ?>', '_blank')">
-                                    <i class="far fa-file-pdf"></i> PDF
-                                </button>
-                            <?php } ?>
-                        <?php } else if ($data['facturas']['area_id'] == 2) { ?>
-                            <?php if ($data['facturas']['solicitud_estado'] === "Validado Conta" && $_SESSION['PersonalData']['area'] == 4) { ?>
-                                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#finalizarModal">
-                                        <i class="fas fa-check"></i> Pagar
-                                    </button>
-                                    <button class="btn btn-danger btn-sm"
-                                        onclick="window.open('<?= base_url() ?>/SolicitudFondos/generarSolicitud/<?= $data['facturas']['contraseña']; ?>', '_blank')">
-                                        <i class="far fa-file-pdf"></i> PDF
-                                    </button>
-                            <?php } ?>
-                        <?php } ?>
+                        <?php if ($data['facturas']['solicitud_estado'] === "Pendiente" && $_SESSION['PersonalData']['area'] == 4): ?>
+                            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#finalizarModal">
+                                <i class="fas fa-check"></i> Pagar
+                            </button>
+
+                            <button class="btn btn-danger btn-sm"
+                                onclick="window.open('<?= base_url() ?>/SolicitudFondos/generarSolicitud/<?= $data['facturas']['contraseña']; ?>', '_blank')">
+                                <i class="far fa-file-pdf"></i> PDF
+                            </button>
+                        <?php endif; ?>
+
                     </div>
                 </div>
                 <div class="card-body">
@@ -297,15 +287,15 @@
                             </div>
                         </div>
                         <hr>
-                            <div class="mb-4">
-                                <h6 class="fw-bold text-dark mb-3">Comentario de Revision</h6>
-                                <div class="row">
-                                    <div class="col-12 mb-3">
-                                        <textarea class="form-control" name="observacion" rows="4"
-                                            placeholder="Escribe aquí tus observaciones..."></textarea>
-                                    </div>
+                        <div class="mb-4">
+                            <h6 class="fw-bold text-dark mb-3">Comentario de Revision</h6>
+                            <div class="row">
+                                <div class="col-12 mb-3">
+                                    <textarea class="form-control" name="observacion" rows="4"
+                                        placeholder="Escribe aquí tus observaciones..."></textarea>
                                 </div>
                             </div>
+                        </div>
                     </div>
                     <!-- Footer -->
                     <div class="modal-footer">

@@ -6,7 +6,7 @@
     <h2 class="fw-bold">Reportes</h2>
 </div>
 
-    <!-- Filtros -->
+    <!-- Filtros
     <div class="card mb-3">
         <div class="card-body">
             <div class="row g-3">
@@ -36,34 +36,13 @@
                     </select>
                 </div>
 
-                <div class="col-md-3">
-                    <label class="form-label">Areas</label>
-                    <select id="area" class="form-select">
-                        <option value="">Todos</option>
-                        <?php foreach ($data['areas'] as $a) { ?>
-                            <option value="<?= $a['id_area'] ?>"><?= $a['nombre_area'] ?></option>
-                        <?php } ?>
-                    </select>
-                </div>
-
-
-                <div class="col-md-3">
-                    <label class="form-label">Proveedores</label>
-                    <select id="proveedor" class="form-select">
-                        <option value="">Todos</option>
-                        <?php foreach ($data['proveedores'] as $a) { ?>
-                            <option value="<?= $a['id_proveedor'] ?>"><?= $a['nombre_proveedor'] ?></option>
-                        <?php } ?>
-                    </select>
-                </div>
-
                 <div class="col-md-12 text-end">
                     <button class="btn btn-secondary mt-2 me-2" id="btnReset">Limpiar</button>
                     <button class="btn btn-primary mt-2" id="btnFiltrar">Aplicar Filtros</button>
                 </div>
             </div>
         </div>
-    </div>
+    </div> -->
 
     <!-- Tabla -->
     <div class="row">

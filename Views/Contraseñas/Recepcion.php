@@ -41,8 +41,8 @@
                                     <th>ID</th>
                                     <th>Contraseña</th>
                                     <th>Area</th>
-                                    <th>Registro</th>
-                                    <th>id_proveedor</th>
+                                    <th>Fecha </th>
+                                    <th>Proveedor</th>
                                     <th>Total</th>
                                     <th>Fecha Pago</th>
                                     <th>Estado</th>
@@ -89,22 +89,22 @@
                     </div>
                     <div class="row mb-4">
                         <div class="col-md-2">
-                            <label for="fecha_registro" class="form-label">Fecha Registro</label>
+                            <label for="fecha_registro" class="form-label"><strong>Fecha Registro</strong></label>
                             <input type="date" class="form-control" id="fecha_registro" name="fecha_registro" readonly>
                         </div>
                         <div class="col-md-3">
-                            <label for="fecha_pago" class="form-label">Fecha Pago <span
+                            <label for="fecha_pago" class="form-label"><strong>Fecha Pago Programado</strong> <span
                                     class="text-danger">*</span></label>
                             <input type="date" class="form-control" id="fecha_pago" name="fecha_pago" required>
                         </div>
                         <div class="col-md-3">
-                            <label for="role_id" class="form-label">Area: <span class="text-danger">*</span></label>
+                            <label for="role_id" class="form-label"><strong>Area:</strong> <span class="text-danger">*</span></label>
                             <select class="form-control selectpicker" id="area" name="area" required>
 
                             </select>
                         </div>
                         <div class="col-md-4">
-                            <label for="role_id" class="form-label">Recibimos de: <span
+                            <label for="role_id" class="form-label"><strong>Recibimos de: </strong><span
                                     class="text-danger">*</span></label>
                             <select class="form-control selectpicker" id="proveedor_recibimiento"
                                 name="proveedor_recibimiento" required>
@@ -186,23 +186,23 @@
                     </div>
                     <div class="row mb-4">
                         <div class="col-md-2">
-                            <label for="fecha_registro" class="form-label">Fecha Registro</label>
+                            <label for="fecha_registro" class="form-label"><strong>Fecha Registro</strong></label>
                             <input type="date" class="form-control" id="edit_fecha_registro" name="fecha_registro"
                                 readonly>
                         </div>
                         <div class="col-md-3">
-                            <label for="fecha_pago" class="form-label">Fecha Pago <span
+                            <label for="fecha_pago" class="form-label"><strong>Fecha Pago</strong> <span
                                     class="text-danger">*</span></label>
                             <input type="date" class="form-control" id="edit_fecha_pago" name="fecha_pago" required>
                         </div>
                         <div class="col-md-3">
-                            <label for="role_id" class="form-label">Area: <span class="text-danger">*</span></label>
+                            <label for="role_id" class="form-label"><strong>Area: </strong><span class="text-danger">*</span></label>
                             <select class="form-control selectpicker" id="edit_area" name="area" required>
 
                             </select>
                         </div>
                         <div class="col-md-4">
-                            <label for="role_id" class="form-label">Recibimos de: <span
+                            <label for="role_id" class="form-label"><strong>Recibimos de:</strong> <span
                                     class="text-danger">*</span></label>
                             <select class="form-control selectpicker" id="edit_id_proveedor"
                                 name="proveedor_recibimiento" required>

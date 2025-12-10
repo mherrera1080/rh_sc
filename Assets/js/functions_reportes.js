@@ -47,14 +47,6 @@ function inicializarTabla() {
   tableReporte = $("#tableReporte").DataTable({
     ajax: {
       url: config.url,
-      data: function (d) {
-        d.f_inicio = document.getElementById("f_inicio").value;
-        d.f_fin = document.getElementById("f_fin").value;
-        d.f_transaccion = document.getElementById("f_transaccion").value;
-        d.estado = document.getElementById("estado").value;
-        d.area = document.getElementById("area").value;
-        d.proveedor = document.getElementById("proveedor").value;
-      },
       dataSrc: function (json) {
         if (!json.status) {
           Swal.fire("Sin registros", json.msg, "info");
@@ -134,7 +126,7 @@ function obtenerConfiguracion(tabla) {
               return html;
             },
           },
-                     {
+          {
             title: "Observaciones",
             data: "correcciones",
             visible: false,

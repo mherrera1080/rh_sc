@@ -202,7 +202,7 @@ class Vehiculos extends Controllers
                 log_Actividad(
                     $_SESSION['PersonalData']['no_empleado'],
                     $_SESSION['PersonalData']['nombre_completo'],
-                    "Configuracion",
+                    "Vehiculos",
                     "Se descarto la contraseña: " . $contraseña
                 );
             }

@@ -428,7 +428,7 @@ class SolicitudFondosModel extends Mysql
         $arrData = [$respuesta, $observacion, $contraseña];
         return $this->update($sql, $arrData);
     }
-    public function descartarDetalles($contraseña, $respuesta, $observacion)
+    public function descartarDetalles($contraseña, $respuesta)
     {
         $sql = "UPDATE tb_detalles 
                 SET 

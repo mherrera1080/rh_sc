@@ -37,7 +37,7 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>ID</th>
-                                    <th>Modulo</th>
+                                    <th>Rol</th>
                                     <th>Estado</th>
                                     <th></th>
                                 </tr>

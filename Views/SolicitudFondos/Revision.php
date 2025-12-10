@@ -20,29 +20,6 @@
                             </button>
                         <?php } ?>
                     </div>
-                    <div class="d-flex gap-2">
-                        <?php if ($data['facturas']['area_id'] != 2) { ?>
-                            <?php if ($data['facturas']['solicitud_estado'] === "Pendiente") { ?>
-                                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#validarModal">
-                                    <i class="fas fa-check"></i> Validar
-                                </button>
-                                <button class="btn btn-danger btn-sm"
-                                    onclick="window.open('<?= base_url() ?>/SolicitudFondos/generarSolicitud/<?= $data['facturas']['contraseña']; ?>', '_blank')">
-                                    <i class="far fa-file-pdf"></i> PDF
-                                </button>
-                            <?php } ?>
-                        <?php } else if ($data['facturas']['area_id'] == 2) { ?>
-                            <?php if ($data['facturas']['solicitud_estado'] === "Pendiente" && $_SESSION['PersonalData']['area'] == 4) { ?>
-                                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#validarModal">
-                                        <i class="fas fa-check"></i> Validar
-                                    </button>
-                                    <button class="btn btn-danger btn-sm"
-                                        onclick="window.open('<?= base_url() ?>/SolicitudFondos/generarSolicitud/<?= $data['facturas']['contraseña']; ?>', '_blank')">
-                                        <i class="far fa-file-pdf"></i> PDF
-                                    </button>
-                            <?php } ?>
-                        <?php } ?>
-                    </div>
                 </div>
                 <div class="card-body">
                     <div class="row g-3">

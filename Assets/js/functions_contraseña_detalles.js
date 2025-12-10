@@ -68,7 +68,7 @@ document.addEventListener("DOMContentLoaded", function () {
       {
         data: null,
         render: function (data, type, row) {
-          if (row.estado_contra === "Pendiente") {
+          if (row.estado_contra === "Pendiente" ||row.estado_contra === "Corregido" ) {
             html = `
             <button type="button" class="btn btn-primary m-0 d-flex justify-content-left d-none btnFacturaEditar"
             data-bs-toggle="modal" data-bs-target="#editarModal" data-id="${row.id_detalle}"> 

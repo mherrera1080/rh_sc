@@ -21,7 +21,7 @@
         <button class="btn btn-primary btn-round ms-auto btn-password" data-bs-toggle="modal"
             data-bs-target="#setContraseñaModal">
             <i class="fa fa-plus"></i>
-            Añadir Solicitud sin Contra
+            Añadir Anticipo
         </button>
     </div>
 
