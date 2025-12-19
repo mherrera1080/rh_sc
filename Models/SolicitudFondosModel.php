@@ -195,6 +195,65 @@ class SolicitudFondosModel extends Mysql
         return $request;
     }
 
+    public function getCombustible($contraseña)
+    {
+        $sql = "SELECT
+            tc.contraseña as contraseña,
+            ta.nombre_area as area,
+            tp.nombre_proveedor as proveedor,
+            ta.id_area,
+            tn.transferencia as total,
+            tn.saldo_disponible as saldo,
+            tn.fecha_inicio,
+            tn.fecha_final,
+            CONCAT(tu.nombres, ' ', tu.primer_apellido, ' ', tu.segundo_apellido) as realizador,
+            DAY(tc.fecha_creacion)   AS dia_registro,
+            MONTH(tc.fecha_creacion) AS mes_registro,
+            YEAR(tc.fecha_creacion)  AS año_registro,
+            tc.fecha_creacion AS fecha_registro,
+            tc.fecha_pago AS fecha_pago
+        FROM tb_solicitud_fondos tc
+        INNER JOIN tb_areas ta ON tc.area = ta.id_area
+        INNER JOIN tb_proveedor tp ON tc.proveedor = tp.id_proveedor
+        INNER JOIN tb_usuarios tu ON tc.usuario = tu.id_usuario
+        INNER JOIN tb_combustible tn ON tc.contraseña = tn.contraseña
+        WHERE tc.contraseña = ?
+        GROUP BY tc.contraseña;
+        ";
+
+        $request = $this->select($sql, array($contraseña));
+        return $request;
+    }
+
+    public function dfdfdf($id_solicitud)
+    {
+        $sql = "SELECT
+            tc.id_solicitud,
+            tc.contraseña,
+            CONCAT(tu.nombres, ' ', tu.primer_apellido, ' ', tu.segundo_apellido) as realizador,
+            tp.nombre_proveedor AS proveedor,
+            ta.id_area,
+            ta.nombre_area AS area,
+            ROUND(SUM(td.valor_documento), 2) AS total,
+            DAY(tc.fecha_creacion)   AS dia_registro,
+            MONTH(tc.fecha_creacion) AS mes_registro,
+            YEAR(tc.fecha_creacion)  AS año_registro,
+            tc.fecha_creacion AS fecha_registro,
+            tc.fecha_pago,
+            tc.estado AS solicitud_estado
+        FROM tb_solicitud_fondos tc
+        INNER JOIN tb_proveedor tp ON tc.proveedor = tp.id_proveedor
+        INNER JOIN tb_areas ta ON tc.area = ta.id_area
+        INNER JOIN tb_detalles td ON tc.id_solicitud = td.no_factura
+        INNER JOIN tb_usuarios tu ON tc.usuario = tu.id_usuario
+        WHERE tc.id_solicitud = ?
+        GROUP BY tc.id_solicitud;
+        ";
+
+        $request = $this->select($sql, array($id_solicitud));
+        return $request;
+    }
+
     public function getContraSoli($id_solicitud)
     {
         $sql = "SELECT
@@ -324,6 +383,17 @@ class SolicitudFondosModel extends Mysql
         return $this->update($sql, $arrData);
     }
 
+    public function UpdateDetalleDos($id_detalle, $cod_ax, $observacion)
+    {
+        $sql = "UPDATE tb_detalles 
+                SET 
+                registro_ax = ?, 
+                observacion = ?
+                WHERE id_detalle = ?";
+        $arrData = [$cod_ax, $observacion, $id_detalle];
+        return $this->update($sql, $arrData);
+    }
+
     public function getImpuestosRegimen($contraseña)
     {
         $sql = "SELECT
@@ -407,6 +477,7 @@ class SolicitudFondosModel extends Mysql
         $request = $this->select($sql, array($id));
         return $request;
     }
+
     public function udapteSolicitud($id_solicitud, $respuesta, $observacion)
     {
         $sql = "UPDATE tb_solicitud_fondos 
@@ -594,6 +665,18 @@ class SolicitudFondosModel extends Mysql
         return $request['contraseña'] ?? null;
     }
 
+    public function getUltimoCombustible()
+    {
+        $sql = "SELECT
+        contraseña 
+        FROM tb_solicitud_fondos 
+        WHERE contraseña LIKE 'COMBUSTIBLE-%' 
+        ORDER BY id_solicitud DESC LIMIT 1";
+        $request = $this->select($sql);
+        return $request['contraseña'] ?? null;
+    }
+
+
     public function selectUsuario($usuario)
     {
         $sql = "SELECT
@@ -607,11 +690,239 @@ class SolicitudFondosModel extends Mysql
         rol_usuario,
         contraseña,
         estado
-    FROM tb_usuarios
-    WHERE CONCAT(nombres, ' ', primer_apellido, ' ', segundo_apellido) LIKE ?";
+        FROM tb_usuarios
+        WHERE CONCAT(nombres, ' ', primer_apellido, ' ', segundo_apellido) LIKE ?";
 
         $request = $this->select($sql, array('%' . $usuario . '%'));
         return $request;
     }
+
+    public function insertServicio($no_factura, $placa, $repuestos, $kilometraje, $estado, $tipo_servicio, $ln, $usuario, $tipo, $codigo_ax, $tipo_mantenimiento)
+    {
+        $sql = "INSERT INTO tb_servicios (
+                no_factura, 
+                placa, 
+                repuestos,
+                kilometraje, 
+                estado, 
+                tipo_servicio, 
+                ln, 
+                usuario,
+                tipo_persona,
+                codigo_ax, 
+                tipo_mantenimiento
+            ) VALUES (?,?,?,?,?,?,?,?,?,?,?)";
+
+        $arrData = [
+            $no_factura,
+            $placa,
+            $repuestos,
+            $kilometraje,
+            $estado,
+            $tipo_servicio,
+            $ln,
+            $usuario,
+            $tipo,
+            $codigo_ax,
+            $tipo_mantenimiento
+        ];
+
+        return $this->insert($sql, $arrData);
+    }
+
+    public function updateServicio($servicio, $no_factura, $placa, $kilometraje, $estado, $tipo_servicio, $ln, $usuario, $tipo, $codigo_ax, $tipo_mantenimiento)
+    {
+        $sql = "UPDATE tb_servicios 
+            SET 
+                no_factura=?,
+                placa=?,
+                kilometraje=?,
+                estado=?,
+                tipo_servicio=?,
+                ln=?,
+                usuario=?,
+                tipo_persona=?,
+                codigo_ax=?,
+                tipo_mantenimiento=?
+            WHERE id_servicio = ?";
+
+        $arrData = [
+            $no_factura,
+            $placa,
+            $kilometraje,
+            $estado,
+            $tipo_servicio,
+            $ln,
+            $usuario,
+            $tipo,
+            $codigo_ax,
+            $tipo_mantenimiento,
+            $servicio
+        ];
+
+        return $this->update($sql, $arrData);
+    }
+
+    public function FacturasServiciobyID(int $id)
+    {
+        // Consulta principal + subconsulta que concatena materiales con separador '|||'
+        $sql = "SELECT
+                tr.id_regimen,
+                tr.nombre_regimen,
+                td.id_detalle,
+                td.no_factura,
+                td.registro_ax,
+                td.bien_servicio,
+                td.valor_documento,
+                td.iva,
+                td.base,
+                td.observacion,
+                ts.id_servicio,
+                ts.placa,
+                ts.kilometraje,
+                ts.estado,
+                ts.tipo_servicio,
+                ts.ln,
+                ts.usuario,
+                ts.codigo_ax,
+                ts.tipo_mantenimiento,
+                (SELECT GROUP_CONCAT(material SEPARATOR ';') 
+                 FROM tb_materiales m 
+                 WHERE m.servicio_id = ts.id_servicio
+                ) AS materiales
+            FROM tb_detalles td
+            LEFT JOIN tb_servicios ts ON td.id_detalle = ts.no_factura
+            INNER JOIN tb_contraseña tc ON td.contraseña = tc.contraseña
+            INNER JOIN tb_proveedor tp ON tc.id_proveedor = tp.id_proveedor
+            INNER JOIN tb_regimen tr ON tp.regimen = tr.id_regimen
+            WHERE td.id_detalle = ?";
+        // Devuelve un único registro (o null)
+        $request = $this->select($sql, array($id));
+        return $request;
+    }
+
+    public function FacturasRentabyID(int $id)
+    {
+        $sql = "SELECT
+                tr.id_regimen,
+                tr.nombre_regimen,
+                td.id_detalle,
+                td.no_factura,
+                td.registro_ax,
+                td.bien_servicio,
+                td.valor_documento,
+                td.iva,
+                td.base,
+                td.observacion,
+                (SELECT GROUP_CONCAT(placa SEPARATOR ';') 
+                 FROM tb_rentas m 
+                 WHERE m.no_factura = td.id_detalle
+                ) AS arrendamientos
+            FROM tb_detalles td
+            INNER JOIN tb_contraseña tc ON td.contraseña = tc.contraseña
+            INNER JOIN tb_proveedor tp ON tc.id_proveedor = tp.id_proveedor
+            INNER JOIN tb_regimen tr ON tp.regimen = tr.id_regimen
+            WHERE td.id_detalle = ?";
+        $request = $this->select($sql, array($id));
+        return $request;
+    }
+
+    public function getServiciosbyContra(int $contraseña)
+    {
+        $sql = "SELECT
+                RIGHT(td.no_factura, 4) AS no_factura,
+                ts.repuestos,
+                ts.placa,
+                ts.estado,
+                ts.usuario,
+                ts.tipo_persona,
+                ts.ln,
+                td.valor_documento
+            FROM tb_servicios ts
+            INNER JOIN tb_detalles td ON ts.no_factura = td.id_detalle
+            WHERE td.contraseña = ?";
+        $request = $this->select_multi($sql, array($contraseña));
+        return $request;
+    }
+
+    public function getRentasbyContra(int $contraseña)
+    {
+        $sql = "SELECT
+                tr.placa
+            FROM tb_rentas tr
+            INNER JOIN tb_detalles td ON tr.no_factura = td.id_detalle
+            WHERE td.contraseña = ?";
+        $request = $this->select_multi($sql, array($contraseña));
+        return $request;
+    }
+
+    public function getMaterialesByServicio($servicio_id)
+    {
+        $sql = "SELECT * FROM tb_materiales WHERE servicio_id = ?";
+        $arrData = [$servicio_id];
+        return $this->select_multi($sql, $arrData);
+    }
+
+
+    public function insertMaterial($servicio_id, $material)
+    {
+        $sql = "INSERT INTO tb_materiales (servicio_id, material) VALUES (?, ?)";
+        $arrData = [$servicio_id, $material];
+        return $this->insert($sql, $arrData);
+    }
+
+    public function deleteMaterial($servicio_id, $material)
+    {
+        $sql = "DELETE FROM tb_materiales WHERE servicio_id = ? AND material = ?";
+        $arrData = [$servicio_id, $material];
+        return $this->deletebyid($sql, $arrData);
+    }
+
+    public function getPlacasByServicio($servicio_id)
+    {
+        $sql = "SELECT * FROM tb_rentas WHERE no_factura = ?";
+        $arrData = [$servicio_id];
+        return $this->select_multi($sql, $arrData);
+    }
+
+    public function insertRenta($no_factura, $placa)
+    {
+        $sql = "INSERT INTO tb_rentas (no_factura, placa) VALUES (?, ?)";
+        $arrData = [$no_factura, $placa];
+        return $this->insert($sql, $arrData);
+    }
+
+    public function deleteRenta($no_factura, $placa)
+    {
+        $sql = "DELETE FROM tb_rentas WHERE no_factura = ? AND placa = ?";
+        $arrData = [$no_factura, $placa];
+        return $this->deletebyid($sql, $arrData);
+    }
+
+    public function insertCombustible($contraseña, $transferencia, $saldo_disponible, $fecha_inicio, $fecha_final)
+    {
+        $sql = "INSERT INTO tb_combustible (contraseña, transferencia, saldo_disponible, fecha_inicio, fecha_final)
+            VALUES (?,?,?,?,?)";
+        $arrData = [$contraseña, $transferencia, $saldo_disponible, $fecha_inicio, $fecha_final];
+        return $this->insert($sql, $arrData);
+    }
+
+    public function getCombustiblebyContra($contraseña)
+    {
+        $sql = "SELECT 
+            tc.contraseña,
+            tc.transferencia,
+            tc.saldo_disponible,
+            tc.fecha_inicio,
+            tc.fecha_final
+        FROM tb_combustible tc
+        INNER JOIN tb_solicitud_fondos ts ON tc.contraseña = ts.contraseña
+        WHERE ts.contraseña = ?";
+        $request = $this->select_multi($sql, array($contraseña));
+        return $request;
+    }
+
+
+
 
 }

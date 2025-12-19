@@ -68,22 +68,7 @@ document.addEventListener("DOMContentLoaded", function () {
       {
         data: null,
         render: function (data, type, row) {
-          // 🔹 Estados que permiten edición
-          if (
-            row.estado_contra === "Pendiente" ||
-            row.estado_contra === "Corregido"
-          ) {
-            return `
-            <button type="button"
-              class="btn btn-primary m-0 d-flex justify-content-left btnFacturaEditar"
-              data-bs-toggle="modal"
-              data-bs-target="#editarModal"
-              data-id="${row.id_detalle}">
-              <i class="fas fa-edit"></i>
-            </button>
-          `;
-          } else {
-            return `
+          return `
               <button type="button"
                 class="btn btn-primary m-0 d-flex justify-content-left btn-info btnFactura"
                 data-bs-toggle="modal"
@@ -91,7 +76,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 <i class="fas fa-info-circle"></i>
               </button>
             `;
-          }
           // 🔹 Cualquier otro estado → solo información
         },
       },

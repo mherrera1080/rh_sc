@@ -76,7 +76,7 @@ class Contabilidad extends Controllers
         $data['page_tag'] = "Detalles";
         $data['page_title'] = "Detalles";
         $data['page_name'] = "Detalles";
-        $data['page_functions_js'] = "functions_contraseña_detalles.js";
+        $data['page_functions_js'] = "functions_contabilidad_detalles.js";
 
         $this->views->getView($this, "Detalles", $data);
     }

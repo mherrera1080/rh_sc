@@ -19,60 +19,52 @@
                                 <i class="fas fa-exclamation"></i>
                             </button>
                         <?php } ?>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <?php if ($data['facturas']['solicitud_estado'] === "Pendiente" && $_SESSION['PersonalData']['area'] == 4): ?>
-                            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#finalizarModal">
-                                <i class="fas fa-check"></i> Pagar
-                            </button>
-
-                            <button class="btn btn-danger btn-sm"
-                                onclick="window.open('<?= base_url() ?>/SolicitudFondos/generarSolicitud/<?= $data['facturas']['contraseña']; ?>', '_blank')">
-                                <i class="far fa-file-pdf"></i> PDF
-                            </button>
-                        <?php endif; ?>
+                        <button class="btn btn-danger btn-sm"
+                            onclick="window.open('<?= base_url() ?>/SolicitudFondos/generarSolicitudServicios/<?= $data['facturas']['contraseña']; ?>', '_blank')">
+                            <i class="far fa-file-pdf"></i> PDF
+                        </button>
                     </div>
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
                         <div class="col-md-3">
-                            <label class="form-label fw-bold">Proveedor</label>
+                            <label class="form-label strong strong fw-bold">Proveedor</label>
                             <input type="text" class="form-control"
                                 value="<?= $data['facturas']['proveedor'] ?? 'N/A'; ?>" disabled>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label fw-bold">Área</label>
+                            <label class="form-label strong strong fw-bold">Área</label>
                             <input type="text" class="form-control" value="<?= $data['facturas']['area'] ?? 'N/A'; ?>"
                                 disabled>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label fw-bold">Fecha Registro</label>
+                            <label class="form-label strong strong fw-bold">Fecha Registro</label>
                             <input type="text" class="form-control"
                                 value="<?= $data['facturas']['fecha_registro'] ?? 'N/A'; ?>" disabled>
                         </div>
                         <div class="col-md-3">
-                            <label for="fecha_pago" class="form-label fw-bold">Fecha Pago</label>
+                            <label for="fecha_pago" class="form-label strong strong fw-bold">Fecha Pago</label>
                             <input type="date" class="form-control" id="fecha_pago"
                                 value="<?= $data['facturas']['fecha_pago'] ?? ''; ?>" disabled>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label fw-bold">Monto Total</label>
+                            <label class="form-label strong strong fw-bold">Monto Total</label>
                             <input type="text" class="form-control text-end"
                                 value="<?= $data['facturas']['total_calc'] ?? 'N/A'; ?>" disabled>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label fw-bold">12% IVA</label>
+                            <label class="form-label strong strong fw-bold">12% IVA</label>
                             <input type="text" class="form-control text-end"
                                 value="<?= ($data['facturas']['regimen'] == 2) ? 0 : ($data['facturas']['iva_calc'] ?? 'N/A'); ?>"
                                 disabled>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label fw-bold">Ret. IVA Total</label>
+                            <label class="form-label strong strong fw-bold">Ret. IVA Total</label>
                             <input type="text" class="form-control text-end"
                                 value="<?= $data['facturas']['reten_iva'] ?? 'N/A'; ?>" disabled>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label fw-bold">Ret. ISR Total</label>
+                            <label class="form-label strong strong fw-bold">Ret. ISR Total</label>
                             <input type="text" class="form-control text-end"
                                 value="<?= $data['facturas']['reten_isr'] ?? 'N/A'; ?>" disabled>
                         </div>
@@ -157,35 +149,45 @@
                             <h6 class="fw-bold text-dark mb-3">Datos Generales</h6>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">Realizador</label>
+                                    <label class="form-label strong strong">Realizador</label>
                                     <input type="text" class="form-control"
                                         value="<?= $data['facturas']['realizador'] ?? 'N/A'; ?>" disabled>
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">Proveedor</label>
+                                    <label class="form-label strong strong">Proveedor</label>
                                     <input type="text" class="form-control"
                                         value="<?= $data['facturas']['proveedor'] ?? 'N/A'; ?>" disabled>
                                 </div>
                                 <div class="col-md-3 mb-3">
-                                    <label class="form-label">Monto Total</label>
+                                    <label class="form-label strong strong">Monto Total</label>
                                     <input type="text" class="form-control text-end"
                                         value="<?= ($data['facturas']['regimen'] == 2) ? ($data['facturas']['total_pequeño'] ?? 'N/A') : ($data['facturas']['total'] ?? 'N/A'); ?>"
                                         disabled>
                                 </div>
                                 <div class="col-md-3 mb-3">
-                                    <label class="form-label">Área</label>
+                                    <label class="form-label strong strong">Área</label>
                                     <input type="text" class="form-control"
                                         value="<?= $data['facturas']['area'] ?? 'N/A'; ?>" disabled>
                                 </div>
                                 <div class="col-md-3 mb-3">
-                                    <label class="form-label">Fecha Registro</label>
+                                    <label class="form-label strong strong">Fecha Registro</label>
                                     <input type="text" class="form-control"
                                         value="<?= $data['facturas']['fecha_registro'] ?? 'N/A'; ?>" disabled>
                                 </div>
                                 <div class="col-md-3 mb-3">
-                                    <label for="fecha_pago" class="form-label">Fecha Pago</label>
+                                    <label for="fecha_pago" class="form-label strong">Fecha Pago</label>
                                     <input type="date" class="form-control btn-input"
                                         value="<?= $data['facturas']['fecha_pago'] ?? ''; ?>" disabled>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="mb-4">
+                                <h6 class="fw-bold text-dark mb-3">Comentario de Revision</h6>
+                                <div class="row">
+                                    <div class="col-12 mb-3">
+                                        <textarea class="form-control" name="observacion" rows="4"
+                                            placeholder="Escribe aquí tus observaciones..."></textarea>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -239,33 +241,33 @@
                             <h6 class="fw-bold text-dark mb-3">Datos Generales</h6>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">Realizador</label>
+                                    <label class="form-label strong">Realizador</label>
                                     <input type="text" class="form-control"
                                         value="<?= $data['facturas']['realizador'] ?? 'N/A'; ?>" disabled>
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">Proveedor</label>
+                                    <label class="form-label strong">Proveedor</label>
                                     <input type="text" class="form-control"
                                         value="<?= $data['facturas']['proveedor'] ?? 'N/A'; ?>" disabled>
                                 </div>
                                 <div class="col-md-3 mb-3">
-                                    <label class="form-label">Monto Total</label>
+                                    <label class="form-label strong">Monto Total</label>
                                     <input type="text" class="form-control text-end"
                                         value="<?= ($data['facturas']['regimen'] == 2) ? ($data['facturas']['total_pequeño'] ?? 'N/A') : ($data['facturas']['total'] ?? 'N/A'); ?>"
                                         disabled>
                                 </div>
                                 <div class="col-md-3 mb-3">
-                                    <label class="form-label">Área</label>
+                                    <label class="form-label strong">Área</label>
                                     <input type="text" class="form-control"
                                         value="<?= $data['facturas']['area'] ?? 'N/A'; ?>" disabled>
                                 </div>
                                 <div class="col-md-3 mb-3">
-                                    <label class="form-label">Fecha Registro</label>
+                                    <label class="form-label strong">Fecha Registro</label>
                                     <input type="text" class="form-control"
                                         value="<?= $data['facturas']['fecha_registro'] ?? 'N/A'; ?>" disabled>
                                 </div>
                                 <div class="col-md-3 mb-3">
-                                    <label for="fecha_pago" class="form-label">Fecha Pago</label>
+                                    <label for="fecha_pago" class="form-label strong">Fecha Pago</label>
                                     <input type="date" class="form-control btn-input"
                                         value="<?= $data['facturas']['fecha_pago'] ?? ''; ?>" disabled>
                                 </div>
@@ -276,22 +278,12 @@
                             <h6 class="fw-bold text-dark mb-3">Datos Finales</h6>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">No. Transferencia</label>
+                                    <label class="form-label strong">No. Transferencia</label>
                                     <input type="text" class="form-control" name="no_transferencia">
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">Fecha de Pago</label>
+                                    <label class="form-label strong">Fecha de Pago</label>
                                     <input type="date" class="form-control" name="fecha_pago">
-                                </div>
-                            </div>
-                        </div>
-                        <hr>
-                        <div class="mb-4">
-                            <h6 class="fw-bold text-dark mb-3">Comentario de Revision</h6>
-                            <div class="row">
-                                <div class="col-12 mb-3">
-                                    <textarea class="form-control" name="observacion" rows="4"
-                                        placeholder="Escribe aquí tus observaciones..."></textarea>
                                 </div>
                             </div>
                         </div>
@@ -314,10 +306,10 @@
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">Revisión Factura</h1>
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Servicio</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form id="DetalleEdit">
+                <form id="ServicioEdit">
                     <div class="modal-body">
                         <input type="hidden" id="edit_id" name="edit_id">
                         <input type="hidden" id="edit_id_regimen">
@@ -329,96 +321,146 @@
 
                             <!-- Datos principales -->
                             <div class="col-md-3 mb-3">
-                                <label for="edit_factura" class="form-label">No. de Factura</label>
+                                <label for="edit_factura" class="form-label strong">No. de Factura</label>
                                 <input type="text" class="form-control" id="edit_factura" name="edit_factura" disabled>
                             </div>
 
                             <div class="col-md-3 mb-3">
-                                <label for="edit_documento" class="form-label">Valor Documento</label>
+                                <label for="edit_documento" class="form-label strong">Valor Documento</label>
                                 <input type="text" class="form-control" id="edit_documento" name="edit_documento"
                                     disabled>
                             </div>
 
                             <div class="col-md-6 mb-3">
-                                <label for="edit_servicio" class="form-label">Bien/Servicio</label>
+                                <label for="edit_servicio" class="form-label strong">Bien/Servicio</label>
                                 <input type="text" class="form-control" id="edit_servicio" name="edit_servicio"
                                     disabled>
                             </div>
                             <!-- Cod AX -->
                             <div class="col-md-3 mb-3">
-                                <label for="edit_codax" class="form-label">Registro AX</label>
+                                <label for="edit_codax" class="form-label strong">Registro AX</label>
                                 <input type="text" class="form-control" id="edit_codax" name="edit_codax">
                             </div>
                             <!-- Cod AX -->
                             <div class="col-md-3 mb-3">
-                                <label for="edit_base" class="form-label">Base</label>
+                                <label for="edit_base" class="form-label strong">Base</label>
                                 <input type="text" class="form-control" id="edit_base" name="edit_base" readonly>
                             </div>
                             <div class="col-md-3 mb-3">
-                                <label for="edit_base" class="form-label">IVA Base</label>
+                                <label for="edit_base" class="form-label strong">IVA Base</label>
                                 <input type="text" class="form-control" id="edit_base_iva" name="edit_base_iva"
                                     readonly>
                             </div>
                             <div class="col-md-3 mb-3">
-                                <label for="edit_base" class="form-label">Regimen</label>
+                                <label for="edit_base" class="form-label strong">Regimen</label>
                                 <input type="text" class="form-control" id="edit_regimen" readonly>
                             </div>
 
+                            <hr>
+
+                            <div class="mb-4 border-bottom pb-2">
+                                <h5 class="fw-bold mb-0">Datos Servicio</h5>
+                            </div>
+                            <input type="hidden" class="form-control" id="id_servicio" name="servicio">
+
+                            <!-- <div class="col-md-3 mb-3">
+                                <label for="placa" class="form-label strong">Placa</label>
+                                <select class="form-control selectpicker w-100" data-live-search="true" id="placa"
+                                    name="placa" required title="Seleccione una placa" data-width="100%">
+                                </select>
+                            </div> -->
+                            <div class="col-md-3 mb-3 position-relative">
+                                <label class="form-label strong">Placa</label>
+
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="placa" name="placa" readonly
+                                        placeholder="Seleccione una Placa" autocomplete="off">
+
+                                    <button class="btn btn-outline-success" type="button" id="btnCambiarPlaca">
+                                        <i class="fa-solid fa-arrow-rotate-left"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Lista de resultados -->
+                                <ul class="list-group position-absolute w-100 d-none" id="placaList"
+                                    style="z-index: 1050; max-height: 200px; overflow-y: auto;">
+                                </ul>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label for="edit_codax" class="form-label strong strong">Kilometraje</label>
+                                <input type="number" class="form-control" id="kilometraje" name="kilometraje">
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label for="edit_codax" class="form-label strong strong">Estado</label>
+                                <select class="form-select" aria-label="Default select example" id="estado"
+                                    name="estado">
+                                    <option selected disabled>Selecciona un estado</option>
+                                    <option value="Rentado">Rentado</option>
+                                    <option value="Propio">Propio</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label for="edit_codax" class="form-label strong strong">Tipo Servicio</label>
+                                <input type="text" class="form-control" id="tipo_servicio" name="tipo_servicio">
+                            </div>
+
+                            <div class="col-md-3 mb-3 position-relative">
+                                <label class="form-label strong">Usuario</label>
+
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="usuario" name="usuario" readonly
+                                        placeholder="Seleccione un usuario" autocomplete="off">
+
+                                    <button class="btn btn-outline-success" type="button" id="btnCambiarUsuario">
+                                        <i class="fa-solid fa-arrow-rotate-left"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Lista de resultados -->
+                                <ul class="list-group position-absolute w-100 d-none" id="usuarioList"
+                                    style="z-index: 1050; max-height: 200px; overflow-y: auto;">
+                                </ul>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label strong">Línea de Negocio</label>
+                                <input type="text" class="form-control" id="ln" name="ln" readonly>
+                                <input type="hidden" id="tipo" name="tipo">
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label for="edit_codax" class="form-label strong strong">Codigo AX</label>
+                                <input type="text" class="form-control" id="codigo_ax" name="codigo_ax">
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label for="edit_codax" class="form-label strong strong">Tipo Mantenimiento</label>
+                                <select class="form-select" aria-label="Default select example" id="tipo_mantenimiento"
+                                    name="tipo_mantenimiento">
+                                    <option selected disabled>Selecciona un estado</option>
+                                    <option value="Preventivo">Preventivo</option>
+                                    <option value="Correctivo">Correctivo</option>
+                                </select>
+                            </div>
 
                             <hr>
-                            <!-- IVA -->
-                            <div class="col-md-3 mb-3">
-                                <label for="input_iva" class="form-label">IVA</label>
-                                <div class="input-group">
-                                    <div class="input-group-text">
-                                        <input class="form-check-input mt-0" type="checkbox" id="check_iva">
-                                    </div>
-                                    <input type="number" class="form-control" id="input_iva" name="input_iva"
-                                        placeholder="%" disabled>
+
+                            <div class="col-md-12">
+                                <h6 class="fw-bold mb-3">Materiales Utilizados</h6>
+                                <div class="mt-2">
+                                    <button type="button" class="btn btn-primary btn-sm" id="btnAgregarMaterial">
+                                        Agregar material
+                                    </button>
                                 </div>
-                            </div>
 
-                            <!-- ISR -->
-                            <div class="col-md-3 mb-3">
-                                <label for="input_isr" class="form-label">ISR</label>
-                                <div class="input-group">
-                                    <div class="input-group-text">
-                                        <input class="form-check-input mt-0" type="checkbox" id="check_isr">
-                                    </div>
-                                    <input type="number" class="form-control" id="input_isr" name="input_isr"
-                                        placeholder="%" disabled>
-                                </div>
-                            </div>
-
-                            <!-- Retención IVA -->
-                            <div class="col-md-3 mb-3">
-                                <label for="edit_reten_iva" class="form-label">Retención IVA</label>
-                                <input type="text" class="form-control" id="edit_reten_iva" name="edit_reten_iva"
-                                    readonly>
-                            </div>
-                            <!-- Retención ISR -->
-                            <div class="col-md-3 mb-3">
-                                <label for="edit_reten_isr" class="form-label">Retención ISR</label>
-                                <input type="text" class="form-control" id="edit_reten_isr" name="edit_reten_isr"
-                                    readonly>
-                            </div>
-
-                            <!-- Fecha Registro -->
-                            <div class="col-md-3 mb-3">
-                                <label for="edit_fecha_registro" class="form-label">Fecha Registro</label>
-                                <input type="text" class="form-control" id="edit_fecha_registro"
-                                    name="edit_fecha_registro" readonly>
-                            </div>
-
-                            <!-- Estado -->
-                            <div class="col-md-3 mb-3">
-                                <label for="edit_total" class="form-label">Total Líquido</label>
-                                <input type="text" class="form-control" id="edit_total" name="edit_total" readonly>
+                                <div class="row" id="contenedorMateriales"></div>
                             </div>
                             <hr>
-                            <!-- Observación -->
                             <div class="col-md-12 mb-3">
-                                <label for="edit_observacion" class="form-label">Observación</label>
+                                <label for="edit_observacion" class="form-label strong strong">Observación</label>
                                 <textarea class="form-control" id="edit_observacion" name="edit_observacion"
                                     rows="2"></textarea>
                             </div>
@@ -460,49 +502,49 @@
                         <h6 class="fw-bold text-dark mb-3">Datos Generales</h6>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Realizador</label>
+                                <label class="form-label strong strong">Realizador</label>
                                 <div class="form-control bg-light">
                                     <?= $data['anticipoinfo']['usuario'] ?? 'N/A'; ?>
                                 </div>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Proveedor</label>
+                                <label class="form-label strong strong">Proveedor</label>
                                 <div class="form-control bg-light">
                                     <?= $data['anticipoinfo']['proveedor'] ?? 'N/A'; ?>
                                 </div>
                             </div>
                             <div class="col-md-3 mb-3">
-                                <label class="form-label">Monto Total</label>
+                                <label class="form-label strong strong">Monto Total</label>
                                 <div class="form-control bg-light">
                                     <?= $data['anticipoinfo']['monto_total'] ?? 'N/A'; ?>
                                 </div>
                             </div>
                             <div class="col-md-3 mb-3">
-                                <label class="form-label">Categoría</label>
+                                <label class="form-label strong strong">Categoría</label>
                                 <div class="form-control bg-light">
                                     <?= $data['anticipoinfo']['categoria'] ?? 'N/A'; ?>
                                 </div>
                             </div>
                             <div class="col-md-3 mb-3">
-                                <label class="form-label">Área</label>
+                                <label class="form-label strong strong">Área</label>
                                 <div class="form-control bg-light">
                                     <?= $data['anticipoinfo']['area'] ?? 'N/A'; ?>
                                 </div>
                             </div>
                             <div class="col-md-3 mb-3">
-                                <label class="form-label">Estado</label>
+                                <label class="form-label strong strong">Estado</label>
                                 <div class="form-control bg-light fw-semibold text-capitalize">
                                     <?= $data['anticipoinfo']['estado'] ?? 'N/A'; ?>
                                 </div>
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label class="form-label">Fecha de Registro</label>
+                                <label class="form-label strong strong">Fecha de Registro</label>
                                 <div class="form-control bg-light">
                                     <?= $data['anticipoinfo']['fecha_creacion'] ?? 'N/A'; ?>
                                 </div>
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label class="form-label">Fecha Estimada de Pago</label>
+                                <label class="form-label strong strong">Fecha Estimada de Pago</label>
                                 <div class="form-control bg-light">
                                     <?= $data['anticipoinfo']['fecha_pago'] ?? 'N/A'; ?>
                                 </div>
@@ -516,13 +558,13 @@
                         <h6 class="fw-bold text-dark mb-3">Detalle de Transacción</h6>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Número de Transferencia</label>
+                                <label class="form-label strong strong">Número de Transferencia</label>
                                 <div class="form-control bg-light">
                                     <?= $data['anticipoinfo']['no_transferencia'] ?? 'N/A'; ?>
                                 </div>
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label class="form-label">Fecha de Transacción</label>
+                                <label class="form-label strong strong">Fecha de Transacción</label>
                                 <div class="form-control bg-light">
                                     <?= $data['anticipoinfo']['fecha_transaccion'] ?? 'N/A'; ?>
                                 </div>
@@ -541,102 +583,6 @@
             </div>
         </div>
     </div>
-
-    <script>
-        // IVA
-        document.getElementById('check_iva').addEventListener('change', function () {
-            const ivaInput = document.getElementById('input_iva');
-            ivaInput.disabled = !this.checked;
-            if (!this.checked) ivaInput.value = "";
-        });
-
-        // ISR
-        document.getElementById('check_isr').addEventListener('change', function () {
-            const isrInput = document.getElementById('input_isr');
-            isrInput.disabled = !this.checked;
-            if (!this.checked) isrInput.value = "";
-        });
-    </script>
-
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const totalInput = document.getElementById("edit_documento");
-            const retenIVAInput = document.getElementById("edit_reten_iva");
-            const retenISRInput = document.getElementById("edit_reten_isr");
-            const totalLiquidoInput = document.getElementById("edit_total");
-
-            const checkIVA = document.getElementById("check_iva");
-            const inputIVA = document.getElementById("input_iva");
-            const checkISR = document.getElementById("check_isr");
-            const inputISR = document.getElementById("input_isr");
-
-            const regimenInput = document.getElementById("edit_id_regimen");
-
-            function obtenerRegimen() {
-                return parseInt(regimenInput.value) || 1;
-            }
-
-
-            function calcular() {
-                const tipoRegimen = obtenerRegimen();
-                let total = parseFloat(totalInput.value) || 0;
-                let porcIVA = checkIVA.checked ? parseFloat(inputIVA.value) || 0 : 0;
-                let porcISR = checkISR.checked ? parseFloat(inputISR.value) || 0 : 0;
-
-                let base = 0;
-                let ivaIncluido = 0;
-                let ret_iva = 0;
-                let ret_isr = 0;
-
-                if (tipoRegimen === 1) {
-                    // Régimen 1: calcular base y IVA
-                    base = total / 1.12;
-                    ivaIncluido = total - base;
-
-                    if (checkIVA.checked && porcIVA > 0) ret_iva = ivaIncluido * (porcIVA / 100);
-                    if (checkISR.checked && porcISR > 0) ret_isr = base * (porcISR / 100);
-
-                    checkISR.disabled = false;
-                    inputISR.disabled = !checkISR.checked;
-                } else if (tipoRegimen === 2) {
-                    // Régimen 2: no separar IVA
-                    base = total;
-                    ivaIncluido = 0;
-
-                    checkISR.checked = false;
-                    checkISR.disabled = true;
-                    inputISR.disabled = true;
-                    inputISR.value = "";
-                    retenISRInput.value = "";
-
-                    if (checkIVA.checked && porcIVA > 0) {
-                        ret_iva = base * (porcIVA / 100);
-                    }
-                }
-
-                // Mostrar base e IVA base
-                document.getElementById("edit_base").value = base.toFixed(2);
-                document.getElementById("edit_base_iva").value = ivaIncluido.toFixed(2);
-
-                let totalLiquido = total - ret_iva - ret_isr;
-                retenIVAInput.value = ret_iva > 0 ? ret_iva.toFixed(2) : "";
-                retenISRInput.value = ret_isr > 0 ? ret_isr.toFixed(2) : "";
-                totalLiquidoInput.value = totalLiquido.toFixed(2);
-            }
-
-            [checkIVA, checkISR, inputIVA, inputISR, totalInput].forEach(el => {
-                if (el) {
-                    el.addEventListener("input", calcular);
-                    el.addEventListener("change", calcular);
-                }
-            });
-
-            // Al mostrar el modal, calcular una vez
-            const modal = document.getElementById("editarModal");
-            modal.addEventListener("shown.bs.modal", calcular);
-        });
-    </script>
-
     <style>
         .btn-warning-circle {
             width: 38px;
@@ -691,3 +637,188 @@
             box-shadow: 0 4px 10px rgba(255, 193, 7, 0.6);
         }
     </style>
+
+    <script>
+        const inputUsuario = document.querySelector("#usuario");
+        const btnCambiar = document.querySelector("#btnCambiarUsuario");
+        const list = document.querySelector("#usuarioList");
+
+        // Liberar input
+        btnCambiar.addEventListener("click", () => {
+            inputUsuario.readOnly = false;
+            inputUsuario.value = "";
+            inputUsuario.focus();
+            list.classList.remove("d-none");
+        });
+
+        let usuarios = [];
+
+        fetch(api_url + "ApiContabilidad/getUserName")
+            .then(res => res.json())
+            .then(data => {
+                usuarios = data;
+            });
+
+        inputUsuario.addEventListener("input", function () {
+            const value = this.value.toLowerCase();
+            list.innerHTML = "";
+
+            if (!value) {
+                list.classList.add("d-none");
+                return;
+            }
+
+            const results = usuarios.filter(u =>
+                u.usuario.toLowerCase().includes(value)
+            );
+
+            if (results.length === 0) {
+                list.classList.add("d-none");
+                return;
+            }
+
+            results.forEach(u => {
+                const li = document.createElement("li");
+                li.className = "list-group-item list-group-item-action";
+                li.textContent = u.usuario;
+
+                li.addEventListener("click", () => seleccionarUsuario(u.usuario));
+
+                list.appendChild(li);
+            });
+
+            list.classList.remove("d-none");
+        });
+
+
+        function seleccionarUsuario(usuario) {
+            inputUsuario.value = usuario;
+            inputUsuario.readOnly = true;
+            list.classList.add("d-none");
+
+            fetch(api_url + "ApiContabilidad/getUser?usuario=" + encodeURIComponent(usuario))
+                .then(res => res.json())
+                .then(response => {
+                    if (response.status) {
+                        document.querySelector("#ln").value = response.data.ln;
+                        document.querySelector("#tipo").value = response.data.tipo;
+                    } else {
+                        document.querySelector("#ln").value = "";
+                        document.querySelector("#tipo").value = "";
+                    }
+                });
+        }
+
+    </script>
+
+    <script>
+        const inputPlaca = document.querySelector("#placa");
+        const btnCambiarPlaca = document.querySelector("#btnCambiarPlaca");
+        const placaList = document.querySelector("#placaList");
+
+
+        btnCambiarPlaca.addEventListener("click", () => {
+            inputPlaca.readOnly = false;
+            inputPlaca.value = "";
+            inputPlaca.focus();
+            placaList.classList.remove("d-none");
+        });
+
+
+        let placas = [];
+
+        fetch(api_url + "ApiContabilidad/getSelectPlacas")
+            .then(res => res.json())
+            .then(data => {
+                placas = data;
+            });
+
+
+        inputPlaca.addEventListener("input", function () {
+            const value = this.value.toLowerCase();
+            placaList.innerHTML = "";
+
+            if (!value) {
+                placaList.classList.add("d-none");
+                return;
+            }
+
+            const results = placas.filter(p =>
+                p.placa.toLowerCase().includes(value)
+            );
+
+            if (results.length === 0) {
+                placaList.classList.add("d-none");
+                return;
+            }
+
+            results.forEach(p => {
+                const li = document.createElement("li");
+                li.className = "list-group-item list-group-item-action";
+                li.textContent = p.placa;
+
+                li.addEventListener("click", () => {
+                    inputPlaca.value = p.placa;
+                    inputPlaca.readOnly = true;
+                    placaList.classList.add("d-none");
+                });
+
+                placaList.appendChild(li);
+            });
+
+            placaList.classList.remove("d-none");
+        });
+
+    </script>
+
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const contenedor = document.getElementById("contenedorMateriales");
+            const btnAgregar = document.getElementById("btnAgregarMaterial");
+
+            let contador = 0;
+
+
+            function agregarInputMaterial(valor = "") {
+                contador++;
+
+                const col = document.createElement("div");
+                col.classList.add("col-md-3", "mb-3");
+                col.setAttribute("id", "material_" + contador);
+
+                col.innerHTML = `
+            <label class="form-label">Material</label>
+            <div class="input-group">
+                <input type="text" class="form-control" name="materiales[]" value="${valor}" placeholder="Material" required>
+                <button type="button" class="btn btn-danger btn-sm btnEliminar" data-id="${contador}">
+                    X
+                </button>
+            </div>
+        `;
+
+                contenedor.appendChild(col);
+            }
+
+            btnAgregar.addEventListener("click", () => {
+                agregarInputMaterial();
+            });
+
+            // Eliminar material
+            contenedor.addEventListener("click", function (e) {
+                if (e.target.classList.contains("btnEliminar")) {
+                    const id = e.target.getAttribute("data-id");
+                    document.getElementById("material_" + id).remove();
+                }
+            });
+
+            // HACER DISPONIBLE LA FUNCIÓN EN GLOBAL PARA USO EN AJAX
+            window.agregarInputMaterial = agregarInputMaterial;
+            window.resetContenedorMateriales = function () {
+                contenedor.innerHTML = "";
+                contador = 0;
+            };
+        });
+
+    </script>

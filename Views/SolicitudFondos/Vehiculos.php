@@ -21,7 +21,7 @@
         <button class="btn btn-primary btn-round ms-auto btn-password" data-bs-toggle="modal"
             data-bs-target="#setContraseñaModal">
             <i class="fa fa-plus"></i>
-            Añadir Anticipo
+            COMBUSTIBLE
         </button>
     </div>
 
@@ -67,29 +67,27 @@
                 <input type="hidden" id="realizador" name="realizador"
                     value="<?php echo $_SESSION['PersonalData']['id_usuario']; ?>">
                 <div class="modal-header ">
-                    <h5 class="modal-title" id="setUserModalLabel">Crear Solicitud de Fondos sin Contraseña</h5>
+                    <h5 class="modal-title" id="setUserModalLabel">Crear Solicitud de Combustible</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row mb-4">
                         <div class="col-md-2">
-                            <label for="fecha_registro" class="form-label">Fecha Registro</label>
+                            <label for="fecha_registro" class="form-label strong">Fecha Registro</label>
                             <input type="date" class="form-control" id="fecha_registro" name="fecha_registro" readonly>
                         </div>
                         <div class="col-md-3">
-                            <label for="fecha_pago" class="form-label">Fecha Pago <span
+                            <label for="fecha_pago" class="form-label strong">Fecha Pago Estimado <span
                                     class="text-danger">*</span></label>
                             <input type="date" class="form-control" id="fecha_pago" name="fecha_pago" required>
                         </div>
                         <div class="col-md-3">
-                            <label for="area" class="form-label">Área</label>
-                            <input type="hidden" name="area" value="<?php echo $_SESSION['PersonalData']['area']; ?>"
-                                readonly>
-                            <input type="text" class="form-control"
-                                value="<?php echo $_SESSION['PersonalData']['nombre_area']; ?>">
+                            <label for="area" class="form-label strong">Área</label>
+                            <input type="hidden" name="area" value="2" readonly>
+                            <input type="text" class="form-control" value="Vehiculos">
                         </div>
                         <div class="col-md-4">
-                            <label for="role_id" class="form-label">Recibimos de: <span
+                            <label for="role_id" class="form-label strong">Recibimos de: <span
                                     class="text-danger">*</span></label>
                             <select class="form-control selectpicker" id="proveedor" name="proveedor" required>
                             </select>
@@ -114,10 +112,10 @@
                                 id="tablaFacturas">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>Tipo</th>
-                                        <th>Bien o Servicio</th>
-                                        <th>Valor</th>
-                                        <th>Acción</th>
+                                        <th>TRANSFERENCIA PARA COMBUSTIBLE</th>
+                                        <th>SALDO DISPONIBLE</th>
+                                        <th>FECHA INICIO</th>
+                                        <th>FECHA FINAL</th>
                                     </tr>
                                 </thead>
                                 <tbody>

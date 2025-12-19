@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", function () {
         data: null, // usamos null porque tomaremos varios campos del row
         className: "text-center",
         render: function (data, type, row) {
-          if (row.categoria === "Anticipo") {
+          if (row.categoria === "Combustible") {
             return row.fecha_pago_sf ?? "—";
           } else {
             return row.fecha_pago ?? "—";
@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", function () {
           let html = "";
           data = data.toLowerCase();
           if (data.includes("pendiente")) {
-            html = '<span class="badge badge-warning"> ' + data + ' </span>';
+            html = '<span class="badge badge-warning"> PENDIENTE </span>';
           } else if (data.includes("validado")) {
             html = '<span class="badge badge-success">VALIDADO</span>';
           } else if (data.includes("pagado")) {
@@ -60,7 +60,7 @@ document.addEventListener("DOMContentLoaded", function () {
             html = '<span class="badge badge-danger">CORREGIR</span>';
           } else if (data.includes("descartado")) {
             html = '<span class="badge badge-danger">DESCARTADO</span>';
-          } 
+          }
           return html;
         },
       },
@@ -72,7 +72,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
           if (row.categoria !== "Anticipo") {
             // Si el estado es diferente a Anticipo
-            html = `<button class="btn btn-info btn-sm" onclick="window.location.href='${base_url}/SolicitudFondos/Revision/${row.contraseña}'">
+            html = `<button class="btn btn-info btn-sm" onclick="window.location.href='${base_url}/SolicitudFondos/${row.categoria}/${row.contraseña}'">
                 <i class="fas fa-archive"></i>
               </button>`;
           } else {
@@ -136,31 +136,15 @@ document.addEventListener("DOMContentLoaded", function () {
     // Crear nueva fila
     const nuevaFila = document.createElement("tr");
     nuevaFila.innerHTML = `
-      <td><input type="text" class="form-control factura" name="tipo[]¿" value="Anticipo" readonly></td>
-      <td><input type="text" class="form-control bien" name="bien[]" required></td>
-      <td><input type="text" class="form-control valor" name="valor[]" placeholder="1000.00" required></td>
-      <td>
-          <button type="button" class="btn btn-danger eliminarFila">
-              <i class="fas fa-trash-alt"></i>
-          </button>
-      </td>
+      <td><input type="num" class="form-control" name="transferencia[]" required></td>
+      <td><input type="num" class="form-control " name="saldo[]" required></td>
+      <td><input type="date" class="form-control " name="inicio[]" required></td>
+      <td><input type="date" class="form-control " name="final[]" required></td>
     `;
 
-    // Agregar la fila al cuerpo de la tabla
     tablaFacturas.querySelector("tbody").appendChild(nuevaFila);
 
-    // 🔹 Ocultar o desactivar el botón
-    agregarFacturaBtn.classList.add("d-none"); // <-- Oculta completamente
-    // agregarFacturaBtn.disabled = true; // <-- O si prefieres solo desactivarlo
-
-    // Configurar el botón de eliminar
-    const eliminarBtn = nuevaFila.querySelector(".eliminarFila");
-    eliminarBtn.addEventListener("click", () => {
-      nuevaFila.remove();
-      // 🔹 Reaparecer el botón al eliminar la fila
-      agregarFacturaBtn.classList.remove("d-none");
-      // agregarFacturaBtn.disabled = false;
-    });
+    agregarFacturaBtn.classList.add("d-none");
   });
 
   document
@@ -176,7 +160,7 @@ document.addEventListener("DOMContentLoaded", function () {
       submitButton.disabled = true;
       spinner.classList.remove("d-none");
 
-      fetch(base_url + "/SolicitudFondos/guardarSolicitudFondos", {
+      fetch(base_url + "/SolicitudFondos/guardarSolicitudCombustible", {
         method: "POST",
         body: formData,
       })

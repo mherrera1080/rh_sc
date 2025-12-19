@@ -114,6 +114,52 @@ class SolicitudFondos extends Controllers
         $this->views->getView($this, "Anticipo", $data);
     }
 
+
+    public function Servicios($contraseña)
+    {
+        $facturas = $this->model->getContraseña($contraseña);
+        $id_anticipo = $facturas["anticipo"];
+        $anticipo = $this->model->getAnticipoInfo($id_anticipo);
+
+        $data['facturas'] = $facturas;
+        $data['anticipoinfo'] = $anticipo;
+        $data['page_id'] = 'Revision';
+        $data['page_tag'] = "Revision";
+        $data['page_title'] = "Revision";
+        $data['page_name'] = "Revision";
+        $data['page_functions_js'] = "functions_servicios.js";
+        $this->views->getView($this, "Servicios", $data);
+    }
+
+    public function Rentas($contraseña)
+    {
+        $facturas = $this->model->getContraseña($contraseña);
+        $id_anticipo = $facturas["anticipo"];
+        $anticipo = $this->model->getAnticipoInfo($id_anticipo);
+
+        $data['facturas'] = $facturas;
+        $data['anticipoinfo'] = $anticipo;
+        $data['page_id'] = 'Revision';
+        $data['page_tag'] = "Revision";
+        $data['page_title'] = "Revision";
+        $data['page_name'] = "Revision";
+        $data['page_functions_js'] = "functions_rentas.js";
+        $this->views->getView($this, "Rentas", $data);
+    }
+
+    public function Combustible($contraseña)
+    {
+        $facturas = $this->model->getCombustible($contraseña);
+
+        $data['facturas'] = $facturas;
+        $data['page_id'] = 'Revision';
+        $data['page_tag'] = "Revision";
+        $data['page_title'] = "Revision";
+        $data['page_name'] = "Revision";
+        $data['page_functions_js'] = "functions_combustible.js";
+        $this->views->getView($this, "Combustible", $data);
+    }
+
     public function getFacturas($contraseña)
     {
         $arrData = $this->model->getFacturasbyContra($contraseña);
@@ -128,6 +174,44 @@ class SolicitudFondos extends Controllers
         echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
         die();
     }
+
+    public function getCombustible($contraseña)
+    {
+        $arrData = $this->model->getCombustiblebyContra($contraseña);
+
+        if (empty($arrData)) {
+            echo json_encode([
+                'status' => false,
+                'msg' => 'No se encontraron registros previos.'
+            ], JSON_UNESCAPED_UNICODE);
+            die();
+        }
+
+        // === Procesar datos ===
+        foreach ($arrData as &$row) {
+
+            // 🔹 Formato monetario (Quetzales)
+            $row['transferencia'] = 'Q ' . number_format((float) $row['transferencia'], 2, '.', ',');
+            $row['saldo_disponible'] = 'Q ' . number_format((float) $row['saldo_disponible'], 2, '.', ',');
+
+            // 🔹 Formato de rango de fechas
+            $row['rango_fechas'] = $this->formatearRangoFechas(
+                $row['fecha_inicio'],
+                $row['fecha_final']
+            );
+
+            // Opcional: eliminar fechas individuales si ya no las necesitas
+            unset($row['fecha_inicio'], $row['fecha_final']);
+        }
+
+        echo json_encode([
+            'status' => true,
+            'data' => $arrData
+        ], JSON_UNESCAPED_UNICODE);
+
+        die();
+    }
+
 
     public function getFacturasSolicitud($id_solicitud)
     {
@@ -171,6 +255,187 @@ class SolicitudFondos extends Controllers
             }
         }
     }
+
+    public function updateDetalleServicio()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(["status" => false, "message" => "Método no permitido."]);
+            exit;
+        }
+
+        $id_detalle = $_POST['edit_id'] ?? null;
+        $cod_ax = $_POST['edit_codax'] ?? null;
+        $observacion = $_POST['edit_observacion'] ?? null;
+
+        $servicio = $_POST['servicio'] ?? null;
+        $placa = $_POST['placa'] ?? null;
+        $kilometraje = $_POST['kilometraje'] ?? null;
+        $estado = $_POST['estado'] ?? null;
+        $tipo_servicio = $_POST['tipo_servicio'] ?? null;
+        $usuario = $_POST['usuario'] ?? null;
+        $ln = $_POST['ln'] ?? null;
+        $tipo = $_POST['tipo'] ?? null;
+        $codigo_ax = $_POST['codigo_ax'] ?? null;
+        $tipo_mantenimiento = $_POST['tipo_mantenimiento'] ?? null;
+
+        // MATERIALES (ARREGLO)
+        $materiales = $_POST['materiales'] ?? [];
+        $repuestos = "Repuestos";
+
+        if (empty($id_detalle)) {
+            echo json_encode(["status" => false, "msg" => "Faltan datos obligatorios (ID detalle)."]);
+            exit;
+        }
+
+        // Actualiza detalle
+        $resultDetalle = $this->model->UpdateDetalleDos($id_detalle, $cod_ax, $observacion);
+
+        if (!$resultDetalle) {
+            echo json_encode(["status" => false, "msg" => "Error al actualizar el detalle del servicio."]);
+            exit;
+        }
+
+        // Insertar o actualizar servicio
+        if ($servicio == 0) {
+            $servicio = $this->model->insertServicio(
+                $id_detalle,
+                $placa,
+                $repuestos,
+                $kilometraje,
+                $estado,
+                $tipo_servicio,
+                $ln,
+                $usuario,
+                $tipo,
+                $codigo_ax,
+                $tipo_mantenimiento
+            );
+        } else {
+            $this->model->updateServicio(
+                $servicio,
+                $id_detalle,
+                $placa,
+                $kilometraje,
+                $estado,
+                $tipo_servicio,
+                $ln,
+                $usuario,
+                $tipo,
+                $codigo_ax,
+                $tipo_mantenimiento
+            );
+        }
+
+        if (!$servicio) {
+            echo json_encode(["status" => false, "message" => "El servicio no pudo ser registrado o actualizado."]);
+            exit;
+        }
+
+        $materialesBD = $this->model->getMaterialesByServicio($servicio);
+
+        $materialesBD_text = array_column($materialesBD, 'material');
+
+        $paraEliminar = array_diff($materialesBD_text, $materiales);
+
+        $paraInsertar = array_diff($materiales, $materialesBD_text);
+
+        foreach ($paraEliminar as $m) {
+            $this->model->deleteMaterial($servicio, $m);
+        }
+
+        foreach ($paraInsertar as $m) {
+            if (trim($m) !== "") {
+                $this->model->insertMaterial($servicio, $m);
+            }
+        }
+
+        echo json_encode(["status" => true, "message" => "Servicio actualizado correctamente."]);
+        exit;
+    }
+
+    public function updateDetalleRenta()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(["status" => false, "message" => "Método no permitido."]);
+            exit;
+        }
+
+        $id_detalle = $_POST['edit_id'] ?? null;
+        $cod_ax = $_POST['edit_codax'] ?? null;
+        $observacion = $_POST['edit_observacion'] ?? null;
+        $arrendamientos = $_POST['arrendamientos'] ?? [];
+
+        if (empty($id_detalle)) {
+            echo json_encode([
+                "status" => false,
+                "msg" => "ID del servicio no recibido."
+            ]);
+            exit;
+        }
+
+        $placasNormalizadas = array_map(function ($p) {
+            return strtoupper(trim($p));
+        }, $arrendamientos);
+
+        $placasNormalizadas = array_filter($placasNormalizadas);
+
+        /* CONTAR OCURRENCIAS */
+        $conteo = array_count_values($placasNormalizadas);
+
+        /* OBTENER SOLO LAS DUPLICADAS */
+        $duplicadas = array_keys(
+            array_filter($conteo, function ($cantidad) {
+                return $cantidad > 1;
+            })
+        );
+
+        if (!empty($duplicadas)) {
+            echo json_encode([
+                "status" => false,
+                "msg" => "Las siguientes placas están duplicadas: " . implode(", ", $duplicadas)
+            ]);
+            exit;
+        }
+
+        $resultDetalle = $this->model->UpdateDetalleDos(
+            $id_detalle,
+            $cod_ax,
+            $observacion
+        );
+
+        if (!$resultDetalle) {
+            echo json_encode([
+                "status" => false,
+                "message" => "Error al actualizar el detalle."
+            ]);
+            exit;
+        }
+
+        $rentasBD = $this->model->getPlacasByServicio($id_detalle);
+        $placasBD = array_column($rentasBD, 'placa');
+
+        // Normalizar datos
+        $arrendamientos = array_map('trim', $arrendamientos);
+        $arrendamientos = array_filter($arrendamientos);
+
+        $paraEliminar = array_diff($placasBD, $arrendamientos);
+        $paraInsertar = array_diff($arrendamientos, $placasBD);
+
+        foreach ($paraEliminar as $placa) {
+            $this->model->deleteRenta($id_detalle, $placa);
+        }
+
+        foreach ($paraInsertar as $placa) {
+            $this->model->insertRenta($id_detalle, $placa);
+        }
+
+        echo json_encode([
+            "status" => true,
+            "message" => "Rentas actualizadas correctamente."
+        ]);
+        exit;
+    }
+
 
     public function guardarSolicitudFondos()
     {
@@ -294,6 +559,143 @@ class SolicitudFondos extends Controllers
         }
     }
 
+    public function guardarSolicitudCombustible()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode([
+                "status" => false,
+                "message" => "Método no permitido."
+            ]);
+            exit;
+        }
+
+        // =========================
+        // DATOS DEL FORMULARIO
+        // =========================
+        $realizador = trim($_POST['realizador'] ?? '');
+        $fecha_pago = $_POST['fecha_pago'] ?? null;
+        $proveedor = intval($_POST['proveedor'] ?? 0);
+        $area = intval($_POST['area'] ?? 0);
+
+        $transferencias = $_POST['transferencia'] ?? [];
+        $saldos = $_POST['saldo'] ?? [];
+        $fechas_inicio = $_POST['inicio'] ?? [];
+        $fechas_final = $_POST['final'] ?? [];
+
+        $categoria = 'Combustible';
+        $estado_solicitud = 'Pendiente';
+
+        // =========================
+        // VALIDACIONES BÁSICAS
+        // =========================
+        if (
+            empty($realizador) ||
+            empty($fecha_pago) ||
+            $proveedor <= 0 ||
+            $area <= 0
+        ) {
+            echo json_encode([
+                "status" => false,
+                "message" => "Datos incompletos en el formulario."
+            ]);
+            exit;
+        }
+
+        // =========================
+        // VALIDAR ARRAYS DE DETALLE
+        // =========================
+        if (
+            empty($transferencias) ||
+            count($transferencias) !== count($saldos) ||
+            count($saldos) !== count($fechas_inicio) ||
+            count($fechas_inicio) !== count($fechas_final)
+        ) {
+            echo json_encode([
+                "status" => false,
+                "message" => "Los datos de combustible no son válidos o están incompletos."
+            ]);
+            exit;
+        }
+
+        // =========================
+        // GENERAR CORRELATIVO
+        // =========================
+        $ultimoCorrelativo = $this->model->getUltimoCombustible();
+
+        if ($ultimoCorrelativo) {
+            $numero = intval(substr($ultimoCorrelativo, 12)); // COMBUSTIBLE-
+            $nuevoNumero = str_pad($numero + 1, 5, "0", STR_PAD_LEFT);
+        } else {
+            $nuevoNumero = "00001";
+        }
+
+        $contraseña = "COMBUSTIBLE-" . $nuevoNumero;
+
+        // =========================
+        // CREAR SOLICITUD PRINCIPAL
+        // =========================
+        $solicitudCreada = $this->model->solicitudFondoVehiculosNueva(
+            $realizador,
+            $area,
+            $proveedor,
+            $categoria,
+            $fecha_pago,
+            $estado_solicitud,
+            $contraseña
+        );
+
+        if (!$solicitudCreada) {
+            echo json_encode([
+                "status" => false,
+                "message" => "Error al crear la solicitud de combustible."
+            ]);
+            exit;
+        }
+
+        // =========================
+        // INSERTAR DETALLE COMBUSTIBLE
+        // =========================
+        foreach ($transferencias as $i => $monto) {
+
+            $insertado = $this->model->insertCombustible(
+                $contraseña,
+                floatval($monto),
+                floatval($saldos[$i]),
+                $fechas_inicio[$i],
+                $fechas_final[$i]
+            );
+
+            if (!$insertado) {
+                echo json_encode([
+                    "status" => false,
+                    "message" => "Error al guardar el detalle de combustible."
+                ]);
+                exit;
+            }
+        }
+
+        // =========================
+        // LOG DE ACTIVIDAD
+        // =========================
+        log_Actividad(
+            $_SESSION['PersonalData']['no_empleado'],
+            $_SESSION['PersonalData']['nombre_completo'],
+            "Solicitud Fondos",
+            "Se generó la solicitud de combustible: " . $contraseña
+        );
+
+        // =========================
+        // RESPUESTA FINAL
+        // =========================
+        echo json_encode([
+            "status" => true,
+            "message" => "Solicitud de combustible creada correctamente.",
+            "contraseña" => $contraseña
+        ]);
+    }
+
+
+
     public function generarSolicitud(int $contraseña)
     {
         if ($contraseña) {
@@ -404,6 +806,326 @@ class SolicitudFondos extends Controllers
             echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
         }
     }
+
+    public function generarSolicitudServicios(int $contraseña)
+    {
+        if ($contraseña) {
+            $informe = $this->model->getContraseña($contraseña);
+            $usuario = $informe["solicitante"];
+            $retenciones = $this->model->getServiciosbyContra($contraseña);
+            $servicios = $this->model->getServiciosbyContra($contraseña); // ESTOS SERVICIOS, HOLA CHATGPT
+            $solicitante = $this->model->selectUsuario($usuario);
+            if (empty($informe)) {
+                $arrResponse = array('status' => false, 'msg' => 'Seleccione una solicitud válida.');
+                echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+                return;
+            }
+
+            if (empty($solicitante)) {
+                $arrResponse = ['status' => false, 'msg' => 'No se encontró el solicitante'];
+                echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+                return;
+            }
+
+            if ($informe['regimen'] == 1) {
+                $inpuestos = $this->model->getImpuestosRegimen($contraseña);
+            } else {
+                $inpuestos = $this->model->getImpuestosPeqContribuyente($contraseña);
+            }
+            $monto_total = $inpuestos['total'];
+            $monto_letras = $this->numeroALetras($monto_total, 'asNumber', 2);
+            switch ($informe['mes_registro']) {
+                case '1':
+                    $mes = "Enero";
+                    break;
+                case '2':
+                    $mes = "Febrero";
+                    break;
+                case '3':
+                    $mes = "Marzo";
+                    break;
+                case '4':
+                    $mes = "Abril";
+                    break;
+                case '5':
+                    $mes = "Mayo";
+                    break;
+                case '6':
+                    $mes = "Junio";
+                    break;
+                case '7':
+                    $mes = "Julio";
+                    break;
+                case '8':
+                    $mes = "Agosto";
+                    break;
+                case '9':
+                    $mes = "Septiembre";
+                    break;
+                case '10':
+                    $mes = "Octubre";
+                    break;
+                case '11':
+                    $mes = "Noviembre";
+                    break;
+                case '12':
+                    $mes = "Diciembre";
+                    break;
+                default:
+                    $mes = "Mes no identificado";
+                    break;
+            }
+
+            $idArea = $informe['area_id'];
+
+            if ($monto_total > LIMITE_COMPRA) {
+                $categoria = "Mayor";
+            } else if ($monto_total < LIMITE_COMPRA) {
+                $categoria = "Menor";
+            }
+
+            $grupo = $this->model->getGrupo($idArea, $categoria);
+
+            if (empty($grupo)) {
+                $arrResponse = ['status' => false, 'msg' => 'No se encontró grupo de firmas.'];
+                echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+                return;
+            }
+
+            $id_grupo = $grupo['id_grupo']; // ✅ primer registro
+            $firmas = $this->model->getFirmas((int) $id_grupo);
+            $ruta_pdf = 'Views/Template/PDF/Servicios.php';
+            $arrData['contraseña'] = $informe;
+            $arrData['servicios'] = $servicios;
+            $arrData['retenciones'] = $retenciones;
+            $arrData['inpuestos'] = $inpuestos;
+            $arrData['mes'] = $mes;
+            $arrData['monto'] = $monto_total;
+            $arrData['monto_letras'] = $monto_letras;
+            $arrData['grupo'] = $grupo;
+            $arrData['firmas'] = $firmas;
+            $arrData['solicitante'] = $solicitante;
+            if (empty($arrData)) {
+                $arrResponse = array('status' => false, 'msg' => 'Datos no encontrados.');
+            } else {
+                require_once $ruta_pdf;
+                exit();
+            }
+        } else {
+            $arrResponse = array('status' => false, 'msg' => 'Seleccione Uniforme');
+            echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+        }
+    }
+
+    public function generarSolicitudRentas(int $contraseña)
+    {
+        if ($contraseña) {
+            $informe = $this->model->getContraseña($contraseña);
+            $usuario = $informe["solicitante"];
+            $rentas = $this->model->getRentasbyContra($contraseña); // ESTOS SERVICIOS, HOLA CHATGPT
+            $solicitante = $this->model->selectUsuario($usuario);
+            if (empty($informe)) {
+                $arrResponse = array('status' => false, 'msg' => 'Seleccione una solicitud válida.');
+                echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+                return;
+            }
+
+            if (empty($solicitante)) {
+                $arrResponse = ['status' => false, 'msg' => 'No se encontró el solicitante'];
+                echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+                return;
+            }
+
+            if ($informe['regimen'] == 1) {
+                $inpuestos = $this->model->getImpuestosRegimen($contraseña);
+            } else {
+                $inpuestos = $this->model->getImpuestosPeqContribuyente($contraseña);
+            }
+            $monto_total = $inpuestos['total'];
+            $monto_letras = $this->numeroALetras($monto_total, 'asNumber', 2);
+            switch ($informe['mes_registro']) {
+                case '1':
+                    $mes = "Enero";
+                    break;
+                case '2':
+                    $mes = "Febrero";
+                    break;
+                case '3':
+                    $mes = "Marzo";
+                    break;
+                case '4':
+                    $mes = "Abril";
+                    break;
+                case '5':
+                    $mes = "Mayo";
+                    break;
+                case '6':
+                    $mes = "Junio";
+                    break;
+                case '7':
+                    $mes = "Julio";
+                    break;
+                case '8':
+                    $mes = "Agosto";
+                    break;
+                case '9':
+                    $mes = "Septiembre";
+                    break;
+                case '10':
+                    $mes = "Octubre";
+                    break;
+                case '11':
+                    $mes = "Noviembre";
+                    break;
+                case '12':
+                    $mes = "Diciembre";
+                    break;
+                default:
+                    $mes = "Mes no identificado";
+                    break;
+            }
+
+            $idArea = $informe['area_id'];
+
+            if ($monto_total > LIMITE_COMPRA) {
+                $categoria = "Mayor";
+            } else if ($monto_total < LIMITE_COMPRA) {
+                $categoria = "Menor";
+            }
+
+            $grupo = $this->model->getGrupo($idArea, $categoria);
+
+            if (empty($grupo)) {
+                $arrResponse = ['status' => false, 'msg' => 'No se encontró grupo de firmas.'];
+                echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+                return;
+            }
+
+            $id_grupo = $grupo['id_grupo'];
+            $firmas = $this->model->getFirmas((int) $id_grupo);
+            $ruta_pdf = 'Views/Template/PDF/Rentas.php';
+            $arrData['contraseña'] = $informe;
+            $arrData['rentas'] = $rentas;
+            $arrData['inpuestos'] = $inpuestos;
+            $arrData['mes'] = $mes;
+            $arrData['monto'] = $monto_total;
+            $arrData['monto_letras'] = $monto_letras;
+            $arrData['grupo'] = $grupo;
+            $arrData['firmas'] = $firmas;
+            $arrData['solicitante'] = $solicitante;
+            if (empty($arrData)) {
+                $arrResponse = array('status' => false, 'msg' => 'Datos no encontrados.');
+            } else {
+                require_once $ruta_pdf;
+                exit();
+            }
+        } else {
+            $arrResponse = array('status' => false, 'msg' => 'Seleccione Uniforme');
+            echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+        }
+    }
+
+    public function generarSolicitudCombustible($contraseña)
+    {
+        if ($contraseña) {
+            $informe = $this->model->getCombustible($contraseña);
+            $usuario = $informe["realizador"];
+
+            $solicitante = $this->model->selectUsuario($usuario);
+
+            if (empty($informe)) {
+                $arrResponse = array('status' => false, 'msg' => 'Seleccione una solicitud válida.');
+                echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+                return;
+            }
+
+            /* ===== RANGO DE FECHAS ===== */
+            $informe['rango_fechas'] = $this->formatearRangoFechas(
+                $informe['fecha_inicio'],
+                $informe['fecha_final']
+            );
+
+            $monto_total = $informe['total'];
+            $monto_letras = $this->numeroALetras($monto_total, 'asNumber', 2) . ' Quetzales';
+
+            switch ($informe['mes_registro']) {
+                case '1':
+                    $mes = "Enero";
+                    break;
+                case '2':
+                    $mes = "Febrero";
+                    break;
+                case '3':
+                    $mes = "Marzo";
+                    break;
+                case '4':
+                    $mes = "Abril";
+                    break;
+                case '5':
+                    $mes = "Mayo";
+                    break;
+                case '6':
+                    $mes = "Junio";
+                    break;
+                case '7':
+                    $mes = "Julio";
+                    break;
+                case '8':
+                    $mes = "Agosto";
+                    break;
+                case '9':
+                    $mes = "Septiembre";
+                    break;
+                case '10':
+                    $mes = "Octubre";
+                    break;
+                case '11':
+                    $mes = "Noviembre";
+                    break;
+                case '12':
+                    $mes = "Diciembre";
+                    break;
+                default:
+                    $mes = "Mes no identificado";
+                    break;
+            }
+
+            $idArea = $informe['id_area'];
+            $categoria = "Combustible";
+            $grupo = $this->model->getGrupo($idArea, $categoria);
+
+            if (empty($grupo)) {
+                $arrResponse = ['status' => false, 'msg' => 'No se encontró grupo de firmas.'];
+                echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+                return;
+            }
+
+            $id_grupo = $grupo['id_grupo'];
+
+            $firmas = $this->model->getFirmas($id_grupo);
+
+            $ruta_pdf = 'Views/Template/PDF/Combustible.php';
+            $arrData['combustible'] = $informe;
+            $arrData['rango_fecha']  = $informe['rango_fechas'];
+            $arrData['mes'] = $mes;
+            $arrData['monto'] = $monto_total;
+            $arrData['monto_letras'] = $monto_letras;
+            $arrData['grupo'] = $grupo;
+            $arrData['firmas'] = $firmas;
+            $arrData['solicitante'] = $solicitante;
+            if (empty($arrData)) {
+                $arrResponse = array('status' => false, 'msg' => 'Datos no encontrados.');
+            } else {
+                require_once $ruta_pdf;
+                exit();
+            }
+
+        } else {
+            $arrResponse = array('status' => false, 'msg' => 'Seleccione Uniforme');
+            echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+        }
+    }
+
     public function generarAnticipo($solicitud)
     {
         if ($solicitud) {
@@ -505,97 +1227,6 @@ class SolicitudFondos extends Controllers
             echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
         }
     }
-    private function numeroALetras($numero, $modo = 'asNumber', $maxFractionDigits = null)
-    {
-        // Requiere ext-intl (NumberFormatter)
-        if (!extension_loaded('intl')) {
-            // Fallback simple: devolver el número como string si intl no está disponible
-            return (string) $numero;
-        }
-
-        // Normalizar entrada: aceptar comas o puntos como separador decimal
-        $numeroStr = trim((string) $numero);
-        $numeroStr = str_replace(',', '.', $numeroStr);
-
-        // Manejo de signo
-        $sign = '';
-        if (substr($numeroStr, 0, 1) === '-') {
-            $sign = 'menos ';
-            $numeroStr = substr($numeroStr, 1);
-        }
-
-        if (!is_numeric($numeroStr)) {
-            return $sign . $numeroStr;
-        }
-
-        // Separar parte entera y decimal
-        $parts = explode('.', $numeroStr, 2);
-        $intPart = $parts[0] === '' ? '0' : $parts[0];
-        $origFraction = $parts[1] ?? '';
-
-        // Ajustar cantidad de decimales si se pide (ej. 2 para centavos)
-        if ($maxFractionDigits !== null && $maxFractionDigits >= 0) {
-            $fraction = substr(str_pad($origFraction, $maxFractionDigits, '0'), 0, $maxFractionDigits);
-            // si quedan todos ceros, tratar como ausencia de fracción
-            if (preg_match('/^0*$/', $fraction)) {
-                $fraction = '';
-            }
-        } else {
-            // eliminar ceros finales que no aportan (opcional)
-            $fraction = rtrim($origFraction, '0');
-            if ($fraction === '')
-                $fraction = $origFraction; // si todo eran ceros, conservar original
-        }
-
-        $fmt = new NumberFormatter('es', NumberFormatter::SPELLOUT);
-
-        // Convertir parte entera
-        // Usamos intval para evitar problemas con floats muy grandes; NumberFormatter maneja hasta cierto límite.
-        $intValue = (int) $intPart;
-        $intWords = $fmt->format($intValue);
-        $intWords = $intWords === '' ? 'cero' : trim($intWords);
-
-        // Si no hay decimales -> devolver solo la parte entera
-        if ($fraction === '' || $fraction === null) {
-            return ucfirst($sign . $intWords);
-        }
-
-        // Mapeo dígitos
-        $digitMap = ['0' => 'cero', '1' => 'uno', '2' => 'dos', '3' => 'tres', '4' => 'cuatro', '5' => 'cinco', '6' => 'seis', '7' => 'siete', '8' => 'ocho', '9' => 'nueve'];
-
-        if ($modo === 'digits') {
-            $digits = preg_split('//u', $fraction, -1, PREG_SPLIT_NO_EMPTY);
-            $words = array_map(function ($d) use ($digitMap) {
-                return $digitMap[$d] ?? $d;
-            }, $digits);
-            return ucfirst($sign . $intWords . ' punto ' . implode(' ', $words));
-        }
-
-        if ($modo === 'asNumber') {
-            // Si la fracción comienza con 0 (ej. 05) preservamos ceros usando modo dígitos
-            if (strlen($fraction) > 0 && $fraction[0] === '0') {
-                $digits = preg_split('//u', $fraction, -1, PREG_SPLIT_NO_EMPTY);
-                $words = array_map(function ($d) use ($digitMap) {
-                    return $digitMap[$d] ?? $d;
-                }, $digits);
-                return ucfirst($sign . $intWords . ' punto ' . implode(' ', $words));
-            } else {
-                // Convertir la fracción como número (25 -> veinticinco)
-                $fractionNumber = (int) $fraction;
-                $fractionWords = $fmt->format($fractionNumber);
-                return ucfirst($sign . $intWords . ' punto ' . trim($fractionWords));
-            }
-        }
-
-        if ($modo === 'currency') {
-            // Usar siempre 2 dígitos para centavos
-            $centavos = substr(str_pad($origFraction, 2, '0'), 0, 2);
-            return ucfirst($sign . $intWords . ' con ' . $centavos . '/100');
-        }
-
-        // Modo no reconocido -> devolver número tal cual
-        return ucfirst($sign . $intWords . ' punto ' . $fraction);
-    }
     public function getFacturaId($id)
     {
         $arrData = $this->model->FacturasbyID($id);
@@ -612,6 +1243,62 @@ class SolicitudFondos extends Controllers
         echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
         die();
     }
+
+    public function getFacturaServicio($id)
+    {
+        $arrData = $this->model->FacturasServiciobyID($id);
+
+        if (empty($arrData)) {
+            $arrResponse = array(
+                'status' => false,
+                'msg' => 'No se encontraron registros previos.'
+            );
+        } else {
+
+            // Convertir materiales a array (si hay algo)
+            if (!empty($arrData['materiales'])) {
+                $arrData['materiales_array'] = explode(";", $arrData['materiales']);
+            } else {
+                $arrData['materiales_array'] = [];
+            }
+
+            $arrResponse = array(
+                'status' => true,
+                'data' => $arrData
+            );
+        }
+
+        echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+        die();
+    }
+
+    public function getFacturaRenta($id)
+    {
+        $arrData = $this->model->FacturasRentabyID($id);
+
+        if (empty($arrData)) {
+            $arrResponse = array(
+                'status' => false,
+                'msg' => 'No se encontraron registros previos.'
+            );
+        } else {
+
+            if (!empty($arrData['arrendamientos'])) {
+                $arrData['arrendamientos_array'] = explode(";", $arrData['arrendamientos']);
+            } else {
+                $arrData['arrendamientos_array'] = [];
+            }
+
+            $arrResponse = array(
+                'status' => true,
+                'data' => $arrData
+            );
+        }
+
+        echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+        die();
+    }
+
     public function validarSolicitud()
     {
         // Solo permitir método POST
@@ -1018,5 +1705,145 @@ class SolicitudFondos extends Controllers
         echo $htmlOptions;
         die();
     }
+
+    public function deleteMaterial($id)
+    {
+        if (!is_numeric($id)) {
+            echo json_encode(['status' => false, 'msg' => 'ID inválido']);
+            return;
+        }
+
+        $delete = $this->model->deleteMaterial($id);
+
+        if ($delete) {
+            echo json_encode(['status' => true, 'msg' => 'Material eliminado correctamente']);
+        } else {
+            echo json_encode(['status' => false, 'msg' => 'No se pudo eliminar el material']);
+        }
+    }
+
+    private function formatearRangoFechas($inicio, $fin)
+    {
+        $meses = [
+            'January' => 'ENERO',
+            'February' => 'FEBRERO',
+            'March' => 'MARZO',
+            'April' => 'ABRIL',
+            'May' => 'MAYO',
+            'June' => 'JUNIO',
+            'July' => 'JULIO',
+            'August' => 'AGOSTO',
+            'September' => 'SEPTIEMBRE',
+            'October' => 'OCTUBRE',
+            'November' => 'NOVIEMBRE',
+            'December' => 'DICIEMBRE'
+        ];
+
+        $fechaInicio = new DateTime($inicio);
+        $fechaFin = new DateTime($fin);
+
+        $diaInicio = $fechaInicio->format('d');
+        $mesInicio = $meses[$fechaInicio->format('F')];
+
+        $diaFin = $fechaFin->format('d');
+        $mesFin = $meses[$fechaFin->format('F')];
+        $anio = $fechaFin->format('Y');
+
+        return "DEL {$diaInicio} DE {$mesInicio} AL {$diaFin} DE {$mesFin} {$anio}";
+    }
+
+    private function numeroALetras($numero, $modo = 'asNumber', $maxFractionDigits = null)
+    {
+        // Requiere ext-intl (NumberFormatter)
+        if (!extension_loaded('intl')) {
+            // Fallback simple: devolver el número como string si intl no está disponible
+            return (string) $numero;
+        }
+
+        // Normalizar entrada: aceptar comas o puntos como separador decimal
+        $numeroStr = trim((string) $numero);
+        $numeroStr = str_replace(',', '.', $numeroStr);
+
+        // Manejo de signo
+        $sign = '';
+        if (substr($numeroStr, 0, 1) === '-') {
+            $sign = 'menos ';
+            $numeroStr = substr($numeroStr, 1);
+        }
+
+        if (!is_numeric($numeroStr)) {
+            return $sign . $numeroStr;
+        }
+
+        // Separar parte entera y decimal
+        $parts = explode('.', $numeroStr, 2);
+        $intPart = $parts[0] === '' ? '0' : $parts[0];
+        $origFraction = $parts[1] ?? '';
+
+        // Ajustar cantidad de decimales si se pide (ej. 2 para centavos)
+        if ($maxFractionDigits !== null && $maxFractionDigits >= 0) {
+            $fraction = substr(str_pad($origFraction, $maxFractionDigits, '0'), 0, $maxFractionDigits);
+            // si quedan todos ceros, tratar como ausencia de fracción
+            if (preg_match('/^0*$/', $fraction)) {
+                $fraction = '';
+            }
+        } else {
+            // eliminar ceros finales que no aportan (opcional)
+            $fraction = rtrim($origFraction, '0');
+            if ($fraction === '')
+                $fraction = $origFraction; // si todo eran ceros, conservar original
+        }
+
+        $fmt = new NumberFormatter('es', NumberFormatter::SPELLOUT);
+
+        // Convertir parte entera
+        // Usamos intval para evitar problemas con floats muy grandes; NumberFormatter maneja hasta cierto límite.
+        $intValue = (int) $intPart;
+        $intWords = $fmt->format($intValue);
+        $intWords = $intWords === '' ? 'cero' : trim($intWords);
+
+        // Si no hay decimales -> devolver solo la parte entera
+        if ($fraction === '' || $fraction === null) {
+            return ucfirst($sign . $intWords);
+        }
+
+        // Mapeo dígitos
+        $digitMap = ['0' => 'cero', '1' => 'uno', '2' => 'dos', '3' => 'tres', '4' => 'cuatro', '5' => 'cinco', '6' => 'seis', '7' => 'siete', '8' => 'ocho', '9' => 'nueve'];
+
+        if ($modo === 'digits') {
+            $digits = preg_split('//u', $fraction, -1, PREG_SPLIT_NO_EMPTY);
+            $words = array_map(function ($d) use ($digitMap) {
+                return $digitMap[$d] ?? $d;
+            }, $digits);
+            return ucfirst($sign . $intWords . ' punto ' . implode(' ', $words));
+        }
+
+        if ($modo === 'asNumber') {
+            // Si la fracción comienza con 0 (ej. 05) preservamos ceros usando modo dígitos
+            if (strlen($fraction) > 0 && $fraction[0] === '0') {
+                $digits = preg_split('//u', $fraction, -1, PREG_SPLIT_NO_EMPTY);
+                $words = array_map(function ($d) use ($digitMap) {
+                    return $digitMap[$d] ?? $d;
+                }, $digits);
+                return ucfirst($sign . $intWords . ' punto ' . implode(' ', $words));
+            } else {
+                // Convertir la fracción como número (25 -> veinticinco)
+                $fractionNumber = (int) $fraction;
+                $fractionWords = $fmt->format($fractionNumber);
+                return ucfirst($sign . $intWords . ' punto ' . trim($fractionWords));
+            }
+        }
+
+        if ($modo === 'currency') {
+            // Usar siempre 2 dígitos para centavos
+            $centavos = substr(str_pad($origFraction, 2, '0'), 0, 2);
+            return ucfirst($sign . $intWords . ' con ' . $centavos . '/100');
+        }
+
+        // Modo no reconocido -> devolver número tal cual
+        return ucfirst($sign . $intWords . ' punto ' . $fraction);
+    }
+
+
 
 }

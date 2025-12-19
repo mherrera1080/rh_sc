@@ -36,6 +36,7 @@ document.addEventListener("DOMContentLoaded", function () {
       { data: "fecha_pago", title: "Fecha Pago" },
       {
         data: "estado",
+        title: "Estado",
         render: function (data, type, row, meta) {
           let html = "";
           data = data.toLowerCase();

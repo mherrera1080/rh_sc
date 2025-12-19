@@ -14,6 +14,11 @@ function base_url()
 {
     return BASE_URL;
 }
+
+function api_url()
+{
+    return API_URL;
+}
 //Retorla la url de Assets
 function media()
 {

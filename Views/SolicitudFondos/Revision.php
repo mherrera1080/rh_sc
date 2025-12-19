@@ -23,12 +23,12 @@
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label class="form-label fw-bold">Proveedor</label>
                             <input type="text" class="form-control"
                                 value="<?= $data['facturas']['proveedor'] ?? 'N/A'; ?>" disabled>
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-3">
                             <label class="form-label fw-bold">Área</label>
                             <input type="text" class="form-control" value="<?= $data['facturas']['area'] ?? 'N/A'; ?>"
                                 disabled>

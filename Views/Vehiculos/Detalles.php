@@ -254,7 +254,7 @@
                                         <option value="" selected disabled>Seleccione una categoría</option>
                                         <option value="Combustible">Combustible</option>
                                         <option value="Servicios">Servicios</option>
-                                        <option value="Arrendamiento">Arrendamiento</option>
+                                        <option value="Rentas">Rentas</option>
                                     </select>
                                 </div>
                             </div>

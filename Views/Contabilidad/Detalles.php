@@ -19,34 +19,14 @@
 
                         <?php if ($data['facturas']['estado'] === "Validado Area" && $_SESSION['PersonalData']['area'] == 4) { ?>
                             <button class="btn btn-success btn-round ms-auto btn-password" id="btnValidar"
-                                data-bs-toggle="modal" data-bs-target="#validarConta"
-                                data-id="<?= $data['facturas']['contraseña']; ?>">
-                                <i class="fas fa-check"></i> Validar Contraseña
-                            </button>
-                            <button class="btn btn-danger btn-round ms-auto btn-corregir" id="btnCorregir"
-                                data-bs-toggle="modal" data-bs-target="#corregirModal"
-                                data-id="<?= $data['facturas']['contraseña']; ?>">
-                                <i class="fas fa-ban"></i> Regresar
-                            </button>
-                            <?php if ($data['facturas']['anticipo'] != null) { ?>
-                                <button class="btn-warning-circle ms-auto" id="btnValidar" data-bs-toggle="modal"
-                                    data-bs-target="#anticipoModal" data-id="<?= $data['facturas']['contraseña']; ?>"
-                                    title="Solicitar Fondos">
-                                    <i class="fas fa-exclamation"></i>
-                                </button>
-                            <?php } ?>
-                        <?php } ?>
-
-                        <?php if ($data['facturas']['estado'] === "Validado Conta") { ?>
-                            <button class="btn btn-success btn-round ms-auto btn-password" id="btnValidar"
                                 data-bs-toggle="modal" data-bs-target="#solicitarFondos"
                                 data-id="<?= $data['facturas']['contraseña']; ?>">
                                 <i class="fas fa-check"></i> Solicitar Fondos
                             </button>
                             <button class="btn btn-danger btn-round ms-auto btn-corregir" id="btnCorregir"
-                                data-bs-toggle="modal" data-bs-target="#descartarModal"
+                                data-bs-toggle="modal" data-bs-target="#corregirModal"
                                 data-id="<?= $data['facturas']['contraseña']; ?>">
-                                <i class="fas fa-ban"></i> Descartar
+                                <i class="fas fa-ban"></i> Regresar
                             </button>
                             <?php if ($data['facturas']['anticipo'] != null) { ?>
                                 <button class="btn-warning-circle ms-auto" id="btnValidar" data-bs-toggle="modal"
@@ -102,20 +82,6 @@
                 <div class="card-header">
                     <div class="d-flex align-items-center">
                         <h4 class="card-title">Contraseñas</h4>
-                        <div class="ms-auto">
-                            <div class="ms-auto">
-                                <?php if ($data['facturas']['estado'] === "Pendiente" || $data['facturas']['estado'] === "Corregido") { ?>
-                                    <button class="btn btn-warning btn-round ms-auto btn-password" onclick="toggleInputs()"
-                                        id="btnEditar">
-                                        <i class="fas fa-pencil-alt"></i> Editar
-                                    </button>
-                                <?php } ?>
-                                <button class="btn btn-danger btn-round ms-auto btn-password" onclick="CancelEdit()"
-                                    id="btnCancelar" style="display:none;">
-                                    <i class="fas fa-ban"></i> Cerrar
-                                </button>
-                            </div>
-                        </div>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
@@ -220,7 +186,7 @@
                             <i class="fas fa-times"></i> Cerrar
                         </button>
                         <button type="submit" class="btn btn-success" data-respuesta="Pendiente">
-                            <i class="fas fa-save"></i> Guardar Cambios
+                            <i class="fas fa-save"></i> Regresar
                         </button>
                     </div>
                 </form>
@@ -664,54 +630,6 @@
         </div>
     </div>
 
-    <div class="modal fade" id="editarModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">Revision Factura</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form id="FacturaEdit">
-                    <div class="modal-body">
-                        <input type="hidden" id="edit_id" name="edit_id">
-                        <div class="row">
-                            <div class="col-md-6 mb-12">
-                                <label for="nombres" class="form-label">No. de Factura</label>
-                                <input type="text" class="form-control" id="edit_factura" name="edit_factura" readonly>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="nombres" class="form-label">Valor Documento</label>
-                                <input type="text" class="form-control" id="edit_documento" name="edit_documento"
-                                    readonly>
-                            </div>
-                            <div class="col-md-12 mb-3">
-                                <label for="nombres" class="form-label">Bien/Servicio</label>
-                                <input type="text" class="form-control" id="edit_servicio" name="edit_servicio"
-                                    readonly>
-                            </div>
-                            <div class="col-md- mb-3">
-                                <label for="nombres" class="form-label">Estado</label>
-                                <select class="form-control valor-select" id="edit_estado" name="edit_estado" required>
-                                    <option value="Validado">Validado</option>
-                                    <option value="Corregir">Corregir</option>
-                                    <option value="Descartar">Descartar</option>
-                                </select>
-                            </div>
-                            <div class="col-md-12 mb-3">
-                                <label for="nombres" class="form-label">Observacion</label>
-                                <textarea class="form-control" id="comentario_solicitud" name="comentario_solicitud"
-                                    rows="3" placeholder="Escribe aquí una descripción detallada..."></textarea>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
 
     <div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog">

@@ -84,6 +84,8 @@
 <script>
     const media_url = "<?= media(); ?>";
     const base_url = "<?= base_url(); ?>";
+    const api_url = "<?= api_url(); ?>";
+
 </script>
 <script src="<?= media(); ?>/js/<?= $data['page_functions_js']; ?>"></script>
 </body>

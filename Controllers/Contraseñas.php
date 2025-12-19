@@ -857,7 +857,7 @@ class Contraseñas extends Controllers
                 echo json_encode(["status" => false, "message" => $errores]);
                 exit;
             }
-            
+
             log_Actividad(
                 $_SESSION['PersonalData']['no_empleado'],
                 $_SESSION['PersonalData']['nombre_completo'],
