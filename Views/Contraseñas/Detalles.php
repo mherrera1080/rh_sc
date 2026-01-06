@@ -11,9 +11,6 @@
                         onclick="window.open( '<?= base_url() ?>/Contraseñas/generarContraseña/<?= $data['facturas']['contraseña']; ?>', '_blank')">
                         <i class="far fa-file-pdf"></i>
                     </button>
-                    <button class="btn btn-warning btn-password">
-                        <i class="far fa-solid fa-envelope"></i>
-                    </button>
                     <?php $_SESSION['PersonalData']['area'] ?>
                     <div class="ms-auto d-flex align-items-center gap-2">
 
@@ -450,100 +447,6 @@
                             <i class="fas fa-times"></i> Descartar
                         </button>
                         <button type="submit" class="btn btn-success" data-respuesta="Validado Area">
-                            <i class="fas fa-save"></i> Validar
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="validarConta" tabindex="-1" aria-labelledby="corregirModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <form id="validarContaForm">
-                    <input type="hidden" class="form-control" name="contraseña"
-                        value="<?= $data['facturas']['contraseña']; ?>">
-                    <input type="hidden" class="form-control" name="area" value="<?= $data['facturas']['id_area']; ?>">
-                    <input type="hidden" class="form-control" name="conta_user"
-                        value="<?= $_SESSION['PersonalData']['nombre_completo'] ?>">
-                    <!-- Encabezado -->
-                    <div class="modal-header bg-dark text-white">
-                        <h5 class="modal-title" id="corregirModalLabel">
-                            Revision Contabilidad
-                        </h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                            aria-label="Cerrar">
-                        </button>
-                    </div>
-                    <!-- Cuerpo -->
-                    <div class="modal-body">
-                        <!-- Número de contraseña -->
-                        <div class="mb-4 border-bottom pb-2">
-                            <h5 class="fw-bold mb-0">
-                                CONTRASEÑA: <span class="text-dark"><?= $data['facturas']['contraseña']; ?></span>
-                            </h5>
-                        </div>
-                        <!-- Datos generales -->
-                        <div class="mb-4">
-                            <h6 class="fw-bold text-dark mb-3">Datos Generales</h6>
-
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Realizador</label>
-                                    <input type="text" class="form-control"
-                                        value="<?= $data['facturas']['realizador'] ?? 'N/A'; ?>" disabled>
-                                </div>
-
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Proveedor</label>
-                                    <input type="text" class="form-control"
-                                        value="<?= $data['facturas']['proveedor'] ?? 'N/A'; ?>" disabled>
-                                </div>
-
-                                <div class="col-md-3 mb-3">
-                                    <label class="form-label">Monto Total</label>
-                                    <input type="text" class="form-control"
-                                        value="<?= $data['facturas']['monto_total'] ?? 'N/A'; ?>" disabled>
-                                </div>
-
-                                <div class="col-md-3 mb-3">
-                                    <label class="form-label">Área</label>
-                                    <input type="text" class="form-control"
-                                        value="<?= $data['facturas']['area'] ?? 'N/A'; ?>" disabled>
-                                </div>
-
-                                <div class="col-md-3 mb-3">
-                                    <label class="form-label">Fecha Registro</label>
-                                    <input type="text" class="form-control"
-                                        value="<?= $data['facturas']['fecha_registro'] ?? 'N/A'; ?>" disabled>
-                                </div>
-
-                                <div class="col-md-3 mb-3">
-                                    <label for="fecha_pago" class="form-label">Fecha Pago</label>
-                                    <input type="date" class="form-control"
-                                        value="<?= $data['facturas']['fecha_pago'] ?? ''; ?>" disabled>
-                                </div>
-                            </div>
-                            <?php if ($data['facturas']['anticipo'] != null) { ?>
-                                <hr>
-                                <div class="row">
-                                    <div class="col-md-12 mb-3">
-                                        <label class="form-label fw-semibold text-warning">Anticipo cargado</label>
-                                        <input type="text" class="form-control bg-light"
-                                            value="Proveedor: <?= $data['anticipoinfo']['proveedor']; ?> | No. Transferencia: <?= $data['anticipoinfo']['no_transferencia']; ?> | Fecha: <?= $data['anticipoinfo']['fecha_transaccion']; ?>"
-                                            disabled>
-                                    </div>
-                                </div>
-                            <?php } ?>
-                        </div>
-                    </div>
-                    <!-- Footer -->
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-danger" data-respuesta="Descartado">
-                            <i class="fas fa-times"></i> Descartar
-                        </button>
-                        <button type="submit" class="btn btn-success" data-respuesta="Validado Conta">
                             <i class="fas fa-save"></i> Validar
                         </button>
                     </div>

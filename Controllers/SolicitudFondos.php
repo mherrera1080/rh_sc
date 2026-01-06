@@ -364,6 +364,7 @@ class SolicitudFondos extends Controllers
         $cod_ax = $_POST['edit_codax'] ?? null;
         $observacion = $_POST['edit_observacion'] ?? null;
         $arrendamientos = $_POST['arrendamientos'] ?? [];
+        $contraseña = $_POST['edit_contraseña'] ?? null;
 
         if (empty($id_detalle)) {
             echo json_encode([
@@ -372,6 +373,31 @@ class SolicitudFondos extends Controllers
             ]);
             exit;
         }
+
+
+        if (empty($contraseña)) {
+            echo json_encode([
+                "status" => false,
+                "msg" => "Contraseña no recibida."
+            ]);
+            exit;
+        }
+
+
+        /* VALIDAR CANTIDAD DE FACTURAS ÚNICAS */
+        $facturas = $this->model->getFacturasbyContra($contraseña);
+
+        /* obtener facturas únicas */
+        $facturasUnicas = array_unique(array_column($facturas, 'no_factura'));
+
+        if (count($facturasUnicas) > 1 && count($arrendamientos) > 1) {
+            echo json_encode([
+                "status" => false,
+                "msg" => "Cuando la solicitud tiene más de una factura, solo se permite registrar un vehículo."
+            ]);
+            exit;
+        }
+
 
         $placasNormalizadas = array_map(function ($p) {
             return strtoupper(trim($p));
@@ -527,9 +553,10 @@ class SolicitudFondos extends Controllers
                 exit;
             }
 
+            $base = "Creacion";
             $arrData = [
                 'anticipo' => $this->model->getSolisinContra($idSolicitud),
-                'correos' => $this->model->getCorreosArea($area, $estado_solicitud, $categoria),
+                'correos' => $this->model->getCorreosArea($area, $base, $categoria),
                 'respuesta' => $estado_solicitud
             ];
 
@@ -694,8 +721,6 @@ class SolicitudFondos extends Controllers
         ]);
     }
 
-
-
     public function generarSolicitud(int $contraseña)
     {
         if ($contraseña) {
@@ -717,11 +742,8 @@ class SolicitudFondos extends Controllers
                 return;
             }
 
-            if ($informe['regimen'] == 1) {
-                $inpuestos = $this->model->getImpuestosRegimen($contraseña);
-            } else {
-                $inpuestos = $this->model->getImpuestosPeqContribuyente($contraseña);
-            }
+            $inpuestos = $this->model->getImpuestosByContraseña($contraseña);
+
             $monto_total = $inpuestos['total'];
             $monto_letras = $this->numeroALetras($monto_total, 'asNumber', 2);
             switch ($informe['mes_registro']) {
@@ -806,7 +828,6 @@ class SolicitudFondos extends Controllers
             echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
         }
     }
-
     public function generarSolicitudServicios(int $contraseña)
     {
         if ($contraseña) {
@@ -827,11 +848,8 @@ class SolicitudFondos extends Controllers
                 return;
             }
 
-            if ($informe['regimen'] == 1) {
-                $inpuestos = $this->model->getImpuestosRegimen($contraseña);
-            } else {
-                $inpuestos = $this->model->getImpuestosPeqContribuyente($contraseña);
-            }
+            $inpuestos = $this->model->getImpuestosByContraseña($contraseña);
+
             $monto_total = $inpuestos['total'];
             $monto_letras = $this->numeroALetras($monto_total, 'asNumber', 2);
             switch ($informe['mes_registro']) {
@@ -922,7 +940,8 @@ class SolicitudFondos extends Controllers
         if ($contraseña) {
             $informe = $this->model->getContraseña($contraseña);
             $usuario = $informe["solicitante"];
-            $rentas = $this->model->getRentasbyContra($contraseña); // ESTOS SERVICIOS, HOLA CHATGPT
+            $rentas = $this->model->getRentasbyContra($contraseña);
+            $retenciones = $this->model->getRetenciones($contraseña);
             $solicitante = $this->model->selectUsuario($usuario);
             if (empty($informe)) {
                 $arrResponse = array('status' => false, 'msg' => 'Seleccione una solicitud válida.');
@@ -936,14 +955,11 @@ class SolicitudFondos extends Controllers
                 return;
             }
 
-            if ($informe['regimen'] == 1) {
-                $inpuestos = $this->model->getImpuestosRegimen($contraseña);
-            } else {
-                $inpuestos = $this->model->getImpuestosPeqContribuyente($contraseña);
-            }
+            $inpuestos = $this->model->getImpuestosRenta($contraseña);
+
             $monto_total = $inpuestos['total'];
             $monto_letras = $this->numeroALetras($monto_total, 'asNumber', 2);
-            switch ($informe['mes_registro']) {
+            switch ($informe['mes_renta']) {
                 case '1':
                     $mes = "Enero";
                     break;
@@ -985,6 +1001,9 @@ class SolicitudFondos extends Controllers
                     break;
             }
 
+            $mes_renta = "RENTA MES DE " . $mes . " " . $informe['año_renta'];
+
+
             $idArea = $informe['area_id'];
 
             if ($monto_total > LIMITE_COMPRA) {
@@ -1006,8 +1025,9 @@ class SolicitudFondos extends Controllers
             $ruta_pdf = 'Views/Template/PDF/Rentas.php';
             $arrData['contraseña'] = $informe;
             $arrData['rentas'] = $rentas;
+            $arrData['retenciones'] = $retenciones;
             $arrData['inpuestos'] = $inpuestos;
-            $arrData['mes'] = $mes;
+            $arrData['mes_renta'] = $mes_renta;
             $arrData['monto'] = $monto_total;
             $arrData['monto_letras'] = $monto_letras;
             $arrData['grupo'] = $grupo;
@@ -1106,7 +1126,7 @@ class SolicitudFondos extends Controllers
 
             $ruta_pdf = 'Views/Template/PDF/Combustible.php';
             $arrData['combustible'] = $informe;
-            $arrData['rango_fecha']  = $informe['rango_fechas'];
+            $arrData['rango_fecha'] = $informe['rango_fechas'];
             $arrData['mes'] = $mes;
             $arrData['monto'] = $monto_total;
             $arrData['monto_letras'] = $monto_letras;
@@ -1299,6 +1319,119 @@ class SolicitudFondos extends Controllers
         die();
     }
 
+    public function getPDF($contraseña)
+    {
+        $arrData = $this->model->PDFdatos($contraseña);
+
+        if (empty($arrData)) {
+            $arrResponse = array(
+                'status' => false,
+                'msg' => 'No se encontraron registros previos.'
+            );
+        } else {
+
+            // Convertir materiales a array (si hay algo)
+            if (!empty($arrData['materiales'])) {
+                $arrData['materiales_array'] = explode(";", $arrData['materiales']);
+            } else {
+                $arrData['materiales_array'] = [];
+            }
+
+            $arrResponse = array(
+                'status' => true,
+                'data' => $arrData
+            );
+        }
+
+        echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+        die();
+    }
+
+    public function updateRentaMes()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+            $contraseña = $_POST['contraseña'] ?? null;
+            $renta_mes = $_POST['mes_renta'] ?? null;
+
+            $tiene_nota_credito = $_POST['tiene_nota_credito'] ?? '0';
+            $no_factura = $_POST['no_factura'] ?? null;
+            $monto_credito = $_POST['monto_credito'] ?? null;
+
+            if (empty($contraseña) || empty($renta_mes)) {
+                echo json_encode([
+                    "status" => false,
+                    "message" => "Datos incompletos."
+                ]);
+                exit;
+            }
+
+            if ($tiene_nota_credito === '1') {
+
+                if (empty($no_factura) || empty($monto_credito)) {
+                    echo json_encode([
+                        "status" => false,
+                        "message" => "Debe ingresar factura y monto de la nota de crédito."
+                    ]);
+                    exit;
+                }
+
+                $monto_credito = str_replace(',', '.', trim($monto_credito));
+
+                if (!is_numeric($monto_credito)) {
+                    echo json_encode([
+                        "status" => false,
+                        "message" => "Monto de crédito inválido."
+                    ]);
+                    exit;
+                }
+
+                $totalBase = $this->model->getTotalRentaSinCredito($contraseña);
+
+                if (empty($totalBase) || !isset($totalBase['total_sin_credito'])) {
+                    echo json_encode([
+                        "status" => false,
+                        "message" => "No se pudo calcular el total de la renta."
+                    ]);
+                    exit;
+                }
+
+                if ($monto_credito > $totalBase['total_sin_credito']) {
+                    echo json_encode([
+                        "status" => false,
+                        "message" => "El monto del crédito no puede ser mayor al total de la renta."
+                    ]);
+                    exit;
+                }
+
+                $existe = $this->model->existeCredito($contraseña);
+
+                if ($existe) {
+                    $this->model->updateCredito($contraseña, $no_factura, $monto_credito);
+                } else {
+                    $this->model->insertCredito($contraseña, $no_factura, $monto_credito);
+                }
+
+            } else if ($tiene_nota_credito === '0') {
+
+                $existe = $this->model->existeCredito($contraseña);
+
+                if ($existe) {
+                    $this->model->deleteCredito($contraseña);
+                }
+            }
+
+            $result = $this->model->updateMesRenta($contraseña, $renta_mes);
+
+            echo json_encode([
+                "status" => $result,
+                "message" => $result
+                    ? "Renta actualizada correctamente."
+                    : "Error al actualizar la renta."
+            ]);
+        }
+    }
+
     public function validarSolicitud()
     {
         // Solo permitir método POST
@@ -1396,7 +1529,6 @@ class SolicitudFondos extends Controllers
         ]);
     }
 
-
     public function finalizarSolicitud()
     {
         // 🔒 Verificar método HTTP
@@ -1485,13 +1617,15 @@ class SolicitudFondos extends Controllers
             exit;
         }
 
-
-
-        // 🔹 Datos para el correo
         $categoria = 'Solicitud Fondos';
+        if ($respuesta = "Pagado") {
+            $base = 'Pagar';
+        } else if ($Descartado = "Descartado") {
+            $base = 'Descartar';
+        }
         $arrData = [
             'solicitud' => $this->model->getContraseña($contraseña),
-            'correos' => $this->model->getCorreosArea($area, $respuesta, $categoria),
+            'correos' => $this->model->getCorreosArea($area, $base, $categoria),
             'respuesta' => $respuesta
         ];
 
@@ -1535,57 +1669,92 @@ class SolicitudFondos extends Controllers
     public function finalizarSolicitudSinContra()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $id_solicitud = $_POST['id_solicitud'];
-            $area = $_POST['area'];
-            $respuesta = $_POST['respuesta'];
+
+            $id_solicitud = $_POST['id_solicitud'] ?? null;
+            $area = $_POST['area'] ?? null;
+            $respuesta = $_POST['respuesta'] ?? null;
             $no_transferencia = $_POST['no_transferencia'] ?? null;
             $fecha_pago = $_POST['fecha_pago'] ?? null;
             $observacion = $_POST['observacion'] ?? null;
 
-            if ($respuesta == 'Pagado') {
-                if (empty($id_solicitud) || empty($no_transferencia) || empty($fecha_pago)) {
-                    echo json_encode(["status" => false, "message" => "Datos incompletos."]);
+            if (empty($id_solicitud) || empty($respuesta) || empty($area)) {
+                echo json_encode([
+                    "status" => false,
+                    "message" => "Datos incompletos."
+                ]);
+                exit;
+            }
+
+            if ($respuesta === 'Pagado') {
+                if (empty($no_transferencia) || empty($fecha_pago)) {
+                    echo json_encode([
+                        "status" => false,
+                        "message" => "Debe ingresar número de transferencia y fecha de pago."
+                    ]);
                     exit;
                 }
             }
 
-            $result = $this->model->endSolicitudSinContra($id_solicitud, $respuesta, $no_transferencia, $fecha_pago, $observacion);
+            $result = $this->model->endSolicitudSinContra(
+                $id_solicitud,
+                $respuesta,
+                $no_transferencia,
+                $fecha_pago,
+                $observacion
+            );
 
+            /* -------- CONFIGURACIÓN DE CORREO -------- */
             $categoria = 'Anticipo';
-            // Enviar correo
-            $arrData = [
-                'anticipo' => $this->model->getSolisinContra($id_solicitud),
-                'correos' => $this->model->getCorreosArea($area, $respuesta, $categoria),
-                'respuesta' => $respuesta
-            ];
+            $base = null;
 
-            $sendcorreoEmpleado = 'Views/Template/Email/sendAnticipo.php';
-            try {
-                ob_start();
-                require $sendcorreoEmpleado;
-                ob_end_clean();
-            } catch (Exception $e) {
-                echo json_encode([
-                    "status" => false,
-                    "message" => "Error al enviar el correo: " . $e->getMessage()
-                ]);
-                exit;
+            switch ($respuesta) {
+                case 'Pagado':
+                    $base = 'Paga';
+                    break;
+
+                case 'Descartado':
+                    $base = 'Descartar';
+                    break;
+            }
+
+            if ($base) {
+                $arrData = [
+                    'anticipo' => $this->model->getSolisinContra($id_solicitud),
+                    'correos' => $this->model->getCorreosArea($area, $base, $categoria),
+                    'respuesta' => $respuesta
+                ];
+
+                $sendcorreoEmpleado = 'Views/Template/Email/sendAnticipo.php';
+
+                try {
+                    ob_start();
+                    require $sendcorreoEmpleado;
+                    ob_end_clean();
+                } catch (Exception $e) {
+                    echo json_encode([
+                        "status" => false,
+                        "message" => "Error al enviar el correo."
+                    ]);
+                    exit;
+                }
             }
 
             log_Actividad(
                 $_SESSION['PersonalData']['no_empleado'],
                 $_SESSION['PersonalData']['nombre_completo'],
                 "Configuracion",
-                "Se reviso el anticipo: " . $contraseña
+                "Se revisó el anticipo ID: " . $id_solicitud
             );
 
-            if ($result) {
-                echo json_encode(["status" => true, "message" => "Factura eliminada correctamente."]);
-            } else {
-                echo json_encode(["status" => false, "message" => "Error al eliminar la factura."]);
-            }
+            echo json_encode([
+                "status" => $result,
+                "message" => $result
+                    ? "Revisión de anticipo completada correctamente."
+                    : "Error al procesar el anticipo."
+            ]);
         }
     }
+
 
     public function getSolisinContra($contraseña)
     {

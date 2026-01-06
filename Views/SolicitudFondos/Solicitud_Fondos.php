@@ -67,7 +67,7 @@
                 <input type="hidden" id="realizador" name="realizador"
                     value="<?php echo $_SESSION['PersonalData']['id_usuario']; ?>">
                 <div class="modal-header ">
-                    <h5 class="modal-title" id="setUserModalLabel">Crear Solicitud de Fondos sin Contraseña</h5>
+                    <h5 class="modal-title" id="setUserModalLabel"></h5>Crear Anticipo
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">

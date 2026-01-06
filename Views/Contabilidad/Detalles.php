@@ -567,6 +567,7 @@
                     <input type="hidden" class="form-control" name="contraseña"
                         value="<?= $data['facturas']['contraseña']; ?>">
                     <input type="hidden" class="form-control" name="area" value="<?= $data['facturas']['id_area']; ?>">
+                    <input type="hidden" class="form-control" name="proveedor" value="<?= $data['facturas']['id_proveedor']; ?>">
                     <input type="hidden" class="form-control" name="solicitante"
                         value="<?= $_SESSION['PersonalData']['nombre_completo'] ?>">
                     <div class="modal-header bg-dark text-white">
@@ -629,7 +630,6 @@
             </div>
         </div>
     </div>
-
 
     <div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -759,223 +759,78 @@
         </div>
     </div>
 
-    <div class="modal fade" id="impuestoModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal fade" id="editarModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">Revisión Factura</h1>
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Revisión Factura Impuestos</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-
                 <form id="DetalleImpuesto">
                     <div class="modal-body">
                         <input type="hidden" id="impuesto_id" name="edit_id">
                         <input type="hidden" id="impuesto_id_regimen">
 
                         <div class="row">
-                            <div class="mb-4 border-bottom pb-2">
-                                <h5 class="fw-bold mb-0">Datos Principales</h5>
+                            <input type="hidden" id="edit_id">
+
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">No. de Factura</label>
+                                <input type="text" class="form-control" id="edit_factura" disabled>
                             </div>
 
                             <div class="col-md-3 mb-3">
-                                <label for="impuesto_factura" class="form-label">No. de Factura</label>
-                                <input type="text" class="form-control" id="impuesto_factura" name="impuesto_factura"
-                                    disabled>
-                            </div>
-
-                            <div class="col-md-3 mb-3">
-                                <label for="impuesto_documento" class="form-label">Valor Documento</label>
-                                <input type="text" class="form-control" id="impuesto_documento"
-                                    name="impuesto_documento" disabled>
+                                <label class="form-label">Valor Documento</label>
+                                <input type="text" class="form-control" id="edit_documento" disabled>
                             </div>
 
                             <div class="col-md-6 mb-3">
-                                <label for="impuesto_servicio" class="form-label">Bien/Servicio</label>
-                                <input type="text" class="form-control" id="impuesto_servicio" name="impuesto_servicio"
-                                    disabled>
+                                <label class="form-label">Bien / Servicio</label>
+                                <input type="text" class="form-control" id="edit_servicio" disabled>
                             </div>
 
                             <div class="col-md-3 mb-3">
-                                <label for="impuesto_codax" class="form-label">Registro AX</label>
-                                <input type="text" class="form-control" id="impuesto_codax" name="edit_codax">
+                                <label class="form-label">Régimen</label>
+                                <input type="text" class="form-control" id="edit_regimen" readonly>
                             </div>
 
                             <div class="col-md-3 mb-3">
-                                <label for="impuesto_base" class="form-label">Base</label>
-                                <input type="text" class="form-control" id="impuesto_base" name="edit_base" readonly>
-                            </div>
-
-                            <div class="col-md-3 mb-3">
-                                <label for="impuesto_base_iva" class="form-label">IVA Base</label>
-                                <input type="text" class="form-control" id="impuesto_base_iva" name="edit_base_iva"
-                                    readonly>
-                            </div>
-
-                            <div class="col-md-3 mb-3">
-                                <label for="impuesto_regimen" class="form-label">Régimen</label>
-                                <input type="text" class="form-control" id="impuesto_regimen" readonly>
+                                <label class="form-label">Base </label>
+                                <input type="text" class="form-control" id="edit_base" disabled>
                             </div>
 
                             <hr>
 
                             <div class="col-md-3 mb-3">
-                                <label for="input_iva" class="form-label">IVA</label>
-                                <div class="input-group">
-                                    <div class="input-group-text">
-                                        <input class="form-check-input mt-0" type="checkbox" id="check_iva">
-                                    </div>
-                                    <input type="number" class="form-control" id="input_iva" name="input_iva"
-                                        placeholder="%" disabled>
-                                </div>
+                                <label class="form-label">IVA</label>
+                                <input type="text" class="form-control" id="edit_iva" readonly>
                             </div>
 
                             <div class="col-md-3 mb-3">
-                                <label for="input_isr" class="form-label">ISR</label>
-                                <div class="input-group">
-                                    <div class="input-group-text">
-                                        <input class="form-check-input mt-0" type="checkbox" id="check_isr">
-                                    </div>
-                                    <input type="number" class="form-control" id="input_isr" name="input_isr"
-                                        placeholder="%" disabled>
-                                </div>
+                                <label class="form-label">Retención IVA</label>
+                                <input type="text" class="form-control" id="edit_reten_iva" readonly>
                             </div>
 
                             <div class="col-md-3 mb-3">
-                                <label for="impuesto_reten_iva" class="form-label">Retención IVA</label>
-                                <input type="text" class="form-control" id="impuesto_reten_iva" name="edit_reten_iva"
-                                    readonly>
+                                <label class="form-label">Retención ISR</label>
+                                <input type="text" class="form-control" id="edit_reten_isr" readonly>
                             </div>
 
                             <div class="col-md-3 mb-3">
-                                <label for="impuesto_reten_isr" class="form-label">Retención ISR</label>
-                                <input type="text" class="form-control" id="impuesto_reten_isr" name="edit_reten_isr"
-                                    readonly>
+                                <label class="form-label">Total Factura</label>
+                                <input type="text" class="form-control" id="edit_total" readonly>
                             </div>
-
-                            <div class="col-md-3 mb-3">
-                                <label for="impuesto_fecha_registro" class="form-label">Fecha Registro</label>
-                                <input type="text" class="form-control" id="impuesto_fecha_registro"
-                                    name="impuesto_fecha_registro" readonly>
-                            </div>
-
-                            <div class="col-md-3 mb-3">
-                                <label for="impuesto_total" class="form-label">Total Líquido</label>
-                                <input type="text" class="form-control" id="impuesto_total" name="edit_total" readonly>
-                            </div>
-
-                            <hr>
 
                             <div class="col-md-12 mb-3">
-                                <label for="impuesto_observacion" class="form-label">Observación</label>
-                                <textarea class="form-control" id="impuesto_observacion" name="edit_observacion"
-                                    rows="2"></textarea>
+                                <label class="form-label">Observación</label>
+                                <textarea class="form-control" id="edit_observacion" rows="2"></textarea>
                             </div>
-                        </div>
-
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                            <button type="submit" class="btn btn-primary">Guardar cambios</button>
                         </div>
                 </form>
 
             </div>
         </div>
     </div>
-
-    <script>
-        // IVA
-        document.getElementById('check_iva').addEventListener('change', function () {
-            const ivaInput = document.getElementById('input_iva');
-            ivaInput.disabled = !this.checked;
-            if (!this.checked) ivaInput.value = "";
-        });
-
-        // ISR
-        document.getElementById('check_isr').addEventListener('change', function () {
-            const isrInput = document.getElementById('input_isr');
-            isrInput.disabled = !this.checked;
-            if (!this.checked) isrInput.value = "";
-        });
-    </script>
-
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const totalInput = document.getElementById("impuesto_documento");
-            const retenIVAInput = document.getElementById("impuesto_reten_iva");
-            const retenISRInput = document.getElementById("impuesto_reten_isr");
-            const totalLiquidoInput = document.getElementById("impuesto_total");
-
-            const checkIVA = document.getElementById("check_iva");
-            const inputIVA = document.getElementById("input_iva");
-            const checkISR = document.getElementById("check_isr");
-            const inputISR = document.getElementById("input_isr");
-
-            const regimenInput = document.getElementById("impuesto_id_regimen");
-
-            function obtenerRegimen() {
-                return parseInt(regimenInput.value) || 1;
-            }
-
-            function calcular() {
-                const tipoRegimen = obtenerRegimen();
-                let total = parseFloat(totalInput.value) || 0;
-                let porcIVA = checkIVA.checked ? parseFloat(inputIVA.value) || 0 : 0;
-                let porcISR = checkISR.checked ? parseFloat(inputISR.value) || 0 : 0;
-
-                let base = 0;
-                let ivaIncluido = 0;
-                let ret_iva = 0;
-                let ret_isr = 0;
-
-                if (tipoRegimen === 1) {
-                    // Régimen 1: calcular base y IVA
-                    base = total / 1.12;
-                    ivaIncluido = total - base;
-
-                    if (checkIVA.checked && porcIVA > 0) ret_iva = ivaIncluido * (porcIVA / 100);
-                    if (checkISR.checked && porcISR > 0) ret_isr = base * (porcISR / 100);
-
-                    checkISR.disabled = false;
-                    inputISR.disabled = !checkISR.checked;
-                } else if (tipoRegimen === 2) {
-                    // Régimen 2: no separar IVA
-                    base = total;
-                    ivaIncluido = 0;
-
-                    checkISR.checked = false;
-                    checkISR.disabled = true;
-                    inputISR.disabled = true;
-                    inputISR.value = "";
-                    retenISRInput.value = "";
-
-                    if (checkIVA.checked && porcIVA > 0) {
-                        ret_iva = base * (porcIVA / 100);
-                    }
-                }
-
-                // Mostrar base e IVA base
-                document.getElementById("impuesto_base").value = base.toFixed(2);
-                document.getElementById("impuesto_base_iva").value = ivaIncluido.toFixed(2);
-
-                let totalLiquido = total - ret_iva - ret_isr;
-                retenIVAInput.value = ret_iva > 0 ? ret_iva.toFixed(2) : "";
-                retenISRInput.value = ret_isr > 0 ? ret_isr.toFixed(2) : "";
-                totalLiquidoInput.value = totalLiquido.toFixed(2);
-            }
-
-            [checkIVA, checkISR, inputIVA, inputISR, totalInput].forEach(el => {
-                if (el) {
-                    el.addEventListener("input", calcular);
-                    el.addEventListener("change", calcular);
-                }
-            });
-
-            // Al mostrar el modal, calcular una vez
-            const modal = document.getElementById("impuestoModal");
-            modal.addEventListener("shown.bs.modal", calcular);
-        });
-    </script>
-
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {

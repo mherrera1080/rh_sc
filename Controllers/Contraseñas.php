@@ -468,9 +468,10 @@ class Contraseñas extends Controllers
             );
 
             $categoria = "Contraseña";
+            $base = "Creacion";
             $arrData = [
                 'contraseña' => $this->model->getContraseña($contraseña),
-                'correos' => $this->model->getCorreosArea($area, $estado, $categoria)
+                'correos' => $this->model->getCorreosArea($area, $base, $categoria)
             ];
 
             $sendcorreoEmpleado = 'Views/Template/Email/createContraseña.php';
@@ -651,9 +652,15 @@ class Contraseñas extends Controllers
                 "Actualizacion de contraseña: " . $contraseña
             );
 
+            // $arrData = [
+            //     'contraseña' => $this->model->getContraseña($contraseña),
+            // ];
 
+            $categoria = "Contraseña";
+            $base = "Correccion";
             $arrData = [
                 'contraseña' => $this->model->getContraseña($contraseña),
+                'correos' => $this->model->getCorreosArea($area, $base, $categoria)
             ];
 
             $sendcorreoEmpleado = 'Views/Template/Email/sendContraseña.php';
@@ -750,9 +757,10 @@ class Contraseñas extends Controllers
             );
 
             $categoria = "Contraseña";
+            $base = "Correccion";
             $arrData = [
                 'contraseña' => $this->model->getContraseña($contraseña),
-                'correos' => $this->model->getCorreosArea($area, $estado, $categoria)
+                'correos' => $this->model->getCorreosArea($area, $base, $categoria)
             ];
 
             $sendcorreoEmpleado = 'Views/Template/Email/sendContraseña.php';
@@ -867,8 +875,9 @@ class Contraseñas extends Controllers
 
             $datos = $this->model->getContraseña($contraseña);
             $id_area = $datos['id_area'];
+
             $categoria = "Contraseña";
-            $respuesta = "Corregido";
+            $respuesta = "Creacion";
             $arrData = [
                 'contraseña' => $this->model->getContraseña($contraseña),
                 'correos' => $this->model->getCorreosArea($id_area, $respuesta, $categoria)
@@ -942,9 +951,15 @@ class Contraseñas extends Controllers
             );
 
             $categoria = "Contraseña";
+            if ($estado = "Validado Area") {
+                $base = 'Validacion Area';
+            } else if ($estado = "Descartado") {
+                $base = 'Descartar';
+
+            }
             $arrData = [
                 'contraseña' => $this->model->getContraseña($contraseña),
-                'correos' => $this->model->getCorreosArea($area, $estado, $categoria)
+                'correos' => $this->model->getCorreosArea($area, $base, $categoria)
             ];
 
             $sendcorreoEmpleado = 'Views/Template/Email/sendContraseña.php';
@@ -968,81 +983,12 @@ class Contraseñas extends Controllers
 
         }
     }
-
-    public function validacionConta()
-    {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $contraseña = $_POST['contraseña'];
-            $area = $_POST['area'];
-            $conta_user = $_POST['conta_user'];
-            $estado = $_POST['respuesta'];
-            $errores = [];
-            if (empty($contraseña) || empty($estado)) {
-                echo json_encode(["status" => false, "msg" => "Problemas al obtener datos."]);
-                exit;
-            }
-
-            $this->model->validacionConta(
-                $contraseña,
-                $conta_user,
-                $estado
-            );
-
-            if (!empty($errores)) {
-                echo json_encode([
-                    "status" => false,
-                    "message" => $errores,
-                    "errors" => $errores
-                ]);
-                exit;
-            }
-
-            log_Actividad(
-                $_SESSION['PersonalData']['no_empleado'],
-                $_SESSION['PersonalData']['nombre_completo'],
-                "Contraseñas",
-                "Contabilidad valido la contraseña: " . $contraseña
-            );
-
-            $categoria = "Contraseña";
-            $arrData = [
-                'contraseña' => $this->model->getContraseña($contraseña),
-                'correos' => $this->model->getCorreosArea($area, $estado, $categoria)
-            ];
-
-            $sendcorreoEmpleado = 'Views/Template/Email/sendContraseña.php';
-            try {
-                ob_start();
-                require $sendcorreoEmpleado;
-                ob_end_clean();
-            } catch (Exception $e) {
-                echo json_encode([
-                    "status" => false,
-                    "message" => "Error al enviar el correo: " . $e->getMessage()
-                ]);
-                exit;
-            }
-
-            if ($estado == 'Descartado') {
-                echo json_encode([
-                    "status" => true,
-                    "message" => "Contraseña descartada y correo enviado correctamente."
-                ]);
-            } else {
-                echo json_encode([
-                    "status" => true,
-                    "message" => "Contraseña validado y correo enviado correctamente."
-                ]);
-
-            }
-
-        }
-    }
     public function solicitudFondos()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $contraseña = $_POST['contraseña'];
             $area = $_POST['area'];
+            $proveedor = $_POST['proveedor'];
             $categoria = 'N/A';
             $solicitante = $_POST['solicitante'];
             $estado = "Validado";
@@ -1053,11 +999,19 @@ class Contraseñas extends Controllers
                 exit;
             }
 
+            $proveedores = $this->model->selectProveedor($proveedor);
+
+            $regimen = $proveedores["regimen"];
+            $iva = $proveedores["iva"];
+            $isr = $proveedores["isr"];
             // Crear la contraseña
             $this->model->solicitudFondoVehiculos(
                 $contraseña,
                 $area,
-                $categoria
+                $categoria,
+                $regimen,
+                $iva,
+                $isr
             );
 
             $this->model->descartarFacturas($contraseña);
@@ -1077,6 +1031,28 @@ class Contraseñas extends Controllers
                 exit;
             }
 
+            // Obtener facturas asociadas a la contraseña
+            $facturas = $this->model->getDetallesPorContraseña($contraseña);
+
+            foreach ($facturas as $factura) {
+
+                // Calcular valores por factura
+                $dataFactura = $this->model->FacturasbyID($factura['no_factura']);
+
+                if (!empty($dataFactura)) {
+
+                    $this->model->actualizarValoresFactura(
+                        $factura['no_factura'],
+                        $dataFactura['base'],
+                        $dataFactura['iva'],
+                        $dataFactura['reten_iva'],
+                        $dataFactura['reten_isr'],
+                        $dataFactura['total_liquido']
+                    );
+                }
+            }
+
+
             log_Actividad(
                 $_SESSION['PersonalData']['no_empleado'],
                 $_SESSION['PersonalData']['nombre_completo'],
@@ -1085,9 +1061,10 @@ class Contraseñas extends Controllers
             );
 
             $categoria = "Contraseña";
+            $base = "Solicitar Fondos";
             $arrData = [
                 'contraseña' => $this->model->getContraseña($contraseña),
-                'correos' => $this->model->getCorreosArea($area, $estado, $categoria)
+                'correos' => $this->model->getCorreosArea($area, $base, $categoria)
             ];
 
             $sendcorreoEmpleado = 'Views/Template/Email/sendContraseña.php';
@@ -1108,6 +1085,9 @@ class Contraseñas extends Controllers
             ]);
         }
     }
+
+
+
     public function descartarContraseña()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {

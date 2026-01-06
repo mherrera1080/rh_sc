@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", function () {
         data: null, // usamos null porque tomaremos varios campos del row
         className: "text-center",
         render: function (data, type, row) {
-          if (row.categoria === "Anticipo") {
+          if (row.categoria === "Anticipo" || row.categoria === "Combustible") {
             return row.fecha_pago_sf ?? "—";
           } else {
             return row.fecha_pago ?? "—";
@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", function () {
           let html = "";
           data = data.toLowerCase();
           if (data.includes("pendiente")) {
-            html = '<span class="badge badge-warning"> ' + data + '</span>';
+            html = '<span class="badge badge-warning"> ' + data + "</span>";
           } else if (data.includes("validado")) {
             html = '<span class="badge badge-success">VALIDADO</span>';
           } else if (data.includes("pagado")) {
@@ -72,14 +72,27 @@ document.addEventListener("DOMContentLoaded", function () {
         render: function (data, type, row) {
           let html = "";
 
-          if (row.categoria !== "Anticipo") {
-            // Si el estado es diferente a Anticipo
-            html = `<button class="btn btn-info btn-sm" onclick="window.location.href='${base_url}/Contabilidad/Revision/${row.contraseña}'">
+          switch (row.categoria) {
+            case "Combustible":
+              html = `
+              <button class="btn btn-info btn-sm"
+                onclick="window.location.href='${base_url}/SolicitudFondos/Combustible/${row.contraseña}'">
                 <i class="fas fa-archive"></i>
               </button>`;
-          } else {
-            // Si el estado es Anticipo
-            html = `<button class="btn btn-info btn-sm" onclick="window.location.href='${base_url}/SolicitudFondos/Anticipo/${row.id_solicitud}'">
+                      break;
+
+                    case "Anticipo":
+                      html = `
+              <button class="btn btn-info btn-sm"
+                onclick="window.location.href='${base_url}/Contabilidad/Anticipo/${row.id_solicitud}'">
+                <i class="fas fa-archive"></i>
+              </button>`;
+                      break;
+
+                    default:
+                      html = `
+              <button class="btn btn-info btn-sm"
+                onclick="window.location.href='${base_url}/Contabilidad/Revision/${row.contraseña}'">
                 <i class="fas fa-archive"></i>
               </button>`;
           }

@@ -44,6 +44,7 @@ document.addEventListener("DOMContentLoaded", function () {
           if (
             solicitud_estado != "Descartado" &&
             solicitud_estado != "Pagado" &&
+            solicitud_estado != "Validado" &&
             usuario == 4
           ) {
             return `
@@ -174,66 +175,48 @@ document.addEventListener("submit", function (event) {
   if (event.target && event.target.id === "validarSolicitud") {
     event.preventDefault();
 
-    // Detecta el botón presionado
     let boton = event.submitter;
     let valor = boton.dataset.respuesta;
-    let formData = new FormData(event.target);
-    formData.append("respuesta", valor);
 
-    let ajaxUrl = base_url + "/SolicitudFondos/validarSolicitud";
-    let request = new XMLHttpRequest();
-    request.open("POST", ajaxUrl, true);
-    request.send(formData);
-
-    request.onreadystatechange = function () {
-      if (request.readyState === 4 && request.status === 200) {
-        let response = JSON.parse(request.responseText);
-        if (response.status) {
-          Swal.fire({
-            title: "Datos guardados correctamente",
-            icon: "success",
-            confirmButtonText: "Aceptar",
-          }).then(() => location.reload());
-        } else {
-          Swal.fire("Atención", response.msg || "Error desconocido", "error");
-        }
+    // 🔴 Confirmación previa
+    Swal.fire({
+      title: "¿Está seguro?",
+      text: "Esta acción no se puede deshacer.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sí, continuar",
+      cancelButtonText: "Cancelar",
+      reverseButtons: true,
+    }).then((result) => {
+      // ❌ Si cancela, no hace nada
+      if (!result.isConfirmed) {
+        return;
       }
-    };
-  }
-});
 
-document.addEventListener("submit", function (event) {
-  if (event.target && event.target.id === "finalizarSolicitud") {
-    event.preventDefault();
+      // ✅ Continúa solo si confirma
+      let formData = new FormData(event.target);
+      formData.append("respuesta", valor);
 
-    // Detecta el botón presionado
-    let boton = event.submitter;
-    let valor = boton.dataset.respuesta;
-    let formData = new FormData(event.target);
-    formData.append("respuesta", valor);
+      let ajaxUrl = base_url + "/SolicitudFondos/validarSolicitud";
+      let request = new XMLHttpRequest();
+      request.open("POST", ajaxUrl, true);
+      request.send(formData);
 
-    let ajaxUrl = base_url + "/SolicitudFondos/finalizarSolicitud";
-    let request = new XMLHttpRequest();
-    request.open("POST", ajaxUrl, true);
-    request.send(formData);
+      request.onreadystatechange = function () {
+        if (request.readyState === 4 && request.status === 200) {
+          let response = JSON.parse(request.responseText);
 
-    request.onreadystatechange = function () {
-      if (request.readyState === 4 && request.status === 200) {
-        let response = JSON.parse(request.responseText);
-        if (response.status) {
-          Swal.fire({
-            title: response.message,
-            icon: "success",
-            confirmButtonText: "Aceptar",
-          }).then(() => location.reload());
-        } else {
-          Swal.fire(
-            "Atención",
-            response.message || "Error desconocido",
-            "error"
-          );
+          if (response.status) {
+            Swal.fire({
+              title: "Datos guardados correctamente",
+              icon: "success",
+              confirmButtonText: "Aceptar",
+            }).then(() => location.reload());
+          } else {
+            Swal.fire("Atención", response.msg || "Error desconocido", "error");
+          }
         }
-      }
-    };
+      };
+    });
   }
 });

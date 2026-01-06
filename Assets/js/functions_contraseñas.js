@@ -38,20 +38,38 @@ document.addEventListener("DOMContentLoaded", function () {
         data: "estado",
         render: function (data, type, row, meta) {
           let html = "";
-          data = data.toLowerCase();
-          if (data.includes("pendiente")) {
-            html = '<span class="badge badge-warning">' + data + "</span>";
-          } else if (data.includes("validado")) {
-            html = '<span class="badge badge-success">VALIDADO</span>';
-          } else if (data.includes("corregir")) {
-            html = '<span class="badge badge-danger">CORREGIR</span>';
-          } else if (data.includes("corregido")) {
-            html = '<span class="badge badge-info">CORREGIDO</span>';
-          } else if (data.includes("descartado")) {
-            html = '<span class="badge badge-danger">DESCARTADO</span>';
-          } else if (data.includes("pagado")) {
-            html = '<span class="badge badge-info">PAGADO</span>';
+          const estado = data.toLowerCase();
+
+          switch (true) {
+            case estado.includes("pendiente"):
+              html = '<span class="badge badge-warning">PENDIENTE</span>';
+              break;
+
+            case estado.includes("validado area"):
+              html = '<span class="badge badge-success">VALIDADO</span>';
+              break;
+
+            case estado.includes("corregir"):
+              html = '<span class="badge badge-danger">CORREGIR</span>';
+              break;
+
+            case estado.includes("corregido"):
+              html = '<span class="badge badge-info">CORREGIDO</span>';
+              break;
+
+            case estado.includes("descartado"):
+              html = '<span class="badge badge-danger">DESCARTADO</span>';
+              break;
+
+            case estado.includes("pagado"):
+              html = '<span class="badge badge-info">PAGADO</span>';
+              break;
+
+            default:
+              html = `<span class="badge badge-secondary">FONDOS SOLICITADOS</span>`;
+              break;
           }
+
           return html;
         },
       },

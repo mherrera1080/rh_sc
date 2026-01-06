@@ -14,6 +14,11 @@
                             onclick="window.open('<?= base_url() ?>/SolicitudFondos/generarAnticipo/<?= $data['facturas']['id_solicitud']; ?>', '_blank')">
                             <i class="far fa-file-pdf"></i> PDF
                         </button>
+                        <?php if ($data['facturas']['solicitud_estado'] === "Pendiente" && $_SESSION['PersonalData']['area'] == 4 || $data['facturas']['solicitud_estado'] === "Corregido" && $_SESSION['PersonalData']['area'] == 4) { ?>
+                            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#finalizarModal">
+                                <i class="fas fa-check"></i> Pagar
+                            </button>
+                        <?php } ?>
                     </div>
                 </div>
                 <div class="card-body">
@@ -173,98 +178,11 @@
                     </div>
                     <!-- Footer -->
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-danger" data-respuesta="Corregir">
-                            <i class="fas fa-save"></i> Corregir
-                        </button>
-                        <button type="submit" class="btn btn-success" data-respuesta="Pagado">
-                            <i class="fas fa-save"></i> Pagar
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="editarSolicitud" tabindex="-1" aria-labelledby="setUserModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <form id="setSolicitud">
-                    <input type="hidden" id="realizador" name="realizador"
-                        value="<?php echo $_SESSION['PersonalData']['id_usuario']; ?>">
-                    <input type="hidden" id="edit_id_solicitud" name="id_solicitud">
-                    <input type="hidden" class="form-control" name="area"
-                        value="<?= $data['facturas']['id_area'] ?? 'N/A'; ?>">
-
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="setUserModalLabel">Editar Solicitud de Fondos</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="row mb-4">
-                            <div class="col-md-2">
-                                <label for="edit_fecha_creacion" class="form-label">Fecha Registro</label>
-                                <input type="date" class="form-control" id="edit_fecha_creacion" name="fecha_registro"
-                                    readonly>
-                            </div>
-                            <div class="col-md-3">
-                                <label for="fecha_pago" class="form-label">Fecha Transaccion <span
-                                        class="text-danger">*</span></label>
-                                <input type="date" class="form-control" id="edit_fecha_pago" name="fecha_pago" required>
-                            </div>
-                            <div class="col-md-3">
-                                <label for="area" class="form-label">Área</label>
-                                <input type="text" class="form-control"
-                                    value="<?php echo $_SESSION['PersonalData']['nombre_area']; ?>" readonly>
-                            </div>
-                            <div class="col-md-4">
-                                <label for="proveedor" class="form-label">Recibimos de: <span
-                                        class="text-danger">*</span></label>
-                                <select class="form-control selectpicker" id="edit_proveedor" name="proveedor" required
-                                    data-live-search="true">
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="row align-items-center mb-2">
-                            <div class="col-md-9">
-                                <h2 class="fw-bold">Detalles</h2>
-                            </div>
-                        </div>
-                        <hr>
-
-                        <div class="mb-3">
-                            <div class="table-responsive">
-                                <table class="table table-bordered table-striped align-middle text-center"
-                                    id="tablaFacturasEdit">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>#</th>
-                                            <th>Tipo</th>
-                                            <th>Bien o Servicio</th>
-                                            <th>Valor Documento</th>
-                                            <th>Acción</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <!-- Contenido dinámico -->
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="observacion_general" class="form-label">Observación General</label>
-                            <textarea class="form-control" id="observacion_general" name="observacion_general"
-                                rows="3"></textarea>
-                        </div>
-                    </div>
-
-                    <div class="modal-footer">
                         <button type="submit" class="btn btn-danger" data-respuesta="Descartado">
                             <i class="fas fa-save"></i> Descartar
                         </button>
-                        <button type="submit" class="btn btn-success" data-respuesta="Corregido">
-                            <i class="fas fa-save"></i> Re-Enviar
+                        <button type="submit" class="btn btn-success" data-respuesta="Pagado">
+                            <i class="fas fa-save"></i> Pagar
                         </button>
                     </div>
                 </form>

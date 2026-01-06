@@ -200,43 +200,6 @@ document.addEventListener("DOMContentLoaded", function () {
       };
     });
 
-  // document
-  //   .querySelector("#regresarContraseña")
-  //   .addEventListener("submit", function (event) {
-  //     event.preventDefault();
-  //     // Detecta el botón presionado
-  //     let boton = event.submitter;
-  //     let valor = boton.dataset.respuesta;
-
-  //     let formData = new FormData(this);
-  //     formData.append("respuesta", valor);
-
-  //     let ajaxUrl = base_url + "/Contraseñas/corregirContraseña";
-  //     let request = window.XMLHttpRequest
-  //       ? new XMLHttpRequest()
-  //       : new ActiveXObject("Microsoft.XMLHTTP");
-
-  //     request.open("POST", ajaxUrl, true);
-  //     request.send(formData);
-
-  //     request.onreadystatechange = function () {
-  //       if (request.readyState === 4 && request.status === 200) {
-  //         let response = JSON.parse(request.responseText);
-  //         if (response.status) {
-  //           Swal.fire({
-  //             title: "Datos guardados correctamente",
-  //             icon: "success",
-  //             confirmButtonText: "Aceptar",
-  //           }).then(() => {
-  //             location.reload();
-  //           });
-  //         } else {
-  //           Swal.fire("Atención", response.msg || "Error desconocido", "error");
-  //         }
-  //       }
-  //     };
-  //   });
-
   document
     .querySelector("#regresarContraseña")
     .addEventListener("submit", function (event) {

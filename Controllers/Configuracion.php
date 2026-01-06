@@ -151,9 +151,11 @@ class Configuracion extends Controllers
     public function setProveedor()
     {
         if ($_POST) {
+
             if (empty($_POST['nombre_proveedor'])) {
                 $arrResponse = array("status" => false, "msg" => 'Datos Incorrectos');
             } else {
+
                 $id_proveedor = intval($_POST['id_proveedor']);
                 $nombre_proveedor = $_POST['nombre_proveedor'];
                 $nombre_social = $_POST['nombre_social'];
@@ -162,8 +164,12 @@ class Configuracion extends Controllers
                 $estado = $_POST['estado'];
                 $regimen = $_POST['regimen'];
 
+                // ✔ Checkboxes (solo se evalúan en update)
+                $iva = isset($_POST['iva']) ? 1 : 0;
+                $isr = isset($_POST['isr']) ? 1 : 0;
                 if ($id_proveedor == 0) {
-                    $option = 1;
+
+                    // INSERT (sin IVA / ISR)
                     $request_user = $this->model->insertProveedor(
                         $nombre_proveedor,
                         $nombre_social,
@@ -172,14 +178,17 @@ class Configuracion extends Controllers
                         $estado,
                         $regimen
                     );
+
                     log_Actividad(
                         $_SESSION['PersonalData']['no_empleado'],
                         $_SESSION['PersonalData']['nombre_completo'],
                         "Configuracion",
                         "Proveedor Creado: " . $nombre_proveedor
                     );
+
                 } else {
-                    $option = 2;
+
+                    // UPDATE (con IVA / ISR)
                     $request_user = $this->model->updateProveedor(
                         $id_proveedor,
                         $nombre_proveedor,
@@ -187,8 +196,11 @@ class Configuracion extends Controllers
                         $nit_proveedor,
                         $dias_credito,
                         $estado,
-                        $regimen
+                        $regimen,
+                        $iva,
+                        $isr
                     );
+
                     log_Actividad(
                         $_SESSION['PersonalData']['no_empleado'],
                         $_SESSION['PersonalData']['nombre_completo'],
@@ -198,21 +210,24 @@ class Configuracion extends Controllers
                 }
 
                 if ($request_user > 0) {
-                    if ($option == 1) {
-                        $arrResponse = array('status' => true, 'msg' => 'Datos guardados correctamente.');
-                    } else {
-                        $arrResponse = array('status' => true, 'msg' => 'Datos actualizados correctamente.');
-                    }
+                    $arrResponse = array(
+                        'status' => true,
+                        'msg' => $id_proveedor == 0
+                            ? 'Datos guardados correctamente.'
+                            : 'Datos actualizados correctamente.'
+                    );
                 } elseif ($request_user == 'exist') {
                     $arrResponse = array('status' => false, 'msg' => '¡Atención! El usuario ya existe.');
                 } else {
                     $arrResponse = array('status' => false, 'msg' => 'No es posible almacenar los datos.');
                 }
             }
+
             echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
         }
         die();
     }
+
     public function Firmas()
     {
         $data['page_id'] = 'Firmas';
@@ -316,11 +331,11 @@ class Configuracion extends Controllers
             }
 
             log_Actividad(
-                        $_SESSION['PersonalData']['no_empleado'],
-                        $_SESSION['PersonalData']['nombre_completo'],
-                        "Configuracion",
-                        "Grupo de Firmas creado: " . $nombre_grupo
-                    );
+                $_SESSION['PersonalData']['no_empleado'],
+                $_SESSION['PersonalData']['nombre_completo'],
+                "Configuracion",
+                "Grupo de Firmas creado: " . $nombre_grupo
+            );
             // ✅ Respuesta final
             echo json_encode([
                 "status" => true,
@@ -402,11 +417,11 @@ class Configuracion extends Controllers
         }
 
         log_Actividad(
-                        $_SESSION['PersonalData']['no_empleado'],
-                        $_SESSION['PersonalData']['nombre_completo'],
-                        "Configuracion",
-                        "Grupo de Firmas Actualizada: "
-                    );
+            $_SESSION['PersonalData']['no_empleado'],
+            $_SESSION['PersonalData']['nombre_completo'],
+            "Configuracion",
+            "Grupo de Firmas Actualizada: "
+        );
 
         echo json_encode(["status" => true, "message" => "Grupo actualizado correctamente."]);
         exit;
@@ -549,11 +564,11 @@ class Configuracion extends Controllers
             }
 
             log_Actividad(
-                        $_SESSION['PersonalData']['no_empleado'],
-                        $_SESSION['PersonalData']['nombre_completo'],
-                        "Configuracion",
-                        "Rol ingresado: " . $role_name
-                    );
+                $_SESSION['PersonalData']['no_empleado'],
+                $_SESSION['PersonalData']['nombre_completo'],
+                "Configuracion",
+                "Rol ingresado: " . $role_name
+            );
 
             echo json_encode(["status" => true, "message" => "Rol y permisos creados correctamente."]);
         }
@@ -754,11 +769,11 @@ class Configuracion extends Controllers
         }
 
         log_Actividad(
-                        $_SESSION['PersonalData']['no_empleado'],
-                        $_SESSION['PersonalData']['nombre_completo'],
-                        "Configuracion",
-                        "Se actualizaron permisos del rol : " . $idRol
-                    );
+            $_SESSION['PersonalData']['no_empleado'],
+            $_SESSION['PersonalData']['nombre_completo'],
+            "Configuracion",
+            "Se actualizaron permisos del rol : " . $idRol
+        );
         // Respuesta
         echo json_encode(['status' => true, 'msg' => 'Permisos actualizados con éxito.']);
     }

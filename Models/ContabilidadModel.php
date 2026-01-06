@@ -6,6 +6,36 @@ class ContabilidadModel extends Mysql
         parent::__construct();
     }
 
+
+        public function getSolicitud($id_solicitud)
+    {
+        $sql = "SELECT
+            tc.id_solicitud,
+            tc.contraseña,
+            CONCAT(tu.nombres, ' ', tu.primer_apellido, ' ', tu.segundo_apellido) as realizador,
+            tp.nombre_proveedor AS proveedor,
+            ta.id_area,
+            ta.nombre_area AS area,
+            ROUND(SUM(td.valor_documento), 2) AS total,
+            DAY(tc.fecha_creacion)   AS dia_registro,
+            MONTH(tc.fecha_creacion) AS mes_registro,
+            YEAR(tc.fecha_creacion)  AS año_registro,
+            tc.fecha_creacion AS fecha_registro,
+            tc.fecha_pago,
+            tc.estado AS solicitud_estado
+        FROM tb_solicitud_fondos tc
+        INNER JOIN tb_proveedor tp ON tc.proveedor = tp.id_proveedor
+        INNER JOIN tb_areas ta ON tc.area = ta.id_area
+        INNER JOIN tb_detalles td ON tc.id_solicitud = td.no_factura
+        INNER JOIN tb_usuarios tu ON tc.usuario = tu.id_usuario
+        WHERE tc.id_solicitud = ?
+        GROUP BY tc.id_solicitud;
+        ";
+
+        $request = $this->select($sql, array($id_solicitud));
+        return $request;
+    }
+
     public function getContraseña($contraseña)
     {
         $sql = "SELECT
@@ -32,7 +62,7 @@ class ContabilidadModel extends Mysql
                 - SUM(td.reten_iva), 
                 2
             ) AS total_pequeño,
-            ROUND((SUM(td.valor_documento) * 0.12) , 2) AS iva_calc,
+            ROUND(SUM(td.iva), 2) AS iva_calc,
             ROUND(SUM(td.valor_documento), 2) AS total_calc,
             ROUND(SUM(td.reten_iva), 2) AS reten_iva,
             ROUND(SUM(td.reten_isr), 2) AS reten_isr,
@@ -55,7 +85,7 @@ class ContabilidadModel extends Mysql
         return $request;
     }
 
-        public function getContraseñaContra($contraseña)
+    public function getContraseñaContra($contraseña)
     {
 
         $sql = "SELECT
@@ -165,4 +195,105 @@ class ContabilidadModel extends Mysql
 
         return $this->select_all($sql);
     }
+
+    public function FacturasbyID($no_factura)
+    {
+        $sql = "SELECT
+        d.id_detalle,
+        d.no_factura,
+        d.valor_documento AS valor_documento,
+        d.bien_servicio,
+        r.nombre_regimen,
+        CASE
+            WHEN r.id_regimen = 1
+            THEN ROUND(d.valor_documento / 1.12, 2)
+            ELSE d.valor_documento
+        END AS base,
+        CASE
+            WHEN r.id_regimen = 1
+            THEN ROUND(d.valor_documento - (d.valor_documento / 1.12), 2)
+            ELSE 0
+        END AS iva,
+        CASE
+            WHEN p.iva = 1
+                AND (
+                    (r.id_regimen = 1 AND d.valor_documento >= 2500.01)
+                    OR (r.id_regimen = 2 AND d.valor_documento >= 2232.14)
+                )
+            THEN
+                CASE
+                    WHEN r.id_regimen = 1
+                    THEN ROUND(
+                        (d.valor_documento - (d.valor_documento / 1.12)) * 0.15
+                    , 2)
+                    WHEN r.id_regimen = 2
+                    THEN ROUND(d.valor_documento * 0.05, 2)
+                    ELSE 0
+                END
+            ELSE 0
+        END AS reten_iva,
+        CASE
+            WHEN p.isr = 1
+                AND (
+                    (r.id_regimen = 1 AND d.valor_documento >= 2500.01)
+                    OR (r.id_regimen = 2 AND d.valor_documento >= 2232.14)
+                )
+            THEN
+                CASE
+                    WHEN r.id_regimen = 1
+                    THEN ROUND((d.valor_documento / 1.12) * 0.05, 2)
+                    WHEN r.id_regimen = 2
+                    THEN ROUND(d.valor_documento * 0.07, 2)
+                    ELSE 0
+                END
+            ELSE 0
+        END AS reten_isr,
+        ROUND(
+            d.valor_documento
+            - (
+                CASE
+                    WHEN p.iva = 1
+                        AND (
+                            (r.id_regimen = 1 AND d.valor_documento >= 2500.01)
+                            OR (r.id_regimen = 2 AND d.valor_documento >= 2232.14)
+                        )
+                    THEN
+                        CASE
+                            WHEN r.id_regimen = 1
+                            THEN (d.valor_documento - (d.valor_documento / 1.12)) * 0.15
+                            WHEN r.id_regimen = 2
+                            THEN d.valor_documento * 0.05
+                            ELSE 0
+                        END
+                    ELSE 0
+                END
+            )
+            - (
+                CASE
+                    WHEN p.isr = 1
+                        AND (
+                            (r.id_regimen = 1 AND d.valor_documento >= 2500.01)
+                            OR (r.id_regimen = 2 AND d.valor_documento >= 2232.14)
+                        )
+                    THEN
+                        CASE
+                            WHEN r.id_regimen = 1
+                            THEN (d.valor_documento / 1.12) * 0.05
+                            WHEN r.id_regimen = 2
+                            THEN d.valor_documento * 0.07
+                            ELSE 0
+                        END
+                    ELSE 0
+                END
+            )
+        , 2) AS total_liquido
+        FROM tb_detalles d
+        INNER JOIN tb_contraseña c ON d.contraseña = c.contraseña
+        INNER JOIN tb_proveedor p ON c.id_proveedor = p.id_proveedor
+        INNER JOIN tb_regimen r ON p.regimen = r.id_regimen
+        WHERE d.no_factura =  ?";
+        $request = $this->select($sql, array($no_factura));
+        return $request;
+    }
+
 }

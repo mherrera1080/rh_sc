@@ -61,12 +61,6 @@ try {
         case 'Descartado':
             $mensaje_estado = "El anticipo ha sido descartado.";
             break;
-        case 'Corregir':
-            $mensaje_estado = "El anticipo ha sido mandado a corregir.";
-            break;
-        case 'Corregido':
-            $mensaje_estado = "El anticipo ha sido corregido.";
-            break;
         default:
             $mensaje_estado = "Se encuentra en un estado desconocido.";
             break;

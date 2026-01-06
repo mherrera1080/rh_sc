@@ -58,7 +58,7 @@ class PDF extends FPDF
         $this->Text(165, 48, $title);
         $title = utf8_decode('FECHA:________________________');
         $this->Text(140, 48, $title);
-        $title = utf8_decode('Favor de elaborar trasnferencia a nombre de:');
+        $title = utf8_decode('Favor de elaborar transferencia a nombre de:');
         $this->Text(10, 55, $title);
     }
 

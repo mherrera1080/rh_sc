@@ -21,16 +21,27 @@
                         <?php } ?>
                     </div>
                     <div class="d-flex gap-2">
-                        <?php if ($data['facturas']['solicitud_estado'] === "Pendiente" && $_SESSION['PersonalData']['area'] == 4): ?>
-                            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#finalizarModal">
-                                <i class="fas fa-check"></i> Pagar
-                            </button>
-
-                            <button class="btn btn-danger btn-sm"
-                                onclick="window.open('<?= base_url() ?>/SolicitudFondos/generarSolicitud/<?= $data['facturas']['contraseña']; ?>', '_blank')">
-                                <i class="far fa-file-pdf"></i> PDF
-                            </button>
-                        <?php endif; ?>
+                        <?php if ($data['facturas']['area_id'] == 2): ?>
+                            <?php if ($data['facturas']['solicitud_estado'] === "Validado" && $_SESSION['PersonalData']['area'] == 4): ?>
+                                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#finalizarModal">
+                                    <i class="fas fa-check"></i> Pagar
+                                </button>
+                                <button class="btn btn-danger btn-sm"
+                                    onclick="window.open('<?= base_url() ?>/SolicitudFondos/generarSolicitud/<?= $data['facturas']['contraseña']; ?>', '_blank')">
+                                    <i class="far fa-file-pdf"></i> PDF
+                                </button>
+                            <?php endif; ?>
+                        <?php elseif ($data['facturas']['area_id'] != 2): ?>
+                            <?php if ($data['facturas']['solicitud_estado'] === "Pendiente" && $_SESSION['PersonalData']['area'] == 4): ?>
+                                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#finalizarModal">
+                                    <i class="fas fa-check"></i> Pagar
+                                </button>
+                                <button class="btn btn-danger btn-sm"
+                                    onclick="window.open('<?= base_url() ?>/SolicitudFondos/generarSolicitud/<?= $data['facturas']['contraseña']; ?>', '_blank')">
+                                    <i class="far fa-file-pdf"></i> PDF
+                                </button>
+                            <?php endif; ?>
+                        <?php endif ?>
                     </div>
                 </div>
                 <div class="card-body">
@@ -541,101 +552,6 @@
             </div>
         </div>
     </div>
-
-    <script>
-        // IVA
-        document.getElementById('check_iva').addEventListener('change', function () {
-            const ivaInput = document.getElementById('input_iva');
-            ivaInput.disabled = !this.checked;
-            if (!this.checked) ivaInput.value = "";
-        });
-
-        // ISR
-        document.getElementById('check_isr').addEventListener('change', function () {
-            const isrInput = document.getElementById('input_isr');
-            isrInput.disabled = !this.checked;
-            if (!this.checked) isrInput.value = "";
-        });
-    </script>
-
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const totalInput = document.getElementById("edit_documento");
-            const retenIVAInput = document.getElementById("edit_reten_iva");
-            const retenISRInput = document.getElementById("edit_reten_isr");
-            const totalLiquidoInput = document.getElementById("edit_total");
-
-            const checkIVA = document.getElementById("check_iva");
-            const inputIVA = document.getElementById("input_iva");
-            const checkISR = document.getElementById("check_isr");
-            const inputISR = document.getElementById("input_isr");
-
-            const regimenInput = document.getElementById("edit_id_regimen");
-
-            function obtenerRegimen() {
-                return parseInt(regimenInput.value) || 1;
-            }
-
-
-            function calcular() {
-                const tipoRegimen = obtenerRegimen();
-                let total = parseFloat(totalInput.value) || 0;
-                let porcIVA = checkIVA.checked ? parseFloat(inputIVA.value) || 0 : 0;
-                let porcISR = checkISR.checked ? parseFloat(inputISR.value) || 0 : 0;
-
-                let base = 0;
-                let ivaIncluido = 0;
-                let ret_iva = 0;
-                let ret_isr = 0;
-
-                if (tipoRegimen === 1) {
-                    // Régimen 1: calcular base y IVA
-                    base = total / 1.12;
-                    ivaIncluido = total - base;
-
-                    if (checkIVA.checked && porcIVA > 0) ret_iva = ivaIncluido * (porcIVA / 100);
-                    if (checkISR.checked && porcISR > 0) ret_isr = base * (porcISR / 100);
-
-                    checkISR.disabled = false;
-                    inputISR.disabled = !checkISR.checked;
-                } else if (tipoRegimen === 2) {
-                    // Régimen 2: no separar IVA
-                    base = total;
-                    ivaIncluido = 0;
-
-                    checkISR.checked = false;
-                    checkISR.disabled = true;
-                    inputISR.disabled = true;
-                    inputISR.value = "";
-                    retenISRInput.value = "";
-
-                    if (checkIVA.checked && porcIVA > 0) {
-                        ret_iva = base * (porcIVA / 100);
-                    }
-                }
-
-                // Mostrar base e IVA base
-                document.getElementById("edit_base").value = base.toFixed(2);
-                document.getElementById("edit_base_iva").value = ivaIncluido.toFixed(2);
-
-                let totalLiquido = total - ret_iva - ret_isr;
-                retenIVAInput.value = ret_iva > 0 ? ret_iva.toFixed(2) : "";
-                retenISRInput.value = ret_isr > 0 ? ret_isr.toFixed(2) : "";
-                totalLiquidoInput.value = totalLiquido.toFixed(2);
-            }
-
-            [checkIVA, checkISR, inputIVA, inputISR, totalInput].forEach(el => {
-                if (el) {
-                    el.addEventListener("input", calcular);
-                    el.addEventListener("change", calcular);
-                }
-            });
-
-            // Al mostrar el modal, calcular una vez
-            const modal = document.getElementById("editarModal");
-            modal.addEventListener("shown.bs.modal", calcular);
-        });
-    </script>
 
     <style>
         .btn-warning-circle {

@@ -19,10 +19,84 @@
                                 <i class="fas fa-exclamation"></i>
                             </button>
                         <?php } ?>
-                        <button class="btn btn-danger btn-sm"
-                            onclick="window.open('<?= base_url() ?>/SolicitudFondos/generarSolicitudRentas/<?= $data['facturas']['contraseña']; ?>', '_blank')">
-                            <i class="far fa-file-pdf"></i> PDF
-                        </button>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <?php if ($data['facturas']['solicitud_estado'] === "Pendiente"): ?>
+                            <?php if ($data['facturas']['renta'] === null): ?>
+                                <button class="btn btn-danger btn-sm btnPDF" data-bs-toggle="modal"
+                                    data-bs-target="#pdfRentasModal" data-id="<?= $data['facturas']['contraseña']; ?>">
+                                    <i class="far fa-file-pdf"></i> Generar PDF
+                                </button>
+                            <?php elseif ($data['facturas']['renta'] != null): ?>
+                                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#validarModal">
+                                    <i class="fas fa-check"></i> Validar
+                                </button>
+                                <button class="btn btn-danger btn-sm"
+                                    onclick="window.open('<?= base_url() ?>/SolicitudFondos/generarSolicitudRentas/<?= $data['facturas']['contraseña']; ?>', '_blank')">
+                                    <i class="far fa-file-pdf"></i> PDF
+                                </button>
+                                <button class="btn btn-secondary btn-sm btnPDF" data-bs-toggle="modal"
+                                    data-bs-target="#pdfRentasModal" data-id="<?= $data['facturas']['contraseña']; ?>">
+                                    <i class="fa-solid fa-arrow-rotate-left"></i>Actualizar Datos
+                                </button>
+                            <?php endif; ?>
+                        <?php endif; ?>
+
+                        <div class="modal fade" id="pdfRentasModal" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-md">
+                                <div class="modal-content">
+                                    <form id="GenerarPDF">
+                                        <div class="modal-header bg-dark text-white">
+                                            <h5 class="modal-title">Generar PDF de Rentas</h5>
+                                            <button type="button" class="btn-close btn-close-white"
+                                                data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+
+                                            <input type="hidden" name="contraseña"
+                                                value="<?= $data['facturas']['contraseña']; ?>">
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold">MES RENTA</label>
+                                                <input type="date" class="form-control" id="mes_renta" name="mes_renta"
+                                                    required>
+                                            </div>
+
+                                            <div class="form-check mb-3">
+                                                <input class="form-check-input" type="checkbox" id="habilitarExtras">
+                                                <label class="form-check-label fw-bold" for="habilitarExtras">
+                                                    Agregar Nota de Credito
+                                                </label>
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-md-6 mb-2">
+                                                    <label class="form-label fw-bold">Factura</label>
+                                                    <input type="text" class="form-control extra-input" id="no_factura"
+                                                        name="no_factura" disabled>
+                                                </div>
+
+                                                <div class="col-md-6 mb-2">
+                                                    <label class="form-label fw-bold">Monto</label>
+                                                    <input type="text" class="form-control extra-input"
+                                                        id="monto_credito" name="monto_credito" inputmode="decimal"
+                                                        placeholder="0.00" disabled>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                Cancelar
+                                            </button>
+                                            <button type="submit" class="btn btn-danger">
+                                                <i class="far fa-file-pdf"></i> Generar PDF
+                                            </button>
+                                        </div>
+
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="card-body">
@@ -94,7 +168,7 @@
                         <table id="tableFacturas" class="table table-hover table-bordered align-middle">
                             <thead class="table-light">
                                 <tr>
-                                    
+
                                 </tr>
                             </thead>
                             <tbody>
@@ -186,15 +260,9 @@
                         <button type="submit" class="btn btn-danger" data-respuesta="Descartado">
                             <i class="fas fa-times"></i> Descartar
                         </button>
-                        <?php if ($data['facturas']['area_id'] == 2) { ?>
-                            <button type="submit" class="btn btn-success" data-respuesta="Validado Conta">
-                                <i class="fas fa-save"></i> Validar
-                            </button>
-                        <?php } else if ($data['facturas']['area_id'] != 2) { ?>
-                                <button type="submit" class="btn btn-success" data-respuesta="Validado Area">
-                                    <i class="fas fa-save"></i> Validar
-                                </button>
-                        <?php } ?>
+                        <button type="submit" class="btn btn-success" data-respuesta="Validado">
+                            <i class="fas fa-save"></i> Validar
+                        </button>
                     </div>
                 </form>
             </div>
@@ -295,13 +363,14 @@
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">Rentas</h1>
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Renta Vehicular</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form id="ArrendamientoEdit">
                     <div class="modal-body">
                         <input type="hidden" id="edit_id" name="edit_id">
                         <input type="hidden" id="edit_id_regimen">
+                        <input type="hidden" name="edit_contraseña" value="<?= $data['facturas']['contraseña']; ?>">
                         <div class="row">
                             <!-- Título -->
                             <div class="mb-4 border-bottom pb-2">
@@ -330,7 +399,6 @@
                                 <label for="edit_codax" class="form-label strong">Registro AX</label>
                                 <input type="text" class="form-control" id="edit_codax" name="edit_codax">
                             </div>
-                            <!-- Cod AX -->
                             <div class="col-md-3 mb-3">
                                 <label for="edit_base" class="form-label strong">Base</label>
                                 <input type="text" class="form-control" id="edit_base" name="edit_base" readonly>
@@ -346,10 +414,6 @@
                             </div>
 
                             <hr>
-
-                            <div class="mb-4 border-bottom pb-2">
-                                <h5 class="fw-bold mb-0">Arrendamiento de los vehiculos</h5>
-                            </div>
                             <div class="col-md-12">
                                 <div class="mt-2">
                                     <button type="button" class="btn btn-primary btn-sm" id="btnAgregarVehiculo">
@@ -658,6 +722,44 @@
                 contenedor.innerHTML = "";
                 contador = 0;
             };
+
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const checkbox = document.getElementById("habilitarExtras");
+            const extraInputs = document.querySelectorAll(".extra-input");
+
+            checkbox.addEventListener("change", function () {
+                extraInputs.forEach(input => {
+                    input.disabled = !checkbox.checked;
+
+                    if (!checkbox.checked) {
+                        input.value = ""; // Limpia los campos al desactivar
+                    }
+                });
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const montoInput = document.querySelector('input[name="monto_credito"]');
+
+            montoInput.addEventListener("input", function () {
+                let valor = this.value;
+
+                valor = valor.replace(/[^0-9.]/g, '');
+
+                const partes = valor.split('.');
+                if (partes.length > 2) {
+                    valor = partes[0] + '.' + partes.slice(1).join('');
+                }
+
+                this.value = valor;
+            });
 
         });
     </script>

@@ -10,14 +10,29 @@
                         <h2 class="mb-1 fs-4 fw-bold">Solicitud de Fondos</h2>
                         <h3 class="mb-0 fs-6 text-muted">
                             NO. CONTRASEÑA:
-                            <strong class="text-dark"><?= $data['facturas']['contraseña']; ?></strong>
+                            <strong class="text-dark">
+                                <?= $data['facturas']['contraseña']; ?>
+                            </strong>
                         </h3>
-                        <button class="btn btn-danger btn-sm"
-                            onclick="window.open('<?= base_url() ?>/SolicitudFondos/generarSolicitudCombustible/<?= $data['facturas']['contraseña']; ?>', '_blank')">
-                            <i class="far fa-file-pdf"></i> PDF
-                        </button>
+                    </div>
+                    <div class="d-flex gap-2">
+
+                        <?php if ($data['facturas']['solicitud_estado'] === "Pendiente") { ?>
+                            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#validarModal">
+                                <i class="fas fa-check"></i> Validar
+                            </button>
+                            <button class="btn btn-danger btn-sm"
+                                onclick="window.open('<?= base_url() ?>/SolicitudFondos/generarSolicitudCombustible/<?= $data['facturas']['contraseña']; ?>', '_blank')">
+                                <i class="far fa-file-pdf"></i> PDF
+                            </button>
+                        <?php } else if ($data['facturas']['solicitud_estado'] === "Validado" && $_SESSION['PersonalData']['area'] == 4) { ?>
+                                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#finalizarModal">
+                                    <i class="fas fa-check"></i> Pagar
+                                </button>
+                        <?php } ?>
                     </div>
                 </div>
+
                 <div class="card-body">
                     <div class="row g-3">
                         <div class="col-md-3">
@@ -118,10 +133,10 @@
                                         value="<?= $data['facturas']['proveedor'] ?? 'N/A'; ?>" disabled>
                                 </div>
                                 <div class="col-md-3 mb-3">
-                                    <label class="form-label strong strong">Monto Total</label>
+                                    <label class="form-label strong strong">Monto</label>
                                     <input type="text" class="form-control text-end"
-                                        value="<?= ($data['facturas']['regimen'] == 2) ? ($data['facturas']['total_pequeño'] ?? 'N/A') : ($data['facturas']['total'] ?? 'N/A'); ?>"
-                                        disabled>
+                                        value="<?= $data['facturas']['total'] ?? 'N/A'; ?>" disabled>
+
                                 </div>
                                 <div class="col-md-3 mb-3">
                                     <label class="form-label strong strong">Área</label>
@@ -156,15 +171,107 @@
                         <button type="submit" class="btn btn-danger" data-respuesta="Descartado">
                             <i class="fas fa-times"></i> Descartar
                         </button>
-                        <?php if ($data['facturas']['area_id'] == 2) { ?>
-                            <button type="submit" class="btn btn-success" data-respuesta="Validado Conta">
-                                <i class="fas fa-save"></i> Validar
-                            </button>
-                        <?php } else if ($data['facturas']['area_id'] != 2) { ?>
-                                <button type="submit" class="btn btn-success" data-respuesta="Validado Area">
-                                    <i class="fas fa-save"></i> Validar
-                                </button>
-                        <?php } ?>
+                        <button type="submit" class="btn btn-success" data-respuesta="Validado">
+                            <i class="fas fa-save"></i> Validar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="finalizarModal" tabindex="-1" aria-labelledby="corregirModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form id="finalizarSolicitud">
+                    <input type="hidden" class="form-control" name="id_solicitud"
+                        value="<?= $data['facturas']['id_solicitud'] ?? 'N/A'; ?>">
+                    <input type="hidden" class="form-control" name="area"
+                        value="<?= $data['facturas']['id_area'] ?? 'N/A'; ?>">
+                    <div class="modal-header bg-dark text-white">
+                        <h5 class="modal-title" id="corregirModalLabel">
+                            Finalizar Anticipo
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                            aria-label="Cerrar">
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-4">
+                            <h6 class="fw-bold text-dark mb-3">Datos Generales</h6>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Realizador</label>
+                                    <input type="text" class="form-control"
+                                        value="<?= $data['facturas']['realizador'] ?? 'N/A'; ?>" disabled>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Proveedor</label>
+                                    <input type="text" class="form-control"
+                                        value="<?= $data['facturas']['proveedor'] ?? 'N/A'; ?>" disabled>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">Monto Total</label>
+                                    <input type="text" class="form-control"
+                                        value="<?= $data['facturas']['total'] ?? 'N/A'; ?>" disabled>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">Área</label>
+                                    <input type="text" class="form-control"
+                                        value="<?= $data['facturas']['area'] ?? 'N/A'; ?>" disabled>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">Fecha Registro</label>
+                                    <input type="text" class="form-control"
+                                        value="<?= $data['facturas']['fecha_registro'] ?? 'N/A'; ?>" disabled>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="fecha_pago" class="form-label">Fecha Pago</label>
+                                    <input type="date" class="form-control btn-input"
+                                        value="<?= $data['facturas']['fecha_pago'] ?? ''; ?>" disabled>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="fecha_pago" class="form-label">Fecha Pago</label>
+                                    <input type="date" class="form-control btn-input"
+                                        value="<?= $data['facturas']['fecha_pago'] ?? ''; ?>" disabled>
+                                </div>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="mb-4">
+                            <h6 class="fw-bold text-dark mb-3">Datos Finales</h6>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="no_transferencia" class="form-label">No. Transferencia</label>
+                                    <input type="text" class="form-control" id="no_transferencia"
+                                        name="no_transferencia">
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="fecha_pago" class="form-label">Fecha de Pago Transferencia</label>
+                                    <input type="date" class="form-control" id="fecha_pago" name="fecha_pago">
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12 mb-3">
+                                    <label for="observacion" class="form-label">Observaciones</label>
+                                    <textarea class="form-control" id="observacion" name="observacion" rows="4"
+                                        placeholder="Escribe aquí tus observaciones..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <!-- Footer -->
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-danger" data-respuesta="Descartado">
+                            <i class="fas fa-save"></i> Descartar
+                        </button>
+                        <button type="submit" class="btn btn-success" data-respuesta="Pagado">
+                            <i class="fas fa-save"></i> Pagar
+                        </button>
                     </div>
                 </form>
             </div>

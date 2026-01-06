@@ -69,14 +69,11 @@ document.addEventListener("DOMContentLoaded", function () {
         data: null,
         render: function (data, type, row) {
           return `
-              <button type="button"
-                class="btn btn-primary m-0 d-flex justify-content-left btn-info btnFactura"
-                data-bs-toggle="modal"
-                data-bs-target="#infoModal">
-                <i class="fas fa-info-circle"></i>
-              </button>
+              <button type="button" class="btn btn-primary m-0 d-flex justify-content-left btnFacturaEditar"
+            data-bs-toggle="modal" data-bs-target="#editarModal" data-id="${row.no_factura}">
+            <i class="fas fa-edit"></i>
+          </button>
             `;
-          // 🔹 Cualquier otro estado → solo información
         },
       },
     ],
@@ -94,23 +91,33 @@ document.addEventListener("DOMContentLoaded", function () {
     const factura = $(this).data("id");
 
     $.ajax({
-      url: `${base_url}/SolicitudFondos/getFacturaId/${factura}`,
-      method: "GET",
+      url: `${base_url}/Contabilidad/getFactura/${factura}`,
+      type: "GET",
       dataType: "json",
       success: function (response) {
-        if (response.status) {
-          $("#edit_id").val(response.data.id_detalle);
-          $("#edit_factura").val(response.data.no_factura);
-          $("#edit_servicio").val(response.data.bien_servicio);
-          $("#edit_documento").val(response.data.valor_documento);
-          $("#edit_fecha_registro").val(response.data.fecha_registro);
-          $("#edit_estado").val(response.data.estado);
-        } else {
+        if (!response.status) {
           alert(response.msg);
+          return;
         }
+
+        const data = response.data;
+
+        $("#edit_id").val(data.id_detalle);
+        $("#edit_factura").val(data.no_factura);
+        $("#edit_documento").val(data.valor_documento);
+        $("#edit_servicio").val(data.bien_servicio);
+        $("#edit_regimen").val(data.nombre_regimen);
+
+        $("#edit_iva").val(data.iva);
+        $("#edit_reten_iva").val(data.reten_iva);
+        $("#edit_reten_isr").val(data.reten_isr);
+        $("#edit_total").val(data.total_liquido);
+        $("#edit_base").val(data.base);
+
+        $("#editarModal").modal("show");
       },
-      error: function (error) {
-        console.log("Error:", error);
+      error: function (xhr) {
+        console.error(xhr.responseText);
       },
     });
   });
@@ -157,69 +164,54 @@ document.addEventListener("DOMContentLoaded", function () {
     .addEventListener("submit", function (event) {
       event.preventDefault();
 
-      let formData = new FormData(this);
-      let ajaxUrl = base_url + "/Contraseñas/descartarContraseña";
-      let request = window.XMLHttpRequest
-        ? new XMLHttpRequest()
-        : new ActiveXObject("Microsoft.XMLHTTP");
-
-      request.open("POST", ajaxUrl, true);
-      request.send(formData);
-
-      request.onreadystatechange = function () {
-        if (request.readyState === 4 && request.status === 200) {
-          let response = JSON.parse(request.responseText);
-          if (response.status) {
-            Swal.fire({
-              title: "Datos guardados correctamente",
-              icon: "success",
-              confirmButtonText: "Aceptar",
-            }).then(() => {
-              location.reload();
-            });
-          } else {
-            Swal.fire("Atención", response.msg || "Error desconocido", "error");
-          }
+      // 🔴 Confirmación previa
+      Swal.fire({
+        title: "¿Está seguro de descartar esta contraseña?",
+        text: "Esta acción no se puede deshacer.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Sí, descartar",
+        cancelButtonText: "Cancelar",
+        reverseButtons: true,
+      }).then((result) => {
+        // ❌ Si cancela, no se ejecuta nada
+        if (!result.isConfirmed) {
+          return;
         }
-      };
+
+        // ✅ Continúa solo si confirma
+        let formData = new FormData(event.target);
+        let ajaxUrl = base_url + "/Contraseñas/descartarContraseña";
+        let request = window.XMLHttpRequest
+          ? new XMLHttpRequest()
+          : new ActiveXObject("Microsoft.XMLHTTP");
+
+        request.open("POST", ajaxUrl, true);
+        request.send(formData);
+
+        request.onreadystatechange = function () {
+          if (request.readyState === 4 && request.status === 200) {
+            let response = JSON.parse(request.responseText);
+
+            if (response.status) {
+              Swal.fire({
+                title: "Datos guardados correctamente",
+                icon: "success",
+                confirmButtonText: "Aceptar",
+              }).then(() => {
+                location.reload();
+              });
+            } else {
+              Swal.fire(
+                "Atención",
+                response.msg || "Error desconocido",
+                "error"
+              );
+            }
+          }
+        };
+      });
     });
-
-  // document
-  //   .querySelector("#regresarContraseña")
-  //   .addEventListener("submit", function (event) {
-  //     event.preventDefault();
-  //     // Detecta el botón presionado
-  //     let boton = event.submitter;
-  //     let valor = boton.dataset.respuesta;
-
-  //     let formData = new FormData(this);
-  //     formData.append("respuesta", valor);
-
-  //     let ajaxUrl = base_url + "/Contraseñas/corregirContraseña";
-  //     let request = window.XMLHttpRequest
-  //       ? new XMLHttpRequest()
-  //       : new ActiveXObject("Microsoft.XMLHTTP");
-
-  //     request.open("POST", ajaxUrl, true);
-  //     request.send(formData);
-
-  //     request.onreadystatechange = function () {
-  //       if (request.readyState === 4 && request.status === 200) {
-  //         let response = JSON.parse(request.responseText);
-  //         if (response.status) {
-  //           Swal.fire({
-  //             title: "Datos guardados correctamente",
-  //             icon: "success",
-  //             confirmButtonText: "Aceptar",
-  //           }).then(() => {
-  //             location.reload();
-  //           });
-  //         } else {
-  //           Swal.fire("Atención", response.msg || "Error desconocido", "error");
-  //         }
-  //       }
-  //     };
-  //   });
 
   document
     .querySelector("#regresarContraseña")
@@ -427,70 +419,53 @@ document.addEventListener("DOMContentLoaded", function () {
     .addEventListener("submit", function (event) {
       event.preventDefault();
 
-      let formData = new FormData(this);
-      let ajaxUrl = base_url + "/Contraseñas/solicitudFondos";
-      let request = window.XMLHttpRequest
-        ? new XMLHttpRequest()
-        : new ActiveXObject("Microsoft.XMLHTTP");
-
-      request.open("POST", ajaxUrl, true);
-      request.send(formData);
-
-      request.onreadystatechange = function () {
-        if (request.readyState === 4 && request.status === 200) {
-          let response = JSON.parse(request.responseText);
-          if (response.status) {
-            Swal.fire({
-              title: "Datos guardados correctamente",
-              icon: "success",
-              confirmButtonText: "Aceptar",
-            }).then((result) => {
-              if (result.isConfirmed) {
-                // Recargar la página al presionar "Aceptar"
-                location.reload();
-              }
-            });
-            $("#solicitarFondos").modal("hide");
-          } else {
-            Swal.fire("Atención", response.msg, "error"); // Mostrar mensaje de error
-          }
+      // 🔴 Confirmación previa
+      Swal.fire({
+        title: "¿Desea enviar la solicitud de fondos?",
+        text: "Verifique que la información sea correcta antes de continuar.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Sí, enviar",
+        cancelButtonText: "Cancelar",
+        reverseButtons: true,
+      }).then((result) => {
+        // ❌ Si cancela, no se envía nada
+        if (!result.isConfirmed) {
+          return;
         }
-      };
-    });
 
-  document
-    .querySelector("#FacturaEdit")
-    .addEventListener("submit", function (event) {
-      event.preventDefault();
+        // ✅ Continúa solo si confirma
+        let formData = new FormData(event.target);
+        let ajaxUrl = base_url + "/Contraseñas/solicitudFondos";
+        let request = window.XMLHttpRequest
+          ? new XMLHttpRequest()
+          : new ActiveXObject("Microsoft.XMLHTTP");
 
-      let formData = new FormData(this);
-      let ajaxUrl = base_url + "/Contraseñas/updateFactura";
-      let request = window.XMLHttpRequest
-        ? new XMLHttpRequest()
-        : new ActiveXObject("Microsoft.XMLHTTP");
+        request.open("POST", ajaxUrl, true);
+        request.send(formData);
 
-      request.open("POST", ajaxUrl, true);
-      request.send(formData);
+        request.onreadystatechange = function () {
+          if (request.readyState === 4 && request.status === 200) {
+            let response = JSON.parse(request.responseText);
 
-      request.onreadystatechange = function () {
-        if (request.readyState === 4 && request.status === 200) {
-          let response = JSON.parse(request.responseText);
-          if (response.status) {
-            Swal.fire({
-              title: "Datos guardados correctamente",
-              icon: "success",
-              confirmButtonText: "Aceptar",
-            }).then((result) => {
-              if (result.isConfirmed) {
-                $("#editarModal").modal("hide");
-                tableFacturas.ajax.reload(null, false);
-              }
-            });
-          } else {
-            Swal.fire("Atención", response.msg, "error"); // Mostrar mensaje de error
+            if (response.status) {
+              Swal.fire({
+                title: "Datos guardados correctamente",
+                icon: "success",
+                confirmButtonText: "Aceptar",
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  location.reload();
+                }
+              });
+
+              $("#solicitarFondos").modal("hide");
+            } else {
+              Swal.fire("Atención", response.msg, "error");
+            }
           }
-        }
-      };
+        };
+      });
     });
 
   let id_proveedor = document.querySelector("#id_proveedor").value;

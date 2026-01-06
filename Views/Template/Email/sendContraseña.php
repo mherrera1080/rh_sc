@@ -55,12 +55,8 @@ try {
             $mensaje_estado = "ha sido validada por " . $area;
             $color_estado = "#007bff";
             break;
-        case 'Validado Conta':
-            $mensaje_estado = "ha sido validada por Contabilidad";
-            $color_estado = "#004aad";
-            break;
         case 'Pendiente':
-            $mensaje_estado = "está pendiente de revisión";
+            $mensaje_estado = "ha sido actualizada recientemente, favor de revisar nuevos cambios.";
             $color_estado = "#6c757d";
             break;
         case 'Descartado':

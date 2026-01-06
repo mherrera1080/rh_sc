@@ -38,8 +38,7 @@ class Contabilidad extends Controllers
         $data['page_functions_js'] = "functions_revision.js";
         $this->views->getView($this, "Revision", $data);
     }
-
-
+    
     public function Contraseñas()
     {
         $data['page_id'] = CONTABILIDAD;
@@ -92,6 +91,19 @@ class Contabilidad extends Controllers
         $this->views->getView($this, "Facturas", $data);
     }
 
+        public function Anticipo($id_solicitud)
+    {
+        $facturas = $this->model->getSolicitud($id_solicitud);
+
+        $data['facturas'] = $facturas;
+        $data['page_id'] = 'Anticipo';
+        $data['page_tag'] = "Anticipo";
+        $data['page_title'] = "Anticipo";
+        $data['page_name'] = "Anticipo";
+        $data['page_functions_js'] = "functions_revision_sin.js";
+        $this->views->getView($this, "Anticipo", $data);
+    }
+
     public function getDetalles()
     {
         $arrData = $this->model->selectDetalles();
@@ -105,5 +117,21 @@ class Contabilidad extends Controllers
         die();
     }
 
+    public function getFactura($no_factura)
+    {
+        $arrData = $this->model->FacturasbyID($no_factura);
+
+        // Verificar y depurar datos
+        error_log(print_r($arrData, true));
+
+        if (empty($arrData)) {
+            $arrResponse = array('status' => false, 'msg' => 'No se encontraron registros previos.');
+        } else {
+            $arrResponse = array('status' => true, 'data' => $arrData);
+        }
+
+        echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+        die();
+    }
 
 }

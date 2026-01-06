@@ -32,35 +32,34 @@ document.addEventListener("DOMContentLoaded", function () {
       { data: "registro_ax", title: "Registro AX", visible: false },
       { data: "bien_servicio", title: "Bien/Servicio" },
       { data: "valor_documento", title: "Valor Doc." },
+      { data: "base", title: "Base" },
+      { data: "iva", title: "IVA" },
       { data: "reten_iva", title: "Ret. IVA" },
       { data: "reten_isr", title: "Ret. ISR" },
-      { data: "iva", title: "IVA", visible: false },
-      { data: "base", title: "Base" },
       { data: "total", title: "Total" },
-      { data: "fecha_registro", title: "Fecha Registro", visible: false },
-      {
-        data: null,
-        render: function (data, type, row) {
-          if (
-            solicitud_estado != "Descartado" &&
-            solicitud_estado != "Pagado" &&
-            usuario == 4
-          ) {
-            return `
-          <button type="button" class="btn btn-primary m-0 d-flex justify-content-left btnFacturaEditar"
-            data-bs-toggle="modal" data-bs-target="#editarModal" data-id="${row.id_detalle}">
-            <i class="fas fa-edit"></i>
-          </button>`;
-          } else {
-            return `
-          <button type="button" class="btn btn-secondary m-0 d-flex justify-content-left btnFacturaInfo"
-            data-bs-toggle="modal" 
-            data-bs-target="#infoModal">
-            <i class="fas fa-edit"></i>
-          </button>`;
-          }
-        },
-      },
+      // {
+      //   data: null,
+      //   render: function (data, type, row) {
+      //     if (
+      //       solicitud_estado != "Descartado" &&
+      //       solicitud_estado != "Pagado" &&
+      //       usuario == 4
+      //     ) {
+      //       return `
+      //     <button type="button" class="btn btn-primary m-0 d-flex justify-content-left btnFacturaEditar"
+      //       data-bs-toggle="modal" data-bs-target="#editarModal" data-id="${row.id_detalle}">
+      //       <i class="fas fa-edit"></i>
+      //     </button>`;
+      //     } else {
+      //       return `
+      //     <button type="button" class="btn btn-secondary m-0 d-flex justify-content-left btnFacturaInfo"
+      //       data-bs-toggle="modal"
+      //       data-bs-target="#infoModal">
+      //       <i class="fas fa-edit"></i>
+      //     </button>`;
+      //     }
+      //   },
+      // },
     ],
     dom: "Bfrtip",
     buttons: [
@@ -213,34 +212,52 @@ document.addEventListener("submit", function (event) {
   if (event.target && event.target.id === "finalizarSolicitud") {
     event.preventDefault();
 
-    // Detecta el botón presionado
     let boton = event.submitter;
     let valor = boton.dataset.respuesta;
-    let formData = new FormData(event.target);
-    formData.append("respuesta", valor);
 
-    let ajaxUrl = base_url + "/SolicitudFondos/finalizarSolicitud";
-    let request = new XMLHttpRequest();
-    request.open("POST", ajaxUrl, true);
-    request.send(formData);
-
-    request.onreadystatechange = function () {
-      if (request.readyState === 4 && request.status === 200) {
-        let response = JSON.parse(request.responseText);
-        if (response.status) {
-          Swal.fire({
-            title: response.message,
-            icon: "success",
-            confirmButtonText: "Aceptar",
-          }).then(() => location.reload());
-        } else {
-          Swal.fire(
-            "Atención",
-            response.message || "Error desconocido",
-            "error"
-          );
-        }
+    // 🔴 Confirmación previa
+    Swal.fire({
+      title: "¿Está seguro de finalizar la solicitud?",
+      text: "Una vez finalizada, no podrá realizar cambios.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sí, finalizar",
+      cancelButtonText: "Cancelar",
+      reverseButtons: true,
+    }).then((result) => {
+      // ❌ Si cancela, no se ejecuta nada
+      if (!result.isConfirmed) {
+        return;
       }
-    };
+
+      // ✅ Continúa solo si confirma
+      let formData = new FormData(event.target);
+      formData.append("respuesta", valor);
+
+      let ajaxUrl = base_url + "/SolicitudFondos/finalizarSolicitud";
+      let request = new XMLHttpRequest();
+      request.open("POST", ajaxUrl, true);
+      request.send(formData);
+
+      request.onreadystatechange = function () {
+        if (request.readyState === 4 && request.status === 200) {
+          let response = JSON.parse(request.responseText);
+
+          if (response.status) {
+            Swal.fire({
+              title: response.message,
+              icon: "success",
+              confirmButtonText: "Aceptar",
+            }).then(() => location.reload());
+          } else {
+            Swal.fire(
+              "Atención",
+              response.message || "Error desconocido",
+              "error"
+            );
+          }
+        }
+      };
+    });
   }
 });

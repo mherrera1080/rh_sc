@@ -106,6 +106,10 @@ class SolicitudFondosModel extends Mysql
             DAY(tc.fecha_registro)   AS dia_registro,
             MONTH(tc.fecha_registro) AS mes_registro,
             YEAR(tc.fecha_registro)  AS año_registro,
+            td.no_factura AS no_factura,
+            tsf.mes_renta as renta,
+            MONTH(tsf.mes_renta) AS mes_renta,
+            YEAR(tsf.mes_renta)  AS año_renta,
             tc.fecha_pago,
             tc.estado,
             tsf.id_solicitud,
@@ -122,7 +126,40 @@ class SolicitudFondosModel extends Mysql
         return $request;
     }
 
-    public function getCorreosArea($area, $estado, $categoria)
+    public function getCombustible($contraseña)
+    {
+        $sql = "SELECT
+            tc.id_solicitud,
+            tc.area as area_id,
+            tc.contraseña as contraseña,
+            ta.nombre_area as area,
+            tp.nombre_proveedor as proveedor,
+            ta.id_area,
+            tn.transferencia as total,
+            tn.saldo_disponible as saldo,
+            tn.fecha_inicio,
+            tn.fecha_final,
+            CONCAT(tu.nombres, ' ', tu.primer_apellido, ' ', tu.segundo_apellido) as realizador,
+            DAY(tc.fecha_creacion)   AS dia_registro,
+            MONTH(tc.fecha_creacion) AS mes_registro,
+            YEAR(tc.fecha_creacion)  AS año_registro,
+            tc.fecha_creacion AS fecha_registro,
+            tc.fecha_pago AS fecha_pago,
+            tc.estado as solicitud_estado
+        FROM tb_solicitud_fondos tc
+        INNER JOIN tb_areas ta ON tc.area = ta.id_area
+        INNER JOIN tb_proveedor tp ON tc.proveedor = tp.id_proveedor
+        INNER JOIN tb_usuarios tu ON tc.usuario = tu.id_usuario
+        INNER JOIN tb_combustible tn ON tc.contraseña = tn.contraseña
+        WHERE tc.contraseña = ?
+        GROUP BY tc.contraseña;
+        ";
+
+        $request = $this->select($sql, array($contraseña));
+        return $request;
+    }
+
+    public function getCorreosArea($area, $base, $categoria)
     {
         $sql = "SELECT 
         tu.correo as correos
@@ -132,7 +169,7 @@ class SolicitudFondosModel extends Mysql
         INNER JOIN tb_fases tf ON tfc.fase = tf.id_fase
         INNER JOIN tb_categoria tc ON tf.categoria = tc.id_categoria
         WHERE tg.area = ? AND tf.nombre_base = ? AND tc.nombre_categoria = ?";
-        $request = $this->select_multi($sql, array($area, $estado, $categoria));
+        $request = $this->select_multi($sql, array($area, $base, $categoria));
         return $request;
     }
 
@@ -195,35 +232,7 @@ class SolicitudFondosModel extends Mysql
         return $request;
     }
 
-    public function getCombustible($contraseña)
-    {
-        $sql = "SELECT
-            tc.contraseña as contraseña,
-            ta.nombre_area as area,
-            tp.nombre_proveedor as proveedor,
-            ta.id_area,
-            tn.transferencia as total,
-            tn.saldo_disponible as saldo,
-            tn.fecha_inicio,
-            tn.fecha_final,
-            CONCAT(tu.nombres, ' ', tu.primer_apellido, ' ', tu.segundo_apellido) as realizador,
-            DAY(tc.fecha_creacion)   AS dia_registro,
-            MONTH(tc.fecha_creacion) AS mes_registro,
-            YEAR(tc.fecha_creacion)  AS año_registro,
-            tc.fecha_creacion AS fecha_registro,
-            tc.fecha_pago AS fecha_pago
-        FROM tb_solicitud_fondos tc
-        INNER JOIN tb_areas ta ON tc.area = ta.id_area
-        INNER JOIN tb_proveedor tp ON tc.proveedor = tp.id_proveedor
-        INNER JOIN tb_usuarios tu ON tc.usuario = tu.id_usuario
-        INNER JOIN tb_combustible tn ON tc.contraseña = tn.contraseña
-        WHERE tc.contraseña = ?
-        GROUP BY tc.contraseña;
-        ";
 
-        $request = $this->select($sql, array($contraseña));
-        return $request;
-    }
 
     public function dfdfdf($id_solicitud)
     {
@@ -276,8 +285,6 @@ class SolicitudFondosModel extends Mysql
             td.registro_ax,
             td.bien_servicio,
             td.valor_documento,
-            td.isr_valor,
-            td.iva_valor,
             td.iva,
             td.isr,
             td.reten_iva,
@@ -306,8 +313,6 @@ class SolicitudFondosModel extends Mysql
             registro_ax,
             bien_servicio,
             valor_documento,
-            isr_valor,
-            iva_valor,
             iva,
             isr,
             reten_iva,
@@ -387,66 +392,11 @@ class SolicitudFondosModel extends Mysql
     {
         $sql = "UPDATE tb_detalles 
                 SET 
-                registro_ax = ?, 
+                registro_ax = ?,
                 observacion = ?
                 WHERE id_detalle = ?";
         $arrData = [$cod_ax, $observacion, $id_detalle];
         return $this->update($sql, $arrData);
-    }
-
-    public function getImpuestosRegimen($contraseña)
-    {
-        $sql = "SELECT
-                DATE_FORMAT(tc.fecha_pago, '%d/%m/%Y') AS fecha_pago,
-                ROUND(SUM(td.valor_documento), 2) AS monto_total,
-                ROUND(SUM(td.reten_iva), 2) AS reten_iva,
-                ROUND(SUM(td.reten_isr), 2) AS reten_isr,
-                ROUND(SUM(td.base), 2) AS subtotal,
-                ROUND(SUM(td.base) * 0.12, 2) AS iva,
-                ROUND(
-                    (SUM(td.base) + (SUM(td.base) * 0.12))
-                    - (SUM(td.reten_isr) + SUM(td.reten_iva))                    
-                    - IFNULL((tdf.valor_documento), 0),
-                    2
-                ) AS total
-            FROM tb_contraseña tc
-            INNER JOIN tb_proveedor tp ON tc.id_proveedor = tp.id_proveedor
-            INNER JOIN tb_areas ta ON tc.area = ta.id_area
-            INNER JOIN tb_detalles td ON tc.contraseña = td.contraseña
-            LEFT JOIN tb_solicitud_fondos tf ON tc.anticipo = tf.id_solicitud
-            LEFT JOIN tb_detalles tdf ON tf.id_solicitud = tdf.no_factura
-            WHERE tc.contraseña = ? 
-            ";
-
-        $request = $this->select($sql, array($contraseña));
-        return $request;
-    }
-
-    public function getImpuestosPeqContribuyente($contraseña)
-    {
-        $sql = "SELECT
-                DATE_FORMAT(tc.fecha_pago, '%d/%m/%Y') AS fecha_pago,
-                ROUND(SUM(td.valor_documento), 2) AS monto_total,
-                ROUND(SUM(td.reten_iva), 2) AS reten_iva,
-                ROUND(SUM(td.reten_isr), 2) AS reten_isr,
-                ROUND(SUM(td.base), 2) AS subtotal,
-                0 AS iva,
-                ROUND(
-                    (SUM(td.base)- SUM(td.reten_iva))
-                    - IFNULL(SUM(tdf.valor_documento), 0),
-                    2
-                ) AS total
-            FROM tb_contraseña tc
-            INNER JOIN tb_proveedor tp ON tc.id_proveedor = tp.id_proveedor
-            INNER JOIN tb_areas ta ON tc.area = ta.id_area
-            INNER JOIN tb_detalles td ON tc.contraseña = td.contraseña
-            LEFT JOIN tb_solicitud_fondos tf ON tc.anticipo = tf.id_solicitud
-            LEFT JOIN tb_detalles tdf ON tf.id_solicitud = tdf.no_factura
-            WHERE tc.contraseña = ?;
-            ";
-
-        $request = $this->select($sql, array($contraseña));
-        return $request;
     }
 
     public function FacturasbyID(int $id)
@@ -827,31 +777,48 @@ class SolicitudFondosModel extends Mysql
         return $request;
     }
 
-    public function getServiciosbyContra(int $contraseña)
+public function getServiciosbyContra(int $contraseña)
+{
+    $sql = "SELECT
+            td.no_factura AS no_factura,
+            ts.repuestos,
+            ts.placa,
+            ts.estado,
+            ts.usuario,
+            ts.tipo_persona,
+            REPLACE(ts.ln, 'LINEA DE NEGOCIO', 'LN') AS ln,
+            td.valor_documento
+        FROM tb_servicios ts
+        INNER JOIN tb_detalles td ON ts.no_factura = td.id_detalle
+        WHERE td.contraseña = ?";
+
+    $request = $this->select_multi($sql, array($contraseña));
+    return $request;
+}
+
+
+    public function getRentasbyContra($contraseña)
     {
         $sql = "SELECT
-                RIGHT(td.no_factura, 4) AS no_factura,
-                ts.repuestos,
-                ts.placa,
-                ts.estado,
-                ts.usuario,
-                ts.tipo_persona,
-                ts.ln,
+                td.no_factura AS no_factura,
+                tr.placa,
                 td.valor_documento
-            FROM tb_servicios ts
-            INNER JOIN tb_detalles td ON ts.no_factura = td.id_detalle
+            FROM tb_rentas tr
+            INNER JOIN tb_detalles td ON tr.no_factura = td.id_detalle
             WHERE td.contraseña = ?";
         $request = $this->select_multi($sql, array($contraseña));
         return $request;
     }
 
-    public function getRentasbyContra(int $contraseña)
+    public function getRetenciones($contraseña)
     {
         $sql = "SELECT
-                tr.placa
-            FROM tb_rentas tr
-            INNER JOIN tb_detalles td ON tr.no_factura = td.id_detalle
-            WHERE td.contraseña = ?";
+                no_factura AS no_factura,
+                valor_documento,
+                reten_iva,
+                reten_isr
+            FROM tb_detalles
+            WHERE contraseña = ?";
         $request = $this->select_multi($sql, array($contraseña));
         return $request;
     }
@@ -922,7 +889,371 @@ class SolicitudFondosModel extends Mysql
         return $request;
     }
 
+    public function getImpuestosByContraseña($contraseña)
+    {
+        $sql = "SELECT
+        DATE_FORMAT(tc.fecha_pago, '%d/%m/%Y') AS fecha_pago,
+
+        /* MONTO TOTAL */
+        ROUND(SUM(d.valor_documento), 2) AS monto_total,
+
+        /* SUBTOTAL */
+        ROUND(SUM(
+            CASE
+                WHEN sf.tipo_regimen = 1
+                THEN d.valor_documento / 1.12
+                ELSE d.valor_documento
+            END
+        ), 2) AS subtotal,
+
+        /* IVA */
+        ROUND(SUM(
+            CASE
+                WHEN sf.tipo_regimen = 1
+                THEN d.valor_documento - (d.valor_documento / 1.12)
+                ELSE 0
+            END
+        ), 2) AS iva,
+
+        /* RETENCIÓN IVA */
+        ROUND(SUM(
+            CASE
+                WHEN sf.iva = 1
+                    AND (
+                        (sf.tipo_regimen = 1 AND d.valor_documento >= 2232.14)
+                        OR (sf.tipo_regimen = 2 AND d.valor_documento >= 2500.01)
+                    )
+                THEN
+                    CASE
+                        WHEN sf.tipo_regimen = 1
+                        THEN (d.valor_documento - (d.valor_documento / 1.12)) * 0.15
+                        WHEN sf.tipo_regimen = 2
+                        THEN d.valor_documento * 0.05
+                        ELSE 0
+                    END
+                ELSE 0
+            END
+        ), 2) AS reten_iva,
+
+        /* RETENCIÓN ISR */
+        ROUND(SUM(
+            CASE
+                WHEN sf.isr = 1
+                    AND (
+                        (sf.tipo_regimen = 1 AND d.valor_documento >= 2232.14)
+                        OR (sf.tipo_regimen = 2 AND d.valor_documento >= 2500.01)
+                    )
+                THEN
+                    CASE
+                        WHEN sf.tipo_regimen = 1
+                        THEN (d.valor_documento / 1.12) * 0.05
+                        WHEN sf.tipo_regimen = 2
+                        THEN d.valor_documento * 0.07
+                        ELSE 0
+                    END
+                ELSE 0
+            END
+        ), 2) AS reten_isr,
+
+        /* ANTICIPO */
+        ROUND(IFNULL(SUM(df.valor_documento), 0), 2) AS anticipo,
+
+        /* TOTAL FINAL */
+        ROUND(
+            SUM(d.valor_documento)
+            - SUM(
+                CASE
+                    WHEN sf.iva = 1
+                        AND (
+                            (sf.tipo_regimen = 1 AND d.valor_documento >= 2232.14)
+                            OR (sf.tipo_regimen = 2 AND d.valor_documento >= 2500.01)
+                        )
+                    THEN
+                        CASE
+                            WHEN sf.tipo_regimen = 1
+                            THEN (d.valor_documento - (d.valor_documento / 1.12)) * 0.15
+                            WHEN sf.tipo_regimen = 2
+                            THEN d.valor_documento * 0.05
+                        END
+                    ELSE 0
+                END
+            )
+            - SUM(
+                CASE
+                    WHEN sf.isr = 1
+                        AND (
+                            (sf.tipo_regimen = 1 AND d.valor_documento >= 2232.14)
+                            OR (sf.tipo_regimen = 2 AND d.valor_documento >= 2500.01)
+                        )
+                    THEN
+                        CASE
+                            WHEN sf.tipo_regimen = 1
+                            THEN (d.valor_documento / 1.12) * 0.05
+                            WHEN sf.tipo_regimen = 2
+                            THEN d.valor_documento * 0.07
+                        END
+                    ELSE 0
+                END
+            )
+            - IFNULL(SUM(df.valor_documento), 0)
+        , 2) AS total
+
+    FROM tb_contraseña tc
+    INNER JOIN tb_detalles d 
+        ON tc.contraseña = d.contraseña
+    LEFT JOIN tb_solicitud_fondos sf 
+        ON sf.contraseña = tc.contraseña
+    LEFT JOIN tb_detalles df 
+        ON df.no_factura = sf.id_solicitud
+    WHERE tc.contraseña = ?";
+
+        return $this->select($sql, [$contraseña]);
+    }
 
 
+    public function getImpuestosRenta($contraseña)
+    {
+        $sql = "SELECT
+        DATE_FORMAT(tc.fecha_pago, '%d/%m/%Y') AS fecha_pago,
+
+        /* MONTO TOTAL */
+        ROUND(SUM(d.valor_documento), 2) AS subtotal,
+
+        /* SUBTOTAL (solo para régimen general) */
+        ROUND(SUM(
+            CASE
+                WHEN sf.tipo_regimen = 1
+                THEN d.valor_documento / 1.12
+                ELSE d.valor_documento
+            END
+        ), 2) AS total_iva,
+
+        /* RETENCIÓN IVA */
+        ROUND(SUM(
+            CASE
+                WHEN sf.iva = 1
+                    AND (
+                        (sf.tipo_regimen = 1 AND d.valor_documento >= 2232.14)
+                        OR (sf.tipo_regimen = 2 AND d.valor_documento >= 2500.01)
+                    )
+                THEN
+                    CASE
+                        WHEN sf.tipo_regimen = 1
+                        THEN (d.valor_documento - (d.valor_documento / 1.12)) * 0.15
+                        WHEN sf.tipo_regimen = 2
+                        THEN d.valor_documento * 0.05
+                        ELSE 0
+                    END
+                ELSE 0
+            END
+        ), 2) AS reten_iva,
+
+        /* ANTICIPO */
+        ROUND(IFNULL(SUM(df.valor_documento), 0), 2) AS anticipo,
+
+        /* CREDITO */
+        
+        tc2.no_factura AS factura_credito,
+        ROUND(IFNULL(tc2.monto_credito, 0), 2) AS monto_credito,
+
+        /* INDICA SI HAY CREDITO */
+        CASE
+            WHEN tc2.monto_credito IS NOT NULL
+                 AND tc2.monto_credito > 0
+            THEN 1
+            ELSE 0
+        END AS tiene_credito,
+
+        /* TOTAL FINAL */
+        ROUND(
+            SUM(d.valor_documento)
+
+            /* RESTA RETENCIÓN IVA */
+            - SUM(
+                CASE
+                    WHEN sf.iva = 1
+                        AND (
+                            (sf.tipo_regimen = 1 AND d.valor_documento >= 2232.14)
+                            OR (sf.tipo_regimen = 2 AND d.valor_documento >= 2500.01)
+                        )
+                    THEN
+                        CASE
+                            WHEN sf.tipo_regimen = 1
+                            THEN (d.valor_documento - (d.valor_documento / 1.12)) * 0.15
+                            WHEN sf.tipo_regimen = 2
+                            THEN d.valor_documento * 0.05
+                            ELSE 0
+                        END
+                    ELSE 0
+                END
+            )
+
+            /* RESTA RETENCIÓN ISR */
+            - SUM(
+                CASE
+                    WHEN sf.isr = 1
+                        AND (
+                            (sf.tipo_regimen = 1 AND d.valor_documento >= 2232.14)
+                            OR (sf.tipo_regimen = 2 AND d.valor_documento >= 2500.01)
+                        )
+                    THEN
+                        CASE
+                            WHEN sf.tipo_regimen = 1
+                            THEN (d.valor_documento / 1.12) * 0.05
+                            WHEN sf.tipo_regimen = 2
+                            THEN d.valor_documento * 0.07
+                            ELSE 0
+                        END
+                    ELSE 0
+                END
+            )
+
+            /* RESTA ANTICIPOS */
+            - IFNULL(SUM(df.valor_documento), 0)
+
+            /* RESTA CREDITO */
+            - IFNULL(tc2.monto_credito, 0)
+
+        , 2) AS total,
+
+        MAX(sf.iva) AS aplica_iva,
+        MAX(sf.isr) AS aplica_isr
+
+    FROM tb_contraseña tc
+    INNER JOIN tb_detalles d 
+        ON tc.contraseña = d.contraseña
+    LEFT JOIN tb_solicitud_fondos sf 
+        ON sf.contraseña = tc.contraseña
+    LEFT JOIN tb_detalles df 
+        ON df.no_factura = sf.id_solicitud
+    LEFT JOIN tb_creditos tc2
+        ON tc2.contraseña = tc.contraseña
+    WHERE tc.contraseña = ?";
+
+        return $this->select($sql, [$contraseña]);
+    }
+
+    public function updateMesRenta($contraseña, $renta_mes)
+    {
+        $sql = "UPDATE tb_solicitud_fondos 
+                SET mes_renta = ?
+                WHERE contraseña = ?";
+        $arrData = [$renta_mes, $contraseña];
+        return $this->update($sql, $arrData);
+    }
+
+    public function PDFdatos($contraseña)
+    {
+        $sql = "SELECT
+            ts.contraseña,
+            ts.mes_renta,
+            tc.no_factura,
+            tc.monto_credito,
+            CASE
+                WHEN tc.monto_credito IS NOT NULL
+                    AND tc.monto_credito > 0
+                THEN 1
+                ELSE 0
+            END AS credito
+        FROM tb_solicitud_fondos ts
+        LEFT JOIN tb_creditos tc ON ts.contraseña = tc.contraseña
+        WHERE ts.contraseña = ?";
+
+        return $this->select($sql, [$contraseña]);
+    }
+
+
+    public function existeCredito($contraseña)
+    {
+        $sql = "SELECT id_credito 
+            FROM tb_creditos 
+            WHERE contraseña = ?";
+        return $this->select($sql, [$contraseña]);
+    }
+
+    public function insertCredito($contraseña, $no_factura, $monto_credito)
+    {
+        $sql = "INSERT INTO tb_creditos
+            (contraseña, no_factura, monto_credito, estado)
+            VALUES (?, ?, ?, 'Activo')";
+        return $this->insert($sql, [$contraseña, $no_factura, $monto_credito]);
+    }
+
+    public function updateCredito($contraseña, $no_factura, $monto_credito)
+    {
+        $sql = "UPDATE tb_creditos 
+                SET no_factura = ?,
+                monto_credito = ?,
+                estado = 'Activo'
+                WHERE contraseña = ?";
+        $arrData = [$no_factura, $monto_credito, $contraseña];
+        return $this->update($sql, $arrData);
+    }
+
+    public function deleteCredito($contraseña)
+    {
+        $sql = "DELETE FROM tb_creditos
+                WHERE contraseña = ?";
+        $arrData = [$contraseña];
+        return $this->update($sql, $arrData);
+    }
+
+    public function getTotalRentaSinCredito($contraseña)
+    {
+        $sql = "SELECT
+        ROUND(
+            SUM(d.valor_documento)
+
+            - SUM(
+                CASE
+                    WHEN sf.iva = 1
+                        AND (
+                            (sf.tipo_regimen = 1 AND d.valor_documento >= 2232.14)
+                            OR (sf.tipo_regimen = 2 AND d.valor_documento >= 2500.01)
+                        )
+                    THEN
+                        CASE
+                            WHEN sf.tipo_regimen = 1
+                            THEN (d.valor_documento - (d.valor_documento / 1.12)) * 0.15
+                            WHEN sf.tipo_regimen = 2
+                            THEN d.valor_documento * 0.05
+                            ELSE 0
+                        END
+                    ELSE 0
+                END
+            )
+
+            - SUM(
+                CASE
+                    WHEN sf.isr = 1
+                        AND (
+                            (sf.tipo_regimen = 1 AND d.valor_documento >= 2232.14)
+                            OR (sf.tipo_regimen = 2 AND d.valor_documento >= 2500.01)
+                        )
+                    THEN
+                        CASE
+                            WHEN sf.tipo_regimen = 1
+                            THEN (d.valor_documento / 1.12) * 0.05
+                            WHEN sf.tipo_regimen = 2
+                            THEN d.valor_documento * 0.07
+                            ELSE 0
+                        END
+                    ELSE 0
+                END
+            )
+
+            - IFNULL(SUM(df.valor_documento), 0)
+        , 2) AS total_sin_credito
+    FROM tb_contraseña tc
+    INNER JOIN tb_detalles d 
+        ON tc.contraseña = d.contraseña
+    LEFT JOIN tb_solicitud_fondos sf 
+        ON sf.contraseña = tc.contraseña
+    LEFT JOIN tb_detalles df 
+        ON df.no_factura = sf.id_solicitud
+    WHERE tc.contraseña = ?";
+
+        return $this->select($sql, [$contraseña]);
+    }
 
 }

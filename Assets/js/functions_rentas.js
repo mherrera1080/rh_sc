@@ -42,23 +42,39 @@ document.addEventListener("DOMContentLoaded", function () {
         data: null,
         title: "Acciones",
         render: function (data, type, row) {
-          if (
-            solicitud_estado != "Descartado" &&
-            solicitud_estado != "Pagado" &&
-            usuario == 4
-          ) {
-            return `
-          <button type="button" class="btn btn-primary m-0 d-flex justify-content-left btnFacturaEditar"
-            data-bs-toggle="modal" data-bs-target="#editarModal" data-id="${row.id_detalle}">
-            <i class="fas fa-edit"></i>
-          </button>`;
-          } else {
-            return `
-          <button type="button" class="btn btn-secondary m-0 d-flex justify-content-left btnFacturaInfo"
-            data-bs-toggle="modal" 
-            data-bs-target="#infoModal">
-            <i class="fas fa-edit"></i>
-          </button>`;
+          switch (solicitud_estado) {
+            case "Validado":
+            case "Descartado":
+            case "Pagado":
+              return `
+              <button type="button"
+                class="btn btn-secondary m-0 d-flex justify-content-left btnFacturaInfo"
+                data-bs-toggle="modal"
+                data-bs-target="#infoModal">
+                <i class="fas fa-edit"></i>
+              </button>
+            `;
+
+            case "Pendiente":
+              return `
+              <button type="button"
+                  class="btn btn-primary m-0 d-flex justify-content-left btnFacturaEditar"
+                  data-bs-toggle="modal"
+                  data-bs-target="#editarModal"
+                  data-id="${row.id_detalle}">
+                  <i class="fas fa-edit"></i>
+                </button>
+            `;
+
+            default:
+              return `
+                <button type="button"
+                  class="btn btn-secondary m-0 d-flex justify-content-left btnFacturaInfo"
+                  data-bs-toggle="modal"
+                  data-bs-target="#infoModal">
+                  <i class="fas fa-edit"></i>
+                </button>
+              `;
           }
         },
       },
@@ -114,6 +130,8 @@ $(document).on("click", ".btnFacturaEditar", function () {
         $("#edit_base_iva").val(response.data.iva);
         $("#edit_observacion").val(response.data.observacion);
 
+        $("#mes_renta").val(response.data.mes_renta);
+
         const arrendamientos = response.data.arrendamientos_array;
 
         // Reiniciar contenedor
@@ -131,6 +149,57 @@ $(document).on("click", ".btnFacturaEditar", function () {
       console.log("Error:", error);
     },
   });
+});
+
+$(document).on("click", ".btnPDF", function () {
+  const contraseña = $(this).data("id");
+
+  $.ajax({
+    url: `${base_url}/SolicitudFondos/getPDF/${contraseña}`,
+    method: "GET",
+    dataType: "json",
+    success: function (response) {
+      if (response.status) {
+        // Campos base
+        $("#mes_renta").val(response.data.mes_renta);
+
+        // Crédito
+        if (parseInt(response.data.credito) === 1) {
+          toggleCredito(true);
+
+          $("#no_factura").val(response.data.no_factura);
+          $("#monto_credito").val(response.data.monto_credito);
+        } else {
+          toggleCredito(false);
+        }
+
+        // Mostrar modal
+        $("#pdfRentasModal").modal("show");
+      } else {
+        alert(response.msg);
+      }
+    },
+    error: function (error) {
+      console.log("Error:", error);
+    },
+  });
+});
+
+function toggleCredito(activo) {
+  const checkbox = $("#habilitarExtras");
+  const inputs = $(".extra-input");
+
+  checkbox.prop("checked", activo);
+
+  inputs.prop("disabled", !activo);
+
+  if (!activo) {
+    inputs.val("");
+  }
+}
+
+$("#habilitarExtras").on("change", function () {
+  toggleCredito(this.checked);
 });
 
 document.addEventListener("submit", function (event) {
@@ -216,6 +285,53 @@ document.addEventListener("submit", function (event) {
             icon: "success",
             confirmButtonText: "Aceptar",
           }).then(() => location.reload());
+        } else {
+          Swal.fire(
+            "Atención",
+            response.message || "Error desconocido",
+            "error"
+          );
+        }
+      }
+    };
+  }
+});
+
+document.addEventListener("submit", function (event) {
+  if (event.target && event.target.id === "GenerarPDF") {
+    event.preventDefault();
+
+    let formData = new FormData(event.target);
+
+    let checkbox = document.getElementById("habilitarExtras");
+
+    formData.append("tiene_nota_credito", checkbox.checked ? "1" : "0");
+
+    let ajaxUrl = base_url + "/SolicitudFondos/updateRentaMes";
+    let request = new XMLHttpRequest();
+    request.open("POST", ajaxUrl, true);
+    request.send(formData);
+
+    request.onreadystatechange = function () {
+      if (request.readyState === 4 && request.status === 200) {
+        let response = JSON.parse(request.responseText);
+
+        if (response.status) {
+          Swal.fire({
+            title: response.message,
+            icon: "success",
+            confirmButtonText: "Aceptar",
+          }).then(() => {
+            let contraseña = formData.get("contraseña");
+
+            let pdfUrl =
+              base_url +
+              "/SolicitudFondos/generarSolicitudRentas/" +
+              contraseña;
+
+            window.open(pdfUrl, "_blank");
+            location.reload();
+          });
         } else {
           Swal.fire(
             "Atención",

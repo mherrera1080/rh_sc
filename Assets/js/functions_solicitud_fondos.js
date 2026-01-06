@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", function () {
           let html = "";
           data = data.toLowerCase();
           if (data.includes("pendiente")) {
-            html = '<span class="badge badge-warning"> ' + data + ' </span>';
+            html = '<span class="badge badge-warning"> ' + data + " </span>";
           } else if (data.includes("validado")) {
             html = '<span class="badge badge-success">VALIDADO</span>';
           } else if (data.includes("pagado")) {

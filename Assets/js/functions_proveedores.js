@@ -1,6 +1,6 @@
 let tableProveedores;
 document.addEventListener("DOMContentLoaded", function () {
-      let permisosMod = permisos[7] || {
+  let permisosMod = permisos[7] || {
     acceder: 0,
     crear: 0,
     editar: 0,
@@ -41,13 +41,13 @@ document.addEventListener("DOMContentLoaded", function () {
       { data: "estado" },
       {
         data: null,
-        title: 'Acciones',
+        title: "Acciones",
         render: function (data, type, row) {
           let botones = "";
 
           // Botón Editar
           if (permisosMod.editar == 1) {
-            botones +=`
+            botones += `
           <button type="button" class="btn btn-warning edit-btn" data-bs-toggle="modal" data-bs-target="#modalEditarProveedor" data-id="${row.id_proveedor}">
             <i class="fas fa-edit"></i>
           </button>`;
@@ -83,9 +83,8 @@ document.addEventListener("DOMContentLoaded", function () {
       },
     ],
     language: {
-  url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json",
-},
-
+      url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json",
+    },
   });
 
   document
@@ -126,7 +125,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   $(document).on("click", ".edit-btn", function () {
     const id_proveedor = $(this).data("id");
-
+    
     $.ajax({
       url: `${base_url}/Configuracion/getProveedorID/${id_proveedor}`,
       method: "GET",
@@ -140,6 +139,9 @@ document.addEventListener("DOMContentLoaded", function () {
           $("#edit_regimen").val(response.data.regimen);
           $("#edit_estado").val(response.data.estado);
           $("#edit_dias_credito").val(response.data.dias_credito);
+          $("#iva").prop("checked", response.data.iva == 1);
+          $("#isr").prop("checked", response.data.isr == 1);
+          
         } else {
           Swal.fire({
             title: "Error",

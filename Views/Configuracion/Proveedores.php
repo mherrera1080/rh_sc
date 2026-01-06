@@ -132,7 +132,6 @@
   </div>
 </div>
 
-<!-- Modal Editar Proveedor -->
 <div class="modal fade" id="modalEditarProveedor" tabindex="-1" aria-labelledby="modalEditarProveedorLabel"
   aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -176,38 +175,19 @@
               <option value="Inactivo">Inactivo</option>
             </select>
           </div>
-
-
-          <div class="col-md-6">
-            <label class="form-label">Monto Mayor</label>
-            <input type="text" class="form-control" name="nit_proveedor">
-          </div>
-
-          <!-- Checkbox + Input -->
-          <div class="col-md-6">
-            <label class="form-label">Opción Especial</label>
-            <div class="input-group">
-              <div class="input-group-text">
-                <input type="checkbox" class="form-check-input mt-0">
-              </div>
-              <input type="text" class="form-control" placeholder="Texto asociado al checkbox">
-            </div>
-          </div>
-
-          <div class="col-md-3 mb-3">
-              <input class="form-check-input" type="checkbox" value="" id="checkChecked" checked>
-  <label class="form-check-label" for="checkChecked">
-    Retencion IVA
-  </label>
+          <div class="col-md-6 mb-3">
+            <input class="form-check-input" type="checkbox" id="iva" name="iva">
+            <label class="form-check-label" for="iva">
+              Retencion IVA
+            </label>
           </div>
           <!-- Retención ISR -->
-          <div class="col-md-3 mb-3">
-              <input class="form-check-input" type="checkbox" value="" id="checkChecked" checked>
-  <label class="form-check-label" for="checkChecked">
-    Retencion ISR
-  </label>
+          <div class="col-md-6 mb-3">
+            <input class="form-check-input" type="checkbox" id="isr" name="isr">
+            <label class="form-check-label" for="isr">
+              Retencion ISR
+            </label>
           </div>
-
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Cancelar</button>

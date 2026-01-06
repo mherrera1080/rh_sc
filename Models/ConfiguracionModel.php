@@ -88,7 +88,9 @@ class ConfiguracionModel extends Mysql
             estado,
             regimen,
             fecha_creacion,
-            dias_credito 
+            dias_credito,
+            iva,
+            isr 
         FROM tb_proveedor
         where id_proveedor = ?";
         $request = $this->select($sql, array($id_proveedor));
@@ -103,7 +105,7 @@ class ConfiguracionModel extends Mysql
         return $this->insert($sql, $arrData); // Devuelve el ID generado o false si falla
     }
 
-    public function updateProveedor($id_proveedor, $nombre_proveedor, $nombre_social, $nit_proveedor, $dias_credito, $estado, $regimen)
+    public function updateProveedor($id_proveedor, $nombre_proveedor, $nombre_social, $nit_proveedor, $dias_credito, $estado, $regimen, $iva, $isr)
     {
         $sql = "UPDATE tb_proveedor SET
         nombre_proveedor = ?, 
@@ -111,7 +113,9 @@ class ConfiguracionModel extends Mysql
         nit_proveedor = ?,
         dias_credito = ?,
         estado = ?,
-        regimen = ?
+        regimen = ?,
+        iva = ?,
+        isr = ?
         WHERE id_proveedor = ?";
 
         $arrData = array(
@@ -121,6 +125,8 @@ class ConfiguracionModel extends Mysql
             $dias_credito,
             $estado,
             $regimen,
+            $iva,
+            $isr,
             $id_proveedor
         );
 

@@ -42,7 +42,7 @@ class Mysql extends Conexion
 		$resExecute = $stmt->execute($params);
 		return $resExecute;
 	}
-	
+
 
 	public function insertLog(string $query, array $arrValues, string $tabla, array $columnas)
 	{
@@ -309,5 +309,22 @@ class Mysql extends Conexion
 
 		return $resDelete;
 	}
+
+
+	public function beginTransaction()
+	{
+		return $this->conexion->beginTransaction();
+	}
+
+	public function commit()
+	{
+		return $this->conexion->commit();
+	}
+
+	public function rollBack()
+	{
+		return $this->conexion->rollBack();
+	}
+
 
 }

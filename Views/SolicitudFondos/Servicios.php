@@ -19,6 +19,14 @@
                                 <i class="fas fa-exclamation"></i>
                             </button>
                         <?php } ?>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <?php if ($data['facturas']['solicitud_estado'] === "Pendiente"): ?>
+                            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#validarModal">
+                                <i class="fas fa-check"></i> Validar
+                            </button>
+                        <?php endif; ?>
+
                         <button class="btn btn-danger btn-sm"
                             onclick="window.open('<?= base_url() ?>/SolicitudFondos/generarSolicitudServicios/<?= $data['facturas']['contraseña']; ?>', '_blank')">
                             <i class="far fa-file-pdf"></i> PDF
@@ -197,110 +205,16 @@
                         <button type="submit" class="btn btn-danger" data-respuesta="Descartado">
                             <i class="fas fa-times"></i> Descartar
                         </button>
-                        <?php if ($data['facturas']['area_id'] == 2) { ?>
-                            <button type="submit" class="btn btn-success" data-respuesta="Validado Conta">
-                                <i class="fas fa-save"></i> Validar
-                            </button>
-                        <?php } else if ($data['facturas']['area_id'] != 2) { ?>
-                                <button type="submit" class="btn btn-success" data-respuesta="Validado Area">
-                                    <i class="fas fa-save"></i> Validar
-                                </button>
-                        <?php } ?>
+                        <button type="submit" class="btn btn-success" data-respuesta="Validado">
+                            <i class="fas fa-save"></i> Validar
+                        </button>
+
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
-    <div class="modal fade" id="finalizarModal" tabindex="-1" aria-labelledby="corregirModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <form id="finalizarSolicitud">
-                    <input type="hidden" class="form-control" name="id_solicitud"
-                        value="<?= $data['facturas']['id_solicitud']; ?>">
-                    <input type="hidden" class="form-control" name="area" value="<?= $data['facturas']['area_id']; ?>">
-                    <!-- Encabezado -->
-                    <div class="modal-header bg-dark text-white">
-                        <h5 class="modal-title" id="corregirModalLabel">
-                            Finalizar solicitud de fondos
-                        </h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                            aria-label="Cerrar">
-                        </button>
-                    </div>
-                    <!-- Cuerpo -->
-                    <div class="modal-body">
-                        <!-- Número de contraseña -->
-                        <div class="mb-4 border-bottom pb-2">
-                            <h5 class="fw-bold mb-0">
-                                CONTRASEÑA: <span class="text-dark"><?= $data['facturas']['contraseña']; ?></span>
-                            </h5>
-                        </div>
-                        <!-- Datos generales -->
-                        <div class="mb-4">
-                            <h6 class="fw-bold text-dark mb-3">Datos Generales</h6>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label strong">Realizador</label>
-                                    <input type="text" class="form-control"
-                                        value="<?= $data['facturas']['realizador'] ?? 'N/A'; ?>" disabled>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label strong">Proveedor</label>
-                                    <input type="text" class="form-control"
-                                        value="<?= $data['facturas']['proveedor'] ?? 'N/A'; ?>" disabled>
-                                </div>
-                                <div class="col-md-3 mb-3">
-                                    <label class="form-label strong">Monto Total</label>
-                                    <input type="text" class="form-control text-end"
-                                        value="<?= ($data['facturas']['regimen'] == 2) ? ($data['facturas']['total_pequeño'] ?? 'N/A') : ($data['facturas']['total'] ?? 'N/A'); ?>"
-                                        disabled>
-                                </div>
-                                <div class="col-md-3 mb-3">
-                                    <label class="form-label strong">Área</label>
-                                    <input type="text" class="form-control"
-                                        value="<?= $data['facturas']['area'] ?? 'N/A'; ?>" disabled>
-                                </div>
-                                <div class="col-md-3 mb-3">
-                                    <label class="form-label strong">Fecha Registro</label>
-                                    <input type="text" class="form-control"
-                                        value="<?= $data['facturas']['fecha_registro'] ?? 'N/A'; ?>" disabled>
-                                </div>
-                                <div class="col-md-3 mb-3">
-                                    <label for="fecha_pago" class="form-label strong">Fecha Pago</label>
-                                    <input type="date" class="form-control btn-input"
-                                        value="<?= $data['facturas']['fecha_pago'] ?? ''; ?>" disabled>
-                                </div>
-                            </div>
-                        </div>
-                        <hr>
-                        <div class="mb-4">
-                            <h6 class="fw-bold text-dark mb-3">Datos Finales</h6>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label strong">No. Transferencia</label>
-                                    <input type="text" class="form-control" name="no_transferencia">
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label strong">Fecha de Pago</label>
-                                    <input type="date" class="form-control" name="fecha_pago">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Footer -->
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-danger" data-respuesta="Descartado">
-                            Descartar
-                        </button>
-                        <button type="submit" class="btn btn-success" data-respuesta="Pagado">
-                            <i class="fas fa-save"></i> Pagar
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
 
     <div class="modal fade" id="editarModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl">
@@ -770,9 +684,6 @@
         });
 
     </script>
-
-
-
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const contenedor = document.getElementById("contenedorMateriales");

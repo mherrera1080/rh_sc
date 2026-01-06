@@ -129,11 +129,27 @@ document.addEventListener("submit", function (event) {
   if (event.target && event.target.id === "validarSolicitud") {
     event.preventDefault();
 
-    // Detecta el botón presionado
-    let boton = event.submitter;
-    let valor = boton.dataset.respuesta;
-    let formData = new FormData(event.target);
-    formData.append("respuesta", valor);
+    const form = event.target;
+    const boton = event.submitter;
+
+    // Validación: botón presionado
+    if (!boton || !boton.dataset.respuesta) {
+      Swal.fire("Atención", "Acción no válida.", "warning");
+      return;
+    }
+
+    // Validación: campos obligatorios (ejemplo)
+    const observacion = form.querySelector("[name='observacion']");
+    if (observacion && observacion.value.trim() === "") {
+      Swal.fire("Atención", "Debe ingresar una observación.", "warning");
+      return;
+    }
+
+    // Evitar doble envío
+    boton.disabled = true;
+
+    let formData = new FormData(form);
+    formData.append("respuesta", boton.dataset.respuesta);
 
     let ajaxUrl = base_url + "/SolicitudFondos/validarSolicitud";
     let request = new XMLHttpRequest();
@@ -141,54 +157,90 @@ document.addEventListener("submit", function (event) {
     request.send(formData);
 
     request.onreadystatechange = function () {
-      if (request.readyState === 4 && request.status === 200) {
-        let response = JSON.parse(request.responseText);
-        if (response.status) {
-          Swal.fire({
-            title: "Datos guardados correctamente",
-            icon: "success",
-            confirmButtonText: "Aceptar",
-          }).then(() => location.reload());
+      if (request.readyState === 4) {
+        boton.disabled = false;
+
+        if (request.status === 200) {
+          let response = JSON.parse(request.responseText);
+
+          if (response.status) {
+            Swal.fire({
+              title: "Datos guardados correctamente",
+              icon: "success",
+              confirmButtonText: "Aceptar",
+            }).then(() => location.reload());
+          } else {
+            Swal.fire("Atención", response.msg || "Error desconocido", "error");
+          }
         } else {
-          Swal.fire("Atención", response.msg || "Error desconocido", "error");
+          Swal.fire("Error", "No se pudo conectar con el servidor.", "error");
         }
       }
     };
   }
 });
+
 
 document.addEventListener("submit", function (event) {
   if (event.target && event.target.id === "finalizarSolicitud") {
     event.preventDefault();
 
-    // Detecta el botón presionado
-    let boton = event.submitter;
-    let valor = boton.dataset.respuesta;
-    let formData = new FormData(event.target);
-    formData.append("respuesta", valor);
+    const form = event.target;
+    const boton = event.submitter;
 
-    let ajaxUrl = base_url + "/SolicitudFondos/finalizarSolicitud";
-    let request = new XMLHttpRequest();
-    request.open("POST", ajaxUrl, true);
-    request.send(formData);
+    // Validación: botón presionado
+    if (!boton || !boton.dataset.respuesta) {
+      Swal.fire("Atención", "Acción no válida.", "warning");
+      return;
+    }
 
-    request.onreadystatechange = function () {
-      if (request.readyState === 4 && request.status === 200) {
-        let response = JSON.parse(request.responseText);
-        if (response.status) {
-          Swal.fire({
-            title: response.message,
-            icon: "success",
-            confirmButtonText: "Aceptar",
-          }).then(() => location.reload());
-        } else {
-          Swal.fire(
-            "Atención",
-            response.message || "Error desconocido",
-            "error"
-          );
+    // Confirmación antes de finalizar
+    Swal.fire({
+      title: "¿Desea finalizar la solicitud?",
+      text: "Esta acción no se puede revertir.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sí, finalizar",
+      cancelButtonText: "Cancelar",
+    }).then((result) => {
+      if (!result.isConfirmed) return;
+
+      boton.disabled = true;
+
+      let formData = new FormData(form);
+      formData.append("respuesta", boton.dataset.respuesta);
+
+      let ajaxUrl = base_url + "/SolicitudFondos/finalizarSolicitud";
+      let request = new XMLHttpRequest();
+      request.open("POST", ajaxUrl, true);
+      request.send(formData);
+
+      request.onreadystatechange = function () {
+        if (request.readyState === 4) {
+          boton.disabled = false;
+
+          if (request.status === 200) {
+            let response = JSON.parse(request.responseText);
+
+            if (response.status) {
+              Swal.fire({
+                title: response.message,
+                icon: "success",
+                confirmButtonText: "Aceptar",
+              }).then(() => location.reload());
+            } else {
+              Swal.fire(
+                "Atención",
+                response.message || "Error desconocido",
+                "error"
+              );
+            }
+          } else {
+            Swal.fire("Error", "No se pudo conectar con el servidor.", "error");
+          }
         }
-      }
-    };
+      };
+    });
   }
 });
+
