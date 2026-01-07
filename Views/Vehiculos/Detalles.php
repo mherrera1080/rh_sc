@@ -23,15 +23,6 @@
                                 <i class="fas fa-check"></i> Solicitar Fondos
                             </button>
                         <?php } ?>
-                        <?php if (
-                            $data['facturas']['estado'] === "Pendiente" || $data['facturas']['estado'] === "Corregido"
-                        ) { ?>
-                            <button class="btn btn-success btn-round ms-auto btn-password" id="btnValidar"
-                                data-bs-toggle="modal" data-bs-target="#validarModal"
-                                data-id="<?= $data['facturas']['contraseña']; ?>">
-                                <i class="fas fa-check"></i> Validacion
-                            </button>
-                        <?php } ?>
                     </div>
                 </div>
                 <div class="card-body">

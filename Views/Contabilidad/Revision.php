@@ -26,10 +26,6 @@
                                 <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#finalizarModal">
                                     <i class="fas fa-check"></i> Pagar
                                 </button>
-                                <button class="btn btn-danger btn-sm"
-                                    onclick="window.open('<?= base_url() ?>/SolicitudFondos/generarSolicitud/<?= $data['facturas']['contraseña']; ?>', '_blank')">
-                                    <i class="far fa-file-pdf"></i> PDF
-                                </button>
                             <?php endif; ?>
                         <?php elseif ($data['facturas']['area_id'] != 2): ?>
                             <?php if ($data['facturas']['solicitud_estado'] === "Pendiente" && $_SESSION['PersonalData']['area'] == 4): ?>

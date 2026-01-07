@@ -70,7 +70,7 @@ document.addEventListener("DOMContentLoaded", function () {
         render: function (data, type, row) {
           return `
               <button type="button" class="btn btn-primary m-0 d-flex justify-content-left btnFacturaEditar"
-            data-bs-toggle="modal" data-bs-target="#editarModal" data-id="${row.no_factura}">
+            data-bs-toggle="modal" data-bs-target="#editarModal" data-id="${row.id_detalle}">
             <i class="fas fa-edit"></i>
           </button>
             `;
@@ -580,44 +580,3 @@ document.addEventListener("DOMContentLoaded", function () {
 
   //bla bla bla
 });
-
-function toggleInputs() {
-  // Mostrar botones de acción
-  document.getElementById("btnCancelar").style.display = "inline-block";
-
-  // Ocultar botones de edición
-  document.getElementById("btnEditar").style.display = "none";
-  document.getElementById("btnValidar").style.display = "none";
-  document.getElementById("btnCorregir").style.display = "none";
-
-  const btnsEditar = document.getElementsByClassName("btnFacturaEditar");
-  for (let btn of btnsEditar) {
-    btn.classList.remove("d-none");
-  }
-
-  // Ocultar botones de info de factura
-  const btnsInfo = document.getElementsByClassName("btnFactura");
-  for (let btn of btnsInfo) {
-    btn.classList.add("d-none");
-  }
-}
-
-function CancelEdit() {
-  // Ocultar botón Cancelar y Actualizar
-  document.getElementById("btnCancelar").style.display = "none";
-  // Mostrar botón Editar y Devolución
-  document.getElementById("btnEditar").style.display = "inline-block";
-  document.getElementById("btnValidar").style.display = "inline-block";
-  document.getElementById("btnCorregir").style.display = "inline-block";
-
-  const btnsEditar = document.getElementsByClassName("btnFacturaEditar");
-  for (let btn of btnsEditar) {
-    btn.classList.add("d-none");
-  }
-
-  // Ocultar botones de info de factura
-  const btnsInfo = document.getElementsByClassName("btnFactura");
-  for (let btn of btnsInfo) {
-    btn.classList.remove("d-none");
-  }
-}

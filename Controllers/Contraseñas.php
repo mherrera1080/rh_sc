@@ -1085,9 +1085,6 @@ class Contraseñas extends Controllers
             ]);
         }
     }
-
-
-
     public function descartarContraseña()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -1153,6 +1150,84 @@ class Contraseñas extends Controllers
                     "error" => $e->getMessage()
                 ]);
             }
+
+        }
+    }
+
+    public function validacionConta()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $contraseña = $_POST['contraseña'];
+            $area = $_POST['area'];
+            $area_user = $_POST['conta_user'];
+            $estado = $_POST['respuesta'];
+            $correciones = $_POST['correciones'];
+            $errores = [];
+
+            if (empty($contraseña) || empty($estado)) {
+                echo json_encode(["status" => false, "msg" => "Problemas al obtener datos."]);
+                exit;
+            }
+
+
+            // Crear la contraseña
+            $this->model->validacionConta(
+                $contraseña,
+                $area_user,
+                $correciones,
+                $estado
+            );
+
+            $this->model->descartarDetalles(
+                $contraseña,
+                $estado
+            );
+
+            if (!empty($errores)) {
+                echo json_encode([
+                    "status" => false,
+                    "message" => $errores,
+                    "errors" => $errores
+                ]);
+                exit;
+            }
+
+            log_Actividad(
+                $_SESSION['PersonalData']['no_empleado'],
+                $_SESSION['PersonalData']['nombre_completo'],
+                "Contraseñas",
+                "Area valido la contraseña: " . $contraseña
+            );
+
+            $categoria = "Contraseña";
+            if ($estado = "Validado Area") {
+                $base = 'Validacion Area';
+            } else if ($estado = "Corregir") {
+                $base = 'Correccion';
+            }
+
+            $arrData = [
+                'contraseña' => $this->model->getContraseña($contraseña),
+                'correos' => $this->model->getCorreosArea($area, $base, $categoria)
+            ];
+
+            $sendcorreoEmpleado = 'Views/Template/Email/sendContraseña.php';
+            try {
+                ob_start();
+                require $sendcorreoEmpleado;
+                ob_end_clean();
+            } catch (Exception $e) {
+                echo json_encode([
+                    "status" => false,
+                    "message" => "Error al enviar el correo: " . $e->getMessage()
+                ]);
+                exit;
+            }
+
+            echo json_encode([
+                "status" => true,
+                "message" => "Contraseña Guardada."
+            ]);
 
         }
     }

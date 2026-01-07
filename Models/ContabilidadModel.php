@@ -291,7 +291,7 @@ class ContabilidadModel extends Mysql
         INNER JOIN tb_contraseña c ON d.contraseña = c.contraseña
         INNER JOIN tb_proveedor p ON c.id_proveedor = p.id_proveedor
         INNER JOIN tb_regimen r ON p.regimen = r.id_regimen
-        WHERE d.no_factura =  ?";
+        WHERE d.id_detalle =  ?";
         $request = $this->select($sql, array($no_factura));
         return $request;
     }

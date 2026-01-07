@@ -17,26 +17,35 @@
                     <?php $_SESSION['PersonalData']['area'] ?>
                     <div class="ms-auto d-flex align-items-center gap-2">
 
-                        <?php if ($data['facturas']['estado'] === "Validado Area" && $_SESSION['PersonalData']['area'] == 4) { ?>
-                            <button class="btn btn-success btn-round ms-auto btn-password" id="btnValidar"
-                                data-bs-toggle="modal" data-bs-target="#solicitarFondos"
-                                data-id="<?= $data['facturas']['contraseña']; ?>">
-                                <i class="fas fa-check"></i> Solicitar Fondos
-                            </button>
-                            <button class="btn btn-danger btn-round ms-auto btn-corregir" id="btnCorregir"
-                                data-bs-toggle="modal" data-bs-target="#corregirModal"
-                                data-id="<?= $data['facturas']['contraseña']; ?>">
-                                <i class="fas fa-ban"></i> Regresar
-                            </button>
-                            <?php if ($data['facturas']['anticipo'] != null) { ?>
-                                <button class="btn-warning-circle ms-auto" id="btnValidar" data-bs-toggle="modal"
-                                    data-bs-target="#anticipoModal" data-id="<?= $data['facturas']['contraseña']; ?>"
-                                    title="Solicitar Fondos">
-                                    <i class="fas fa-exclamation"></i>
+                        <?php if ($data['facturas']['id_area'] == 2 && $_SESSION['PersonalData']['area'] == 4) { ?>
+                            <?php if ($data['facturas']['estado'] === "Pendiente" || $data['facturas']['estado'] === "Corregido") { ?>
+                                <button class="btn btn-success btn-round ms-auto btn-password" id="btnValidar"
+                                    data-bs-toggle="modal" data-bs-target="#validarConta"
+                                    data-id="<?= $data['facturas']['contraseña']; ?>">
+                                    <i class="fas fa-check"></i> Validacion
                                 </button>
                             <?php } ?>
+                        <?php } else { ?>
+                            <?php if ($data['facturas']['estado'] === "Validado Area" && $_SESSION['PersonalData']['area'] == 4) { ?>
+                                <button class="btn btn-success btn-round ms-auto btn-password" id="btnValidar"
+                                    data-bs-toggle="modal" data-bs-target="#solicitarFondos"
+                                    data-id="<?= $data['facturas']['contraseña']; ?>">
+                                    <i class="fas fa-check"></i> Solicitar Fondos
+                                </button>
+                                <button class="btn btn-danger btn-round ms-auto btn-corregir" id="btnCorregir"
+                                    data-bs-toggle="modal" data-bs-target="#corregirModal"
+                                    data-id="<?= $data['facturas']['contraseña']; ?>">
+                                    <i class="fas fa-ban"></i> Regresar
+                                </button>
+                                <?php if ($data['facturas']['anticipo'] != null) { ?>
+                                    <button class="btn-warning-circle ms-auto" id="btnValidar" data-bs-toggle="modal"
+                                        data-bs-target="#anticipoModal" data-id="<?= $data['facturas']['contraseña']; ?>"
+                                        title="Solicitar Fondos">
+                                        <i class="fas fa-exclamation"></i>
+                                    </button>
+                                <?php } ?>
+                            <?php } ?>
                         <?php } ?>
-
                     </div>
                 </div>
                 <div class="card-body">
@@ -532,26 +541,24 @@
                                     <input type="date" class="form-control"
                                         value="<?= $data['facturas']['fecha_pago'] ?? ''; ?>" disabled>
                                 </div>
-                            </div>
-                            <?php if ($data['facturas']['anticipo'] != null) { ?>
-                                <hr>
-                                <div class="row">
-                                    <div class="col-md-12 mb-3">
-                                        <label class="form-label fw-semibold text-warning">Anticipo cargado</label>
-                                        <input type="text" class="form-control bg-light"
-                                            value="Proveedor: <?= $data['anticipoinfo']['proveedor']; ?> | No. Transferencia: <?= $data['anticipoinfo']['no_transferencia']; ?> | Fecha: <?= $data['anticipoinfo']['fecha_transaccion']; ?>"
-                                            disabled>
-                                    </div>
+
+                                <div>
+                                    <h6 class="fw-bold text-dark mb-3">Detalles de Corrección</h6>
+                                    <p class="text-muted small mb-2">
+                                        Especifique los inconvenientes encontrados en esta contraseña antes de enviarla:
+                                    </p>
+                                    <textarea class="form-control" name="correciones" id="correciones" rows="4"
+                                        placeholder="Describa los inconvenientes..." required></textarea>
                                 </div>
-                            <?php } ?>
+                            </div>
                         </div>
                     </div>
                     <!-- Footer -->
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-danger" data-respuesta="Descartado">
-                            <i class="fas fa-times"></i> Descartar
+                        <button type="submit" class="btn btn-danger" data-respuesta="Corregir">
+                            <i class="fas fa-times"></i> Corregir
                         </button>
-                        <button type="submit" class="btn btn-success" data-respuesta="Validado Conta">
+                        <button type="submit" class="btn btn-success" data-respuesta="Validado Area">
                             <i class="fas fa-save"></i> Validar
                         </button>
                     </div>
@@ -567,7 +574,8 @@
                     <input type="hidden" class="form-control" name="contraseña"
                         value="<?= $data['facturas']['contraseña']; ?>">
                     <input type="hidden" class="form-control" name="area" value="<?= $data['facturas']['id_area']; ?>">
-                    <input type="hidden" class="form-control" name="proveedor" value="<?= $data['facturas']['id_proveedor']; ?>">
+                    <input type="hidden" class="form-control" name="proveedor"
+                        value="<?= $data['facturas']['id_proveedor']; ?>">
                     <input type="hidden" class="form-control" name="solicitante"
                         value="<?= $_SESSION['PersonalData']['nombre_completo'] ?>">
                     <div class="modal-header bg-dark text-white">

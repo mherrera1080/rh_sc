@@ -448,14 +448,15 @@ class ContraseñasModel extends Mysql
         return $this->update($sql, $arrData);
     }
 
-    public function validacionConta($contraseña, $conta_user, $estado)
+    public function validacionConta($contraseña, $conta_user, $correcciones,$estado)
     {
         $sql = "UPDATE tb_contraseña 
                 SET 
                 estado = ?,
-                conta_user = ?
+                conta_user = ?,
+                correcciones = ?
                 WHERE contraseña = ?";
-        $arrData = [$estado, $conta_user, $contraseña];
+        $arrData = [$estado, $conta_user, $correcciones, $contraseña];
         return $this->update($sql, $arrData);
     }
 
