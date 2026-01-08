@@ -103,7 +103,7 @@ try {
                 <!-- Pie -->
                 <tr>
                     <td align='center' style='background-color:#f9fafb;padding:18px;font-size:12px;color:#777;border-top:1px solid #eaeaea;'>
-                    © <?= date('Y') ?> Nacel de Centroamérica S.A. — Correo generado automáticamente.<br>
+                     © " . date('Y') . " Nacel de Centroamérica S.A. — Correo generado automáticamente.<br>
                     <span style='font-size:11px;'>No responda a este mensaje.</span>
                     </td>
                 </tr>

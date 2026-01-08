@@ -133,7 +133,7 @@ try {
 
                                     <p style='margin-top:18px;font-size:13px;'>Para consultar más detalles o dar seguimiento, puede acceder al sistema haciendo clic en el siguiente botón:</p>
                                     <p align='center' style='margin:18px 0;'>
-                                        <a href='#' style='display:inline-block;background-color:#FFD700;color:#000;text-decoration:none;font-weight:bold;padding:10px 20px;border-radius:5px;font-size:14px;'>Ver Solicitud en el Sistema</a>
+                                        <a href=". BASE_URL ." style='display:inline-block;background-color:#FFD700;color:#000;text-decoration:none;font-weight:bold;padding:10px 20px;border-radius:5px;font-size:14px;'>Ver Solicitud en el Sistema</a>
                                     </p>
                                 </td>
                             </tr>

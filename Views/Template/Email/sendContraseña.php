@@ -135,7 +135,7 @@ try {
 
                             <p>Para consultar más detalles o realizar seguimiento, puede acceder al sistema haciendo clic en el siguiente botón:</p>
                             <p align='center'>
-                                <a href='#' style='display:inline-block;background-color:#004aad;color:#fff;text-decoration:none;font-weight:bold;padding:12px 24px;border-radius:6px;'>Ver Detalle en el Sistema</a>
+                                <a href=". BASE_URL ." style='display:inline-block;background-color:#004aad;color:#fff;text-decoration:none;font-weight:bold;padding:12px 24px;border-radius:6px;'>Ver Detalle en el Sistema</a>
                             </p>
                             <p style='margin-top:25px;'>Saludos cordiales,</p>
                             <p style='font-size:13px;color:#666;'>Equipo de Sistemas</p>
