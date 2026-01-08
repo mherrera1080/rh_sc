@@ -566,5 +566,41 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
+  document
+    .querySelector("#solicitarFondosForm")
+    .addEventListener("submit", function (event) {
+      event.preventDefault();
+
+      let formData = new FormData(this);
+      let ajaxUrl = base_url + "/Contraseñas/solicitudFondos";
+      let request = window.XMLHttpRequest
+        ? new XMLHttpRequest()
+        : new ActiveXObject("Microsoft.XMLHTTP");
+
+      request.open("POST", ajaxUrl, true);
+      request.send(formData);
+
+      request.onreadystatechange = function () {
+        if (request.readyState === 4 && request.status === 200) {
+          let response = JSON.parse(request.responseText);
+          if (response.status) {
+            Swal.fire({
+              title: "Datos guardados correctamente",
+              icon: "success",
+              confirmButtonText: "Aceptar",
+            }).then((result) => {
+              if (result.isConfirmed) {
+                // Recargar la página al presionar "Aceptar"
+                location.reload();
+              }
+            });
+            $("#solicitarFondos").modal("hide");
+          } else {
+            Swal.fire("Atención", response.msg, "error"); // Mostrar mensaje de error
+          }
+        }
+      };
+    });
+
   //bla bla bla
 });
