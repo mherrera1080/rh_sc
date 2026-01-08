@@ -174,7 +174,7 @@ document.addEventListener("DOMContentLoaded", function () {
               confirmButtonText: "OK",
             }).then(() => location.reload());
             $("#setContraseñaModal").modal("hide");
-            tableContraseña.ajax.reload();
+            tableSolicitudes.ajax.reload();
           } else {
             Swal.fire({
               title: "Advertencia",

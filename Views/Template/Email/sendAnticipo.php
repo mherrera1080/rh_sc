@@ -42,29 +42,55 @@ try {
 
     // Datos recibidos (simulados por ahora)
     $anticipo = $arrData['anticipo'];
-    $contraseña = $solianticipocitud['contraseña'];
-    $realizador = $anticipo['usuario'];
+    $contraseña = $anticipo['contraseña'];
+    $realizador = $anticipo['realizador'];
     $area = $anticipo['area'];
     $proveedor = $anticipo['proveedor'];
-    $monto = $anticipo['monto_total'];
-    $valor_letras = "Doce mil cuatrocientos cincuenta quetzales exactos";
-    $fecha_registro = $anticipo['fecha_creacion'];
-    $estado = $arrData['respuesta'];
+    $monto = $anticipo['total'];
+    $fecha_registro = $anticipo['fecha_registro'];
+    $estado = $anticipo['solicitud_estado'];
 
-    switch ($estado) {
-        case 'Pendiente':
-            $mensaje_estado = "Se ha creado un anticipo del área " . $area;
-            break;
-        case 'Pagado':
-            $mensaje_estado = "El anticipo ha sido liquidado.";
-            break;
-        case 'Descartado':
-            $mensaje_estado = "El anticipo ha sido descartado.";
-            break;
-        default:
-            $mensaje_estado = "Se encuentra en un estado desconocido.";
-            break;
+    if ($area == "Vehiculos") {
+        $caso = "Combustible";
+        switch ($estado) {
+            case 'Pendiente':
+                $mensaje_estado = "Se ha creado un solicitud de combustible.";
+                break;
+            case 'Corregir':
+                $mensaje_estado = "El ha mandado a corregir la siguiente solicitud de combustible: ";
+                break;
+            case 'Corregido':
+                $mensaje_estado = "El ha mandado a corregido la siguiente solicitud de combustible: ";
+                break;
+            case 'Pagado':
+                $mensaje_estado = "La solicitud de combustible ha sido liquidada";
+                break;
+            case 'Descartado':
+                $mensaje_estado = "La solicitud de combustible ha sido descartado.";
+                break;
+            default:
+                $mensaje_estado = "Se encuentra en un estado desconocido.";
+                break;
+        }
+    } else {
+        $caso = "Anticipo";
+        switch ($estado) {
+
+            case 'Pendiente':
+                $mensaje_estado = "Se ha creado un anticipo del área " . $area;
+                break;
+            case 'Pagado':
+                $mensaje_estado = "El anticipo ha sido liquidado.";
+                break;
+            case 'Descartado':
+                $mensaje_estado = "El anticipo ha sido descartado.";
+                break;
+            default:
+                $mensaje_estado = "Se encuentra en un estado desconocido.";
+                break;
+        }
     }
+
 
     // Cuerpo del correo (diseño limpio y compacto)
     $body = "
@@ -86,7 +112,7 @@ try {
                             </tr>
                             <tr>
                                 <td style='padding:25px 30px;'>
-                                    <h2 style='color:#DAA520;font-size:18px;margin-bottom:10px;'>Solicitud de Anticipo N° $contraseña</h2>
+                                    <h2 style='color:#DAA520;font-size:18px;margin-bottom:10px;'>Solicitud de $caso N° $contraseña</h2>
                                     <p style='font-size:14px;line-height:1.5;margin-bottom:15px;'>$mensaje_estado</p>
 
                                     <table width='100%' cellspacing='0' cellpadding='0' border='0'

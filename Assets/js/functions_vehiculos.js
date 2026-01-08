@@ -47,8 +47,8 @@ document.addEventListener("DOMContentLoaded", function () {
           let html = "";
           data = data.toLowerCase();
           if (data.includes("pendiente")) {
-            html = '<span class="badge badge-warning"> ' + data + ' </span>';
-          } else if (data.includes("validado")) {
+            html = '<span class="badge badge-warning"> ' + data + " </span>";
+          } else if (data.includes("validado area")) {
             html = '<span class="badge badge-success">VALIDADO</span>';
           } else if (data.includes("corregir")) {
             html = '<span class="badge badge-danger">CORREGIR</span>';
@@ -60,6 +60,9 @@ document.addEventListener("DOMContentLoaded", function () {
             html = '<span class="badge badge-success">FINALIZADO</span>';
           } else if (data.includes("pagado")) {
             html = '<span class="badge badge-info">PAGADO</span>';
+          } else {
+            html =
+              '<span class="badge badge-secondary">FONDOS SOLICITADOS</span>';
           }
           return html;
         },

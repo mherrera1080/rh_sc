@@ -210,7 +210,7 @@ document.addEventListener("submit", function (event) {
       let formData = new FormData(form);
       formData.append("respuesta", boton.dataset.respuesta);
 
-      let ajaxUrl = base_url + "/SolicitudFondos/finalizarSolicitud";
+      let ajaxUrl = base_url + "/SolicitudFondos/finalizarSolicitudSinContra";
       let request = new XMLHttpRequest();
       request.open("POST", ajaxUrl, true);
       request.send(formData);

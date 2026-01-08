@@ -145,7 +145,8 @@ class SolicitudFondosModel extends Mysql
             YEAR(tc.fecha_creacion)  AS año_registro,
             tc.fecha_creacion AS fecha_registro,
             tc.fecha_pago AS fecha_pago,
-            tc.estado as solicitud_estado
+            tc.estado as solicitud_estado,
+            tc.categoria as tipo
         FROM tb_solicitud_fondos tc
         INNER JOIN tb_areas ta ON tc.area = ta.id_area
         INNER JOIN tb_proveedor tp ON tc.proveedor = tp.id_proveedor
@@ -233,35 +234,34 @@ class SolicitudFondosModel extends Mysql
     }
 
 
+    // public function dfdfdf($id_solicitud)
+    // {
+    //     $sql = "SELECT
+    //         tc.id_solicitud,
+    //         tc.contraseña,
+    //         CONCAT(tu.nombres, ' ', tu.primer_apellido, ' ', tu.segundo_apellido) as realizador,
+    //         tp.nombre_proveedor AS proveedor,
+    //         ta.id_area,
+    //         ta.nombre_area AS area,
+    //         ROUND(SUM(td.valor_documento), 2) AS total,
+    //         DAY(tc.fecha_creacion)   AS dia_registro,
+    //         MONTH(tc.fecha_creacion) AS mes_registro,
+    //         YEAR(tc.fecha_creacion)  AS año_registro,
+    //         tc.fecha_creacion AS fecha_registro,
+    //         tc.fecha_pago,
+    //         tc.estado AS solicitud_estado
+    //     FROM tb_solicitud_fondos tc
+    //     INNER JOIN tb_proveedor tp ON tc.proveedor = tp.id_proveedor
+    //     INNER JOIN tb_areas ta ON tc.area = ta.id_area
+    //     INNER JOIN tb_detalles td ON tc.id_solicitud = td.no_factura
+    //     INNER JOIN tb_usuarios tu ON tc.usuario = tu.id_usuario
+    //     WHERE tc.id_solicitud = ?
+    //     GROUP BY tc.id_solicitud;
+    //     ";
 
-    public function dfdfdf($id_solicitud)
-    {
-        $sql = "SELECT
-            tc.id_solicitud,
-            tc.contraseña,
-            CONCAT(tu.nombres, ' ', tu.primer_apellido, ' ', tu.segundo_apellido) as realizador,
-            tp.nombre_proveedor AS proveedor,
-            ta.id_area,
-            ta.nombre_area AS area,
-            ROUND(SUM(td.valor_documento), 2) AS total,
-            DAY(tc.fecha_creacion)   AS dia_registro,
-            MONTH(tc.fecha_creacion) AS mes_registro,
-            YEAR(tc.fecha_creacion)  AS año_registro,
-            tc.fecha_creacion AS fecha_registro,
-            tc.fecha_pago,
-            tc.estado AS solicitud_estado
-        FROM tb_solicitud_fondos tc
-        INNER JOIN tb_proveedor tp ON tc.proveedor = tp.id_proveedor
-        INNER JOIN tb_areas ta ON tc.area = ta.id_area
-        INNER JOIN tb_detalles td ON tc.id_solicitud = td.no_factura
-        INNER JOIN tb_usuarios tu ON tc.usuario = tu.id_usuario
-        WHERE tc.id_solicitud = ?
-        GROUP BY tc.id_solicitud;
-        ";
-
-        $request = $this->select($sql, array($id_solicitud));
-        return $request;
-    }
+    //     $request = $this->select($sql, array($id_solicitud));
+    //     return $request;
+    // }
 
     public function getContraSoli($id_solicitud)
     {

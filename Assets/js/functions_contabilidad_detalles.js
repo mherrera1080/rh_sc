@@ -386,61 +386,49 @@ document.addEventListener("DOMContentLoaded", function () {
     .addEventListener("submit", function (event) {
       event.preventDefault();
 
-      // Detecta el botón presionado
+      /* 1. Validar botón presionado */
+      if (!event.submitter) {
+        Swal.fire("Atención", "Acción no válida.", "warning");
+        return;
+      }
+
       let boton = event.submitter;
-      let valor = boton.dataset.respuesta;
+      let respuesta = boton.dataset.respuesta;
+      let correcciones = event.target.querySelector("#correciones");
 
-      let formData = new FormData(this);
-      formData.append("respuesta", valor);
-
-      let ajaxUrl = base_url + "/Contraseñas/validacionConta";
-      let request = new XMLHttpRequest();
-      request.open("POST", ajaxUrl, true);
-      request.send(formData);
-
-      request.onreadystatechange = function () {
-        if (request.readyState === 4 && request.status === 200) {
-          let response = JSON.parse(request.responseText);
-          if (response.status) {
-            Swal.fire({
-              title: "Datos guardados correctamente",
-              icon: "success",
-              confirmButtonText: "Aceptar",
-            }).then(() => location.reload());
-          } else {
-            Swal.fire("Atención", response.msg || "Error desconocido", "error");
-          }
+      /* 2. Si es CORREGIR, exigir corrección */
+      if (respuesta === "Corregir") {
+        if (!correcciones.value.trim()) {
+          Swal.fire(
+            "Atención",
+            "Debe indicar el motivo de la corrección.",
+            "warning"
+          );
+          correcciones.focus();
+          return;
         }
-      };
-    });
+      }
 
-  document
-    .querySelector("#solicitarFondosForm")
-    .addEventListener("submit", function (event) {
-      event.preventDefault();
-
-      // 🔴 Confirmación previa
+      /* 3. Confirmación */
       Swal.fire({
-        title: "¿Desea enviar la solicitud de fondos?",
-        text: "Verifique que la información sea correcta antes de continuar.",
+        title:
+          respuesta === "Corregir"
+            ? "¿Desea enviar la corrección?"
+            : "¿Desea validar esta contraseña?",
         icon: "warning",
         showCancelButton: true,
-        confirmButtonText: "Sí, enviar",
+        confirmButtonText: "Sí, continuar",
         cancelButtonText: "Cancelar",
         reverseButtons: true,
       }).then((result) => {
-        // ❌ Si cancela, no se envía nada
-        if (!result.isConfirmed) {
-          return;
-        }
+        if (!result.isConfirmed) return;
 
-        // ✅ Continúa solo si confirma
+        /* 4. Envío AJAX */
         let formData = new FormData(event.target);
-        let ajaxUrl = base_url + "/Contraseñas/solicitudFondos";
-        let request = window.XMLHttpRequest
-          ? new XMLHttpRequest()
-          : new ActiveXObject("Microsoft.XMLHTTP");
+        formData.append("respuesta", respuesta);
 
+        let ajaxUrl = base_url + "/Contraseñas/validacionConta";
+        let request = new XMLHttpRequest();
         request.open("POST", ajaxUrl, true);
         request.send(formData);
 
@@ -450,18 +438,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (response.status) {
               Swal.fire({
-                title: "Datos guardados correctamente",
+                title: response.msg || "Proceso realizado correctamente",
                 icon: "success",
                 confirmButtonText: "Aceptar",
-              }).then((result) => {
-                if (result.isConfirmed) {
-                  location.reload();
-                }
-              });
+              }).then(() => location.reload());
 
-              $("#solicitarFondos").modal("hide");
+              $("#validarConta").modal("hide");
             } else {
-              Swal.fire("Atención", response.msg, "error");
+              Swal.fire(
+                "Atención",
+                response.msg || "Error al procesar la solicitud.",
+                "error"
+              );
             }
           }
         };

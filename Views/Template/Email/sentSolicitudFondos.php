@@ -1,6 +1,8 @@
 <?php
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
+use PhpOffice\PhpSpreadsheet\Calculation\MathTrig\Base;
+
 require 'Assets/vendor/autoload.php';
 $mail = new PHPMailer(true);
 
@@ -49,23 +51,36 @@ try {
     $fecha_registro = $solicitud['fecha_registro'];
     $estado = $arrData['respuesta'];
 
-    switch ($estado) {
-        case 'Validado Area':
-            $mensaje_estado = "ha sido validada por " . $area;
-            break;
-        case 'Validado Conta':
-            $mensaje_estado = "ha sido validada por " . $area;
-            break;
-        case 'Pagado':
-            $mensaje_estado = "ha sido liquidada";
-            break;
-        case 'Descartado':
-            $mensaje_estado = "ha sido descartada";
-            break;
-        default:
-            $mensaje_estado = "se encuentra en estado desconocido.";
-            break;
+
+    if ($area == "Vehiculos") {
+        switch ($estado) {
+            case 'Validado':
+                $mensaje_estado = "ha sido validada por Vehiculos";
+                break;
+            case 'Pagado':
+                $mensaje_estado = "ha sido liquidada";
+                break;
+            case 'Descartado':
+                $mensaje_estado = "ha sido liquidada";
+            default:
+                $mensaje_estado = "se encuentra en estado desconocido.";
+                break;
+        }
+    } else {
+        switch ($estado) {
+            case 'Pagado':
+                $mensaje_estado = "ha sido liquidada";
+                break;
+            case 'Descartado':
+                $mensaje_estado = "ha sido descartada";
+                break;
+            default:
+                $mensaje_estado = "se encuentra en estado desconocido.";
+                break;
+        }
     }
+
+
 
     // Cuerpo del correo (diseño limpio y compacto)
     $body = "
@@ -109,7 +124,7 @@ try {
 
                                 <p style='margin-top:18px;font-size:13px;'>Para consultar más detalles o realizar seguimiento, puede acceder al sistema haciendo clic en el siguiente botón:</p>
                                 <p align='center' style='margin:18px 0;'>
-                                    <a href='#' style='display:inline-block;background-color:#2E7D32;color:#fff;text-decoration:none;font-weight:bold;padding:10px 20px;border-radius:5px;font-size:14px;'>Ver Detalle en el Sistema</a>
+                                    <a href=". BASE_URL ." style='display:inline-block;background-color:#2E7D32;color:#fff;text-decoration:none;font-weight:bold;padding:10px 20px;border-radius:5px;font-size:14px;'>Ver Detalle en el Sistema</a>
                                 </p>
 
                                 <p style='margin-top:20px;font-size:13px;'>Saludos cordiales,</p>

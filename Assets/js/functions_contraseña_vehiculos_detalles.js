@@ -66,20 +66,12 @@ document.addEventListener("DOMContentLoaded", function () {
       {
         data: null,
         render: function (data, type, row) {
-          if (row.estado === "Pendiente" && usuario == 4) {
-            return `
+          return `
               <button type="button" class="btn btn-primary m-0 d-flex justify-content-left btnFacturaEditar"
-                data-bs-toggle="modal" data-bs-target="#editarModal" data-id="${row.no_factura}">
-                <i class="fas fa-edit"></i>
-              </button>`;
-          } else if (row.estado === "Validado") {
-            return `
-                        <button type="button" class="btn btn-primary m-0 d-flex justify-content-left btn-info btnFactura"
-            data-bs-toggle="modal" data-bs-target="#infoModal">
-            <i class="fas fa-info-circle"></i>
-          </button>`;
-          }
-          return "";
+            data-bs-toggle="modal" data-bs-target="#editarModal" data-id="${row.id_detalle}">
+            <i class="fas fa-edit"></i>
+          </button>
+            `;
         },
       },
     ],
@@ -142,10 +134,50 @@ document.addEventListener("DOMContentLoaded", function () {
     .addEventListener("submit", function (event) {
       event.preventDefault();
 
-      // Detecta el botón presionado
+      /* 1. Validar botón presionado */
+      if (!event.submitter) {
+        Swal.fire("Atención", "Acción no válida.", "warning");
+        return;
+      }
+
       let boton = event.submitter;
       let valor = boton.dataset.respuesta;
 
+      /* 2. Validar data-respuesta */
+      if (!valor) {
+        Swal.fire("Atención", "Respuesta no definida.", "warning");
+        return;
+      }
+
+      /* 3. Validar campos required del formulario */
+      const camposRequeridos = this.querySelectorAll("[required]");
+      for (let campo of camposRequeridos) {
+        if (!campo.value.trim()) {
+          Swal.fire(
+            "Atención",
+            "Debe completar todos los campos obligatorios.",
+            "warning"
+          );
+          campo.focus();
+          return;
+        }
+      }
+
+      /* 4. Validación condicional (ejemplo: rechazo requiere motivo) */
+      if (valor === "RECHAZADO") {
+        let motivo = this.querySelector("#motivo");
+        if (motivo && !motivo.value.trim()) {
+          Swal.fire(
+            "Atención",
+            "Debe indicar el motivo del rechazo.",
+            "warning"
+          );
+          motivo.focus();
+          return;
+        }
+      }
+
+      /* 5. Envío AJAX */
       let formData = new FormData(this);
       formData.append("respuesta", valor);
 
@@ -157,6 +189,7 @@ document.addEventListener("DOMContentLoaded", function () {
       request.onreadystatechange = function () {
         if (request.readyState === 4 && request.status === 200) {
           let response = JSON.parse(request.responseText);
+
           if (response.status) {
             Swal.fire({
               title: "Datos guardados correctamente",
@@ -175,36 +208,72 @@ document.addEventListener("DOMContentLoaded", function () {
     .addEventListener("submit", function (event) {
       event.preventDefault();
 
-      let boton = event.submitter;
-      let valor = boton.dataset.respuesta;
+      /* 1. Validar botón presionado */
+      if (!event.submitter) {
+        Swal.fire("Atención", "Acción no válida.", "warning");
+        return;
+      }
 
-      let formData = new FormData(this);
-      formData.append("respuesta", valor);
+      const boton = event.submitter;
+      const respuesta = boton.dataset.respuesta;
 
-      let ajaxUrl = base_url + "/Vehiculos/solicitudFondos";
-      let request = window.XMLHttpRequest
-        ? new XMLHttpRequest()
-        : new ActiveXObject("Microsoft.XMLHTTP");
+      if (!respuesta) {
+        Swal.fire("Atención", "Respuesta no definida.", "warning");
+        return;
+      }
 
-      request.open("POST", ajaxUrl, true);
-      request.send(formData);
+      /* 2. Validación condicional de categoría */
+      const categoria = this.querySelector("#categoria");
 
-      request.onreadystatechange = function () {
-        if (request.readyState === 4) {
+      if (respuesta === "Validado") {
+        if (!categoria || !categoria.value) {
+          Swal.fire(
+            "Atención",
+            "Debe seleccionar una categoría para validar la solicitud.",
+            "warning"
+          );
+          categoria.focus();
+          return;
+        }
+      }
+
+      /* 3. Confirmación */
+      Swal.fire({
+        title:
+          respuesta === "Descartado"
+            ? "¿Desea descartar esta solicitud?"
+            : "¿Desea validar esta solicitud de fondos?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Sí, continuar",
+        cancelButtonText: "Cancelar",
+        reverseButtons: true,
+      }).then((result) => {
+        if (!result.isConfirmed) return;
+
+        /* 4. Envío AJAX */
+        const formData = new FormData(event.target);
+        formData.append("respuesta", respuesta);
+
+        const ajaxUrl = base_url + "/Vehiculos/solicitudFondos";
+        const request = new XMLHttpRequest();
+        request.open("POST", ajaxUrl, true);
+        request.send(formData);
+
+        request.onreadystatechange = function () {
+          if (request.readyState !== 4) return;
+
           try {
             if (request.status === 200) {
-              let response = JSON.parse(request.responseText);
+              const response = JSON.parse(request.responseText);
 
               if (response.status) {
                 Swal.fire({
-                  title: response.message || "Datos guardados correctamente",
+                  title: response.message || "Proceso realizado correctamente",
                   icon: "success",
                   confirmButtonText: "Aceptar",
-                }).then((result) => {
-                  if (result.isConfirmed) {
-                    location.reload();
-                  }
-                });
+                }).then(() => location.reload());
+
                 $("#solicitarFondosVehiculos").modal("hide");
               } else {
                 Swal.fire(
@@ -229,10 +298,9 @@ document.addEventListener("DOMContentLoaded", function () {
             );
             Swal.fire("Error", "Respuesta inesperada del servidor.", "error");
           }
-        }
-      };
+        };
+      });
     });
-
 
   //bla bla bla
 });

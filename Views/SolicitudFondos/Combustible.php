@@ -16,8 +16,7 @@
                         </h3>
                     </div>
                     <div class="d-flex gap-2">
-
-                        <?php if ($data['facturas']['solicitud_estado'] === "Pendiente") { ?>
+                        <?php if ($data['facturas']['solicitud_estado'] === "Pendiente" && $_SESSION['PersonalData']['area'] == 4) { ?>
                             <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#validarModal">
                                 <i class="fas fa-check"></i> Validar
                             </button>
@@ -185,9 +184,13 @@
             <div class="modal-content">
                 <form id="finalizarSolicitud">
                     <input type="hidden" class="form-control" name="id_solicitud"
-                        value="<?= $data['facturas']['id_solicitud'] ?? 'N/A'; ?>">
+                        value="<?= $data['facturas']['id_solicitud'] ; ?>">
+                    <input type="hidden" class="form-control" name="contraseña"
+                        value="<?= $data['facturas']['contraseña']; ?>">
+                    <input type="hidden" class="form-control" name="tipo"
+                        value="<?= $data['facturas']['tipo']; ?>">
                     <input type="hidden" class="form-control" name="area"
-                        value="<?= $data['facturas']['id_area'] ?? 'N/A'; ?>">
+                        value="<?= $data['facturas']['id_area']; ?>">
                     <div class="modal-header bg-dark text-white">
                         <h5 class="modal-title" id="corregirModalLabel">
                             Finalizar Anticipo

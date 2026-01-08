@@ -596,9 +596,6 @@ class SolicitudFondos extends Controllers
             exit;
         }
 
-        // =========================
-        // DATOS DEL FORMULARIO
-        // =========================
         $realizador = trim($_POST['realizador'] ?? '');
         $fecha_pago = $_POST['fecha_pago'] ?? null;
         $proveedor = intval($_POST['proveedor'] ?? 0);
@@ -611,10 +608,6 @@ class SolicitudFondos extends Controllers
 
         $categoria = 'Combustible';
         $estado_solicitud = 'Pendiente';
-
-        // =========================
-        // VALIDACIONES BÁSICAS
-        // =========================
         if (
             empty($realizador) ||
             empty($fecha_pago) ||
@@ -627,10 +620,6 @@ class SolicitudFondos extends Controllers
             ]);
             exit;
         }
-
-        // =========================
-        // VALIDAR ARRAYS DE DETALLE
-        // =========================
         if (
             empty($transferencias) ||
             count($transferencias) !== count($saldos) ||
@@ -644,9 +633,6 @@ class SolicitudFondos extends Controllers
             exit;
         }
 
-        // =========================
-        // GENERAR CORRELATIVO
-        // =========================
         $ultimoCorrelativo = $this->model->getUltimoCombustible();
 
         if ($ultimoCorrelativo) {
@@ -658,9 +644,6 @@ class SolicitudFondos extends Controllers
 
         $contraseña = "COMBUSTIBLE-" . $nuevoNumero;
 
-        // =========================
-        // CREAR SOLICITUD PRINCIPAL
-        // =========================
         $solicitudCreada = $this->model->solicitudFondoVehiculosNueva(
             $realizador,
             $area,
@@ -679,9 +662,6 @@ class SolicitudFondos extends Controllers
             exit;
         }
 
-        // =========================
-        // INSERTAR DETALLE COMBUSTIBLE
-        // =========================
         foreach ($transferencias as $i => $monto) {
 
             $insertado = $this->model->insertCombustible(
@@ -701,9 +681,26 @@ class SolicitudFondos extends Controllers
             }
         }
 
-        // =========================
-        // LOG DE ACTIVIDAD
-        // =========================
+        $base = "Creacion";
+        $arrData = [
+            'anticipo' => $this->model->getCombustible($contraseña),
+            'correos' => $this->model->getCorreosArea($area, $base, "Anticipo"),
+            'respuesta' => $estado_solicitud
+        ];
+
+        $sendcorreoEmpleado = 'Views/Template/Email/sendAnticipo.php';
+        try {
+            ob_start();
+            require $sendcorreoEmpleado;
+            ob_end_clean();
+        } catch (Exception $e) {
+            echo json_encode([
+                "status" => false,
+                "message" => "Error al enviar el correo: " . $e->getMessage()
+            ]);
+            exit;
+        }
+
         log_Actividad(
             $_SESSION['PersonalData']['no_empleado'],
             $_SESSION['PersonalData']['nombre_completo'],
@@ -1665,7 +1662,6 @@ class SolicitudFondos extends Controllers
             "message" => $mensaje
         ]);
     }
-
     public function finalizarSolicitudSinContra()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -1677,6 +1673,10 @@ class SolicitudFondos extends Controllers
             $fecha_pago = $_POST['fecha_pago'] ?? null;
             $observacion = $_POST['observacion'] ?? null;
 
+            $contraseña = $_POST['contraseña'] ?? null;
+            $tipo = $_POST['tipo'] ?? null;
+
+
             if (empty($id_solicitud) || empty($respuesta) || empty($area)) {
                 echo json_encode([
                     "status" => false,
@@ -1684,6 +1684,15 @@ class SolicitudFondos extends Controllers
                 ]);
                 exit;
             }
+
+            if (empty($tipo)) {
+                echo json_encode([
+                    "status" => false,
+                    "message" => "Tipo de solicitud no definido."
+                ]);
+                exit;
+            }
+
 
             if ($respuesta === 'Pagado') {
                 if (empty($no_transferencia) || empty($fecha_pago)) {
@@ -1704,7 +1713,6 @@ class SolicitudFondos extends Controllers
             );
 
             /* -------- CONFIGURACIÓN DE CORREO -------- */
-            $categoria = 'Anticipo';
             $base = null;
 
             switch ($respuesta) {
@@ -1717,10 +1725,16 @@ class SolicitudFondos extends Controllers
                     break;
             }
 
+            if ($tipo === "Anticipo") {
+                $db = $this->model->getSolisinContra($id_solicitud);
+            } else {
+                $db = $this->model->getCombustible($contraseña);
+            }
+
             if ($base) {
                 $arrData = [
-                    'anticipo' => $this->model->getSolisinContra($id_solicitud),
-                    'correos' => $this->model->getCorreosArea($area, $base, $categoria),
+                    'anticipo' => $db,
+                    'correos' => $this->model->getCorreosArea($area, $base, "Anticipo"),
                     'respuesta' => $respuesta
                 ];
 
@@ -1754,8 +1768,6 @@ class SolicitudFondos extends Controllers
             ]);
         }
     }
-
-
     public function getSolisinContra($contraseña)
     {
         $arrData = $this->model->getSolisinContra($contraseña);

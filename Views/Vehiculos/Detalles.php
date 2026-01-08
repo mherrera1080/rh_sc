@@ -1,6 +1,5 @@
 <?php headerAdmin($data); ?>
 <div class="main p-3">
-
     <div class="row">
         <div class="col-md-12">
             <div class="card mb-4">
@@ -40,7 +39,7 @@
                         <div class="col-md-3 mb-3">
                             <label for="" class="form-label">Monto Total</label>
                             <input type="text" class="form-control" id="" name=""
-                                value="<?= $data['facturas']['monto_total'] ?? 'N/A'; ?>" disabled>
+                                value="<?= $data['facturas']['monto_formato'] ?? 'N/A'; ?>" disabled>
                         </div>
                         <div class="col-md-3 mb-3">
                             <label for="" class="form-label">Area</label>
@@ -62,6 +61,7 @@
             </div>
         </div>
     </div>
+
     <div class="row">
         <div class="col-md-12">
             <div class="card">
@@ -105,9 +105,6 @@
         </div>
     </div>
     <?php footerAdmin($data); ?>
-
-    <!-- MODAL ACCIONES -->
-
 
     <div class="modal fade" id="validarModal" tabindex="-1" aria-labelledby="corregirModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -182,7 +179,6 @@
             </div>
         </div>
     </div>
-
 
     <div class="modal fade" id="solicitarFondosVehiculos" tabindex="-1" aria-labelledby="corregirModalLabel"
         aria-hidden="true">
@@ -331,7 +327,9 @@
 
                             <div class="col-md-12 mb-3">
                                 <label class="form-label">Observación</label>
-                                <textarea class="form-control" id="edit_observacion" rows="2"></textarea>
+                                <textarea class="form-control" id="edit_observacion" rows="2" readonly>
+
+                                </textarea>
                             </div>
                         </div>
                 </form>

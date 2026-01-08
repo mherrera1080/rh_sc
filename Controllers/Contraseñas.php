@@ -898,7 +898,7 @@ class Contraseñas extends Controllers
 
             echo json_encode([
                 "status" => true,
-                "message" => "Contraseña Corregida y correo enviado correctamente."
+                "message" => "Contraseña Corregida."
             ]);
         }
     }

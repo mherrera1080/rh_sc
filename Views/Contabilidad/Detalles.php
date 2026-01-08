@@ -63,7 +63,7 @@
                         <div class="col-md-3 mb-3">
                             <label for="" class="form-label">Monto Total</label>
                             <input type="text" class="form-control" id="" name=""
-                                value="<?= $data['facturas']['monto_total'] ?? 'N/A'; ?>" disabled>
+                                value="<?= $data['facturas']['monto_formato'] ?? 'N/A'; ?>" disabled>
                         </div>
                         <div class="col-md-3 mb-3">
                             <label for="" class="form-label">Area</label>
@@ -158,7 +158,7 @@
                                 <div class="col-md-3 mb-3">
                                     <label class="form-label">Monto Total</label>
                                     <input type="text" class="form-control"
-                                        value="<?= $data['facturas']['monto_total'] ?? 'N/A'; ?>" disabled>
+                                        value="<?= $data['facturas']['monto_formato'] ?? 'N/A'; ?>" disabled>
                                 </div>
                                 <div class="col-md-3 mb-3">
                                     <label class="form-label">Área</label>
@@ -244,7 +244,7 @@
                                 <div class="col-md-3 mb-3">
                                     <label class="form-label">Monto Total</label>
                                     <input type="text" class="form-control"
-                                        value="<?= $data['facturas']['monto_total'] ?? 'N/A'; ?>" disabled>
+                                        value="<?= $data['facturas']['monto_formato'] ?? 'N/A'; ?>" disabled>
                                 </div>
                                 <div class="col-md-3 mb-3">
                                     <label class="form-label">Área</label>
@@ -318,7 +318,7 @@
                                 <div class="col-md-3 mb-3">
                                     <label class="form-label">Monto Total</label>
                                     <input type="text" class="form-control"
-                                        value="<?= $data['facturas']['monto_total'] ?? 'N/A'; ?>" disabled>
+                                        value="<?= $data['facturas']['monto_formato'] ?? 'N/A'; ?>" disabled>
                                 </div>
                                 <div class="col-md-3 mb-3">
                                     <label class="form-label">Área</label>
@@ -365,7 +365,7 @@
     <div class="modal fade" id="validarModal" tabindex="-1" aria-labelledby="corregirModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <form id="validarForm">
+                <form id="validarForm" novalidate>
                     <input type="hidden" class="form-control" name="contraseña"
                         value="<?= $data['facturas']['contraseña']; ?>">
                     <input type="hidden" class="form-control" name="area" value="<?= $data['facturas']['id_area']; ?>">
@@ -409,7 +409,7 @@
                                 <div class="col-md-3 mb-3">
                                     <label class="form-label">Monto Total</label>
                                     <input type="text" class="form-control"
-                                        value="<?= $data['facturas']['monto_total'] ?? 'N/A'; ?>" disabled>
+                                        value="<?= $data['facturas']['monto_formato'] ?? 'N/A'; ?>" disabled>
                                 </div>
 
                                 <div class="col-md-3 mb-3">
@@ -484,7 +484,6 @@
                     <input type="hidden" class="form-control" name="area" value="<?= $data['facturas']['id_area']; ?>">
                     <input type="hidden" class="form-control" name="conta_user"
                         value="<?= $_SESSION['PersonalData']['nombre_completo'] ?>">
-                    <!-- Encabezado -->
                     <div class="modal-header bg-dark text-white">
                         <h5 class="modal-title" id="corregirModalLabel">
                             Revision Contabilidad
@@ -493,15 +492,12 @@
                             aria-label="Cerrar">
                         </button>
                     </div>
-                    <!-- Cuerpo -->
                     <div class="modal-body">
-                        <!-- Número de contraseña -->
                         <div class="mb-4 border-bottom pb-2">
                             <h5 class="fw-bold mb-0">
                                 CONTRASEÑA: <span class="text-dark"><?= $data['facturas']['contraseña']; ?></span>
                             </h5>
                         </div>
-                        <!-- Datos generales -->
                         <div class="mb-4">
                             <h6 class="fw-bold text-dark mb-3">Datos Generales</h6>
 
@@ -521,7 +517,7 @@
                                 <div class="col-md-3 mb-3">
                                     <label class="form-label">Monto Total</label>
                                     <input type="text" class="form-control"
-                                        value="<?= $data['facturas']['monto_total'] ?? 'N/A'; ?>" disabled>
+                                        value="<?= $data['facturas']['monto_formato'] ?? 'N/A'; ?>" disabled>
                                 </div>
 
                                 <div class="col-md-3 mb-3">
@@ -541,14 +537,13 @@
                                     <input type="date" class="form-control"
                                         value="<?= $data['facturas']['fecha_pago'] ?? ''; ?>" disabled>
                                 </div>
-
                                 <div>
                                     <h6 class="fw-bold text-dark mb-3">Detalles de Corrección</h6>
                                     <p class="text-muted small mb-2">
                                         Especifique los inconvenientes encontrados en esta contraseña antes de enviarla:
                                     </p>
                                     <textarea class="form-control" name="correciones" id="correciones" rows="4"
-                                        placeholder="Describa los inconvenientes..." required></textarea>
+                                        placeholder="Describa los inconvenientes..."></textarea>
                                 </div>
                             </div>
                         </div>
@@ -607,7 +602,7 @@
                                 <div class="col-md-3 mb-3">
                                     <label class="form-label">Monto Total</label>
                                     <input type="text" class="form-control"
-                                        value="<?= $data['facturas']['monto_total'] ?? 'N/A'; ?>" disabled>
+                                        value="<?= $data['facturas']['monto_formato'] ?? 'N/A'; ?>" disabled>
                                 </div>
                                 <div class="col-md-3 mb-3">
                                     <label class="form-label">Área</label>
@@ -699,7 +694,7 @@
                             <div class="col-md-3 mb-3">
                                 <label class="form-label">Monto Total</label>
                                 <div class="form-control bg-light">
-                                    <?= $data['anticipoinfo']['monto_total'] ?? 'N/A'; ?>
+                                    <?= $data['anticipoinfo']['monto_formato'] ?? 'N/A'; ?>
                                 </div>
                             </div>
                             <div class="col-md-3 mb-3">

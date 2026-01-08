@@ -88,7 +88,7 @@ class VehiculosModel extends Mysql
         INNER JOIN tb_detalles td ON tc.contraseña = td.contraseña
         LEFT JOIN tb_solicitud_fondos ts ON tc.contraseña = ts.contraseña
         WHERE tc.contraseña = ? 
-        GROUP BY tc.id_contraseña;";
+        GROUP BY tc.id_contraseña";
         $request = $this->select($sql, array($contraseña));
         return $request;
     }

@@ -142,12 +142,14 @@ class Vehiculos extends Controllers
 
     public function solicitudFondos()
     {
+        header('Content-Type: application/json');
+
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             echo json_encode([
                 "status" => false,
                 "message" => "Método no permitido."
             ]);
-            exit;
+            return;
         }
 
         $contraseña = $_POST['contraseña'] ?? null;
@@ -159,24 +161,31 @@ class Vehiculos extends Controllers
         if (empty($contraseña) || empty($estado)) {
             echo json_encode([
                 "status" => false,
-                "message" => "Problemas al obtener datos."
+                "message" => "Datos incompletos."
             ]);
-            exit;
+            return;
         }
 
-        if ($estado === "Finalizado" && empty($categoria)) {
+        if ($estado === "Validado" && empty($categoria)) {
             echo json_encode([
                 "status" => false,
-                "message" => "Seleccione una categoría antes."
+                "message" => "Debe seleccionar una categoría."
             ]);
-            exit;
+            return;
         }
 
         $proveedores = $this->model->selectProveedor($proveedor);
+        if (empty($proveedores)) {
+            echo json_encode([
+                "status" => false,
+                "message" => "Proveedor no válido."
+            ]);
+            return;
+        }
 
-            $regimen = $proveedores["regimen"];
-            $iva = $proveedores["iva"];
-            $isr = $proveedores["isr"];
+        $regimen = $proveedores["regimen"];
+        $iva = $proveedores["iva"];
+        $isr = $proveedores["isr"];
 
         $this->model->beginTransaction();
 
@@ -189,19 +198,25 @@ class Vehiculos extends Controllers
                 (isset($r1['status']) && $r1['status'] === false) ||
                 (isset($r2['status']) && $r2['status'] === false)
             ) {
-                throw new Exception("Error al actualizar estado de la contraseña.");
+                throw new Exception("Error al actualizar el estado.");
             }
 
             if ($estado === "Validado") {
 
-                $r3 = $this->model->solicitudFondoVehiculos($contraseña, $area, $categoria, $regimen, $iva, $isr);
+                $r3 = $this->model->solicitudFondoVehiculos(
+                    $contraseña,
+                    $area,
+                    $categoria,
+                    $regimen,
+                    $iva,
+                    $isr
+                );
 
                 if (!$r3) {
                     throw new Exception("No fue posible crear la solicitud de fondos.");
                 }
 
                 $facturas = $this->model->getFacturasbyContra($contraseña);
-
                 if (empty($facturas)) {
                     throw new Exception("La contraseña no tiene facturas asociadas.");
                 }
@@ -209,9 +224,10 @@ class Vehiculos extends Controllers
                 foreach ($facturas as $factura) {
 
                     $dataFactura = $this->model->FacturasbyID($factura['no_factura']);
-
                     if (empty($dataFactura)) {
-                        throw new Exception("No se pudieron calcular valores de la factura {$factura['no_factura']}.");
+                        throw new Exception(
+                            "No se pudieron calcular valores de la factura {$factura['no_factura']}."
+                        );
                     }
 
                     $update = $this->model->actualizarValoresFactura(
@@ -224,39 +240,66 @@ class Vehiculos extends Controllers
                     );
 
                     if (!$update) {
-                        throw new Exception("Error al actualizar valores de la factura {$factura['no_factura']}.");
+                        throw new Exception(
+                            "Error al actualizar la factura {$factura['no_factura']}."
+                        );
                     }
                 }
-                $this->model->commit();
 
                 log_Actividad(
                     $_SESSION['PersonalData']['no_empleado'],
                     $_SESSION['PersonalData']['nombre_completo'],
                     "Vehiculos",
-                    "Solicitud de fondos creada: " . $contraseña
+                    "Solicitud de fondos creada: {$contraseña}"
                 );
 
-                echo json_encode([
-                    "status" => true,
-                    "message" => "Solicitud iniciada correctamente."
-                ]);
+                $mensaje = "Solicitud iniciada correctamente.";
 
             } else {
 
-                $this->model->commit();
-
                 log_Actividad(
                     $_SESSION['PersonalData']['no_empleado'],
                     $_SESSION['PersonalData']['nombre_completo'],
                     "Vehiculos",
-                    "Se descartó la contraseña: " . $contraseña
+                    "Contraseña descartada: {$contraseña}"
                 );
 
-                echo json_encode([
-                    "status" => true,
-                    "message" => "Contraseña descartada."
-                ]);
+                $mensaje = "Contraseña descartada correctamente.";
             }
+
+            $this->model->commit();
+
+            try {
+                $categoria = "Contraseña";
+                $base = "Solicitar Fondos";
+
+                $arrData = [
+                    'contraseña' => $this->model->getContraseña($contraseña),
+                    'correos' => $this->model->getCorreosArea($area, $base, $categoria)
+                ];
+
+                $sendcorreoEmpleado = 'Views/Template/Email/sendContraseña.php';
+                try {
+                    ob_start();
+                    require $sendcorreoEmpleado;
+                    ob_end_clean();
+                } catch (Exception $e) {
+                    echo json_encode([
+                        "status" => false,
+                        "message" => "Error al enviar el correo: " . $e->getMessage()
+                    ]);
+                    exit;
+                }
+
+            } catch (Exception $e) {
+                // Se ignora error de correo
+            }
+
+            echo json_encode([
+                "status" => true,
+                "message" => $mensaje
+            ]);
+            return;
 
         } catch (Exception $e) {
 
@@ -266,29 +309,9 @@ class Vehiculos extends Controllers
                 "status" => false,
                 "message" => $e->getMessage()
             ]);
-            exit;
-        }
-
-        $datos = $this->model->getContraseña($contraseña);
-        $area = $datos['id_area'];
-
-        $categoriaCorreo = "Contraseña";
-
-        $arrData = [
-            'contraseña' => $datos,
-            'correos' => $this->model->getCorreosArea($area, $estado, $categoriaCorreo)
-        ];
-
-        try {
-            ob_start();
-            require 'Views/Template/Email/sendContraseña.php';
-            ob_end_clean();
-        } catch (Exception $e) {
-            // El correo NO revierte la transacción
+            return;
         }
     }
 
 
-
-    // no
 }
