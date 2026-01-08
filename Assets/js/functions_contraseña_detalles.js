@@ -121,6 +121,7 @@ document.addEventListener("DOMContentLoaded", function () {
           $("#edit_documento").val(response.data.valor_documento);
           $("#edit_fecha_registro").val(response.data.fecha_registro);
           $("#edit_estado").val(response.data.estado);
+          $("#observacion").val(response.data.observacion);
         } else {
           alert(response.msg);
         }
@@ -369,39 +370,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
   document
-    .querySelector("#validarContaForm")
-    .addEventListener("submit", function (event) {
-      event.preventDefault();
-
-      // Detecta el botón presionado
-      let boton = event.submitter;
-      let valor = boton.dataset.respuesta;
-
-      let formData = new FormData(this);
-      formData.append("respuesta", valor);
-
-      let ajaxUrl = base_url + "/Contraseñas/validacionConta";
-      let request = new XMLHttpRequest();
-      request.open("POST", ajaxUrl, true);
-      request.send(formData);
-
-      request.onreadystatechange = function () {
-        if (request.readyState === 4 && request.status === 200) {
-          let response = JSON.parse(request.responseText);
-          if (response.status) {
-            Swal.fire({
-              title: "Datos guardados correctamente",
-              icon: "success",
-              confirmButtonText: "Aceptar",
-            }).then(() => location.reload());
-          } else {
-            Swal.fire("Atención", response.msg || "Error desconocido", "error");
-          }
-        }
-      };
-    });
-
-  document
     .querySelector("#solicitarFondosForm")
     .addEventListener("submit", function (event) {
       event.preventDefault();
@@ -584,44 +552,3 @@ document.addEventListener("DOMContentLoaded", function () {
 
   //bla bla bla
 });
-
-function toggleInputs() {
-  // Mostrar botones de acción
-  document.getElementById("btnCancelar").style.display = "inline-block";
-
-  // Ocultar botones de edición
-  document.getElementById("btnEditar").style.display = "none";
-  document.getElementById("btnValidar").style.display = "none";
-  document.getElementById("btnCorregir").style.display = "none";
-
-  const btnsEditar = document.getElementsByClassName("btnFacturaEditar");
-  for (let btn of btnsEditar) {
-    btn.classList.remove("d-none");
-  }
-
-  // Ocultar botones de info de factura
-  const btnsInfo = document.getElementsByClassName("btnFactura");
-  for (let btn of btnsInfo) {
-    btn.classList.add("d-none");
-  }
-}
-
-function CancelEdit() {
-  // Ocultar botón Cancelar y Actualizar
-  document.getElementById("btnCancelar").style.display = "none";
-  // Mostrar botón Editar y Devolución
-  document.getElementById("btnEditar").style.display = "inline-block";
-  document.getElementById("btnValidar").style.display = "inline-block";
-  document.getElementById("btnCorregir").style.display = "inline-block";
-
-  const btnsEditar = document.getElementsByClassName("btnFacturaEditar");
-  for (let btn of btnsEditar) {
-    btn.classList.add("d-none");
-  }
-
-  // Ocultar botones de info de factura
-  const btnsInfo = document.getElementsByClassName("btnFactura");
-  for (let btn of btnsInfo) {
-    btn.classList.remove("d-none");
-  }
-}

@@ -533,6 +533,7 @@ class Contraseñas extends Controllers
             $bien = $_POST['edit_servicio'];
             $valor = $_POST['edit_documento'];
             $estado = $_POST['edit_estado'];
+            $observacion = $_POST['observacion'];
             $errores = [];
 
             // Crear la contraseña
@@ -540,13 +541,14 @@ class Contraseñas extends Controllers
                 $id_factura,
                 $bien,
                 $valor,
+                $observacion,
                 $estado
             );
 
             if (!empty($errores)) {
                 echo json_encode([
                     "status" => false,
-                    "message" => $errores,
+                    "msg" => $errores,
                     "errors" => $errores
                 ]);
                 exit;

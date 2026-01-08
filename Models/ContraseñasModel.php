@@ -351,15 +351,16 @@ class ContraseñasModel extends Mysql
         return $request;
     }
 
-    public function updateFactura($id_factura, $bien_servicio, $valor_documento, $estado)
+    public function updateFactura($id_factura, $bien_servicio, $valor_documento, $observacion, $estado)
     {
         $sql = "UPDATE tb_detalles SET
             bien_servicio = ?,
             valor_documento = ?,
+            observacion = ?,
             estado = ?
             WHERE id_detalle = ?";
-        $arrData = [$bien_servicio, $valor_documento, $estado, $id_factura];
-        $request = $this->update($sql, $arrData); // <---- cambio aquí
+        $arrData = [$bien_servicio, $valor_documento, $observacion, $estado, $id_factura];
+        $request = $this->update($sql, $arrData);
         return $request;
     }
 
