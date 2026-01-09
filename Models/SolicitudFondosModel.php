@@ -182,19 +182,22 @@ class SolicitudFondosModel extends Mysql
             tc.area,
             tc.proveedor as proveedor_id,
             tc.categoria,
-            tc.fecha_creacion,
+            tc.fecha_creacion as fecha_registro,
             tc.estado,
             tc.fecha_pago,
             tc.observacion,
             tp.nombre_proveedor AS proveedor,
             ta.nombre_area AS area,
             tc.fecha_creacion,
+            ROUND(SUM(td.valor_documento), 2) AS total,
             CONCAT(tu.nombres, ' ', tu.primer_apellido, ' ', tu.segundo_apellido) as usuario,
             FORMAT(SUM(td.valor_documento), 2) AS monto_total,
             GROUP_CONCAT(td.id_detalle ORDER BY td.id_detalle ASC) AS no_factura,
             GROUP_CONCAT(td.tipo ORDER BY td.tipo ASC) AS tipo,
             GROUP_CONCAT(td.bien_servicio ORDER BY td.no_factura ASC) AS bien_servicio,
-            GROUP_CONCAT(td.valor_documento ORDER BY td.no_factura ASC) AS valor_documento
+            GROUP_CONCAT(td.valor_documento ORDER BY td.no_factura ASC) AS valor_documento,
+            tc.estado as solicitud_estado,
+            CONCAT(tu.nombres, ' ', tu.primer_apellido, ' ', tu.segundo_apellido) as realizador
         FROM tb_solicitud_fondos tc
         INNER JOIN tb_detalles td ON tc.id_solicitud = td.no_factura
         INNER JOIN tb_usuarios tu ON tc.usuario = tu.id_usuario

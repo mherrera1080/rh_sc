@@ -97,6 +97,8 @@
                         value="<?= $data['facturas']['id_solicitud'] ?? 'N/A'; ?>">
                     <input type="hidden" class="form-control" name="area"
                         value="<?= $data['facturas']['id_area'] ?? 'N/A'; ?>">
+                        <input type="hidden" class="form-control" name="tipo"
+                        value="Anticipo">
                     <!-- Encabezado -->
                     <div class="modal-header bg-dark text-white">
                         <h5 class="modal-title" id="corregirModalLabel">
