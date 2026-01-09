@@ -38,7 +38,7 @@ class Contabilidad extends Controllers
         $data['page_functions_js'] = "functions_revision.js";
         $this->views->getView($this, "Revision", $data);
     }
-    
+
     public function Contraseñas()
     {
         $data['page_id'] = CONTABILIDAD;
@@ -91,7 +91,7 @@ class Contabilidad extends Controllers
         $this->views->getView($this, "Facturas", $data);
     }
 
-        public function Anticipo($id_solicitud)
+    public function Anticipo($id_solicitud)
     {
         $facturas = $this->model->getSolicitud($id_solicitud);
 
@@ -133,5 +133,72 @@ class Contabilidad extends Controllers
         echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
         die();
     }
+
+    public function getDetalle($id_detalle)
+    {
+        $arrData = $this->model->selectDetalle($id_detalle);
+
+        error_log(print_r($arrData, true));
+
+        if (empty($arrData)) {
+            $arrResponse = array('status' => false, 'msg' => 'No se encontraron registros previos.');
+        } else {
+            $arrResponse = array('status' => true, 'data' => $arrData);
+        }
+
+        echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+        die();
+    }
+
+
+    public function setFactura()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (
+                empty($_POST['id_detalle']) ||
+                empty($_POST['codigo_ax'])
+            ) {
+                $arrResponse = array(
+                    'status' => false,
+                    'msg' => 'Datos incompletos.'
+                );
+            } else {
+
+                $id_detalle = intval($_POST['id_detalle']);
+                $codigo_ax = trim($_POST['codigo_ax']);
+
+                // Actualización
+                $request = $this->model->updateCodigoAX(
+                    $id_detalle,
+                    $codigo_ax
+                );
+
+                if ($request) {
+                    log_Actividad(
+                        $_SESSION['PersonalData']['no_empleado'],
+                        $_SESSION['PersonalData']['nombre_completo'],
+                        "Contabilidad",
+                        "Actualizó Código AX del detalle ID: " . $id_detalle
+                    );
+
+                    $arrResponse = array(
+                        'status' => true,
+                        'msg' => 'Código AX actualizado correctamente.'
+                    );
+
+                } else {
+                    $arrResponse = array(
+                        'status' => false,
+                        'msg' => 'No fue posible actualizar el Código AX.'
+                    );
+                }
+            }
+
+            echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+        }
+
+        die();
+    }
+
 
 }

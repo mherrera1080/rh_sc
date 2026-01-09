@@ -120,6 +120,7 @@ document.addEventListener("DOMContentLoaded", function () {
           $("#edit_servicio").val(response.data.bien_servicio);
           $("#edit_documento").val(response.data.valor_documento);
           $("#edit_fecha_registro").val(response.data.fecha_registro);
+          $("#edit_orden_compra").val(response.data.no_oc);
           $("#edit_estado").val(response.data.estado);
           $("#observacion").val(response.data.observacion);
         } else {

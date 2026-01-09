@@ -7,7 +7,7 @@ class ContabilidadModel extends Mysql
     }
 
 
-        public function getSolicitud($id_solicitud)
+    public function getSolicitud($id_solicitud)
     {
         $sql = "SELECT
             tc.id_solicitud,
@@ -196,6 +196,33 @@ class ContabilidadModel extends Mysql
         return $this->select_all($sql);
     }
 
+
+    public function selectDetalle($id_detalle)
+    {
+        $sql = "SELECT 
+        tc.id_detalle,
+        tc.contraseña,
+        tc.no_factura,
+        tc.registro_ax,
+        tc.bien_servicio,
+        tc.valor_documento,
+        tc.iva,
+        tc.reten_iva,
+        tc.reten_isr,
+        tc.base,
+        tc.total,
+        tc.fecha_registro,
+        tc.observacion,
+        tc.estado,
+        ta.nombre_area as area
+        FROM tb_detalles tc
+        INNER JOIN tb_contraseña td ON tc.contraseña = td.contraseña
+        INNER JOIN tb_areas ta ON td.area = ta.id_area
+        WHERE tc.id_detalle = ? ";
+        $request = $this->select($sql, array($id_detalle));
+        return $request;
+    }
+
     public function FacturasbyID($no_factura)
     {
         $sql = "SELECT
@@ -295,5 +322,15 @@ class ContabilidadModel extends Mysql
         $request = $this->select($sql, array($no_factura));
         return $request;
     }
+
+    public function updateCodigoAX(int $id_detalle, string $codigo_ax)
+    {
+        $sql = "UPDATE tb_detalles
+            SET registro_ax = ?
+            WHERE id_detalle = ?";
+
+        return $this->update($sql, array($codigo_ax, $id_detalle));
+    }
+
 
 }

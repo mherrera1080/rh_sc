@@ -32,37 +32,6 @@
                         <h4 class="card-title">Facturas</h4>
                     </div>
                 </div>
-                <!-- <div class="card-body border-bottom pb-3">
-                    <div class="row g-3">
-                        <div class="col-md-3">
-                            <label for="filtroArea" class="form-label">Área</label>
-                            <select id="filtroArea" class="form-select">
-                                <option value="">Todas</option>
-                                <option value="Finanzas">Finanzas</option>
-                                <option value="Recursos Humanos">Recursos Humanos</option>
-                                <option value="Operaciones">Operaciones</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label for="filtroEstado" class="form-label">Estado</label>
-                            <select id="filtroEstado" class="form-select">
-                                <option value="">Todos</option>
-                                <option value="Pendiente">Pendiente</option>
-                                <option value="Aprobado">Aprobado</option>
-                                <option value="Rechazado">Rechazado</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label for="filtroFecha" class="form-label">Fecha Registro</label>
-                            <input type="date" id="filtroFecha" class="form-control">
-                        </div>
-                        <div class="col-md-3 d-flex align-items-end">
-                            <button class="btn btn-primary w-100" id="btnFiltrar">
-                                <i class="fa fa-filter"></i> Filtrar
-                            </button>
-                        </div>
-                    </div>
-                </div> -->
                 <div class="card-body">
                     <div class="table-responsive">
                         <table id="tableFacturas" class="display table table-striped table-hover">
@@ -91,3 +60,84 @@
 </div>
 
 <?php footerAdmin($data); ?>
+
+<div class="modal fade" id="editFactura" tabindex="-1" aria-labelledby="editFacturaLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="editFacturaLabel">Revisión de Factura</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <form id="formEditFactura">
+
+                    <!-- ID necesario para actualizar -->
+                    <input type="hidden" id="id_detalle" name="id_detalle">
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">No. Factura</label>
+                            <input type="text" class="form-control" id="no_factura" readonly>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Área</label>
+                            <input type="text" class="form-control" id="area" readonly>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Bien / Servicio</label>
+                            <input type="text" class="form-control" id="bien_servicio" disabled>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Valor Documento</label>
+                            <input type="text" class="form-control" id="valor_documento" disabled>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Base</label>
+                            <input type="text" class="form-control" id="base" disabled>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Retención IVA</label>
+                            <input type="text" class="form-control" id="reten_iva" disabled>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Retención ISR</label>
+                            <input type="text" class="form-control" id="reten_isr" disabled>
+                        </div>
+                    </div>
+
+                    <!-- CAMPO EDITABLE -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Código AX</label>
+                            <input type="number" class="form-control" id="codigo_ax" name="codigo_ax"
+                                placeholder="Ingrese el código AX">
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Cerrar
+                </button>
+                <button type="submit" form="formEditFactura" class="btn btn-primary">
+                    Guardar cambios
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>

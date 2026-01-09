@@ -128,7 +128,7 @@ class ContraseñasModel extends Mysql
             ta.id_area,
             tc.id_proveedor,
             ta.nombre_area AS area,
-            FORMAT(SUM(td.valor_documento), 2) AS monto_formato,
+            ROUND(SUM(td.valor_documento), 2) AS monto_formato,
             SUM(td.valor_documento) AS monto_total,
             tc.fecha_pago,
             tc.estado,
@@ -337,6 +337,7 @@ class ContraseñasModel extends Mysql
         $sql = "SELECT
             td.id_detalle,
             td.no_factura,
+            td.no_oc,
             td.bien_servicio,
             td.valor_documento,
             td.fecha_registro,
@@ -351,15 +352,16 @@ class ContraseñasModel extends Mysql
         return $request;
     }
 
-    public function updateFactura($id_factura, $bien_servicio, $valor_documento, $observacion, $estado)
+    public function updateFactura($id_factura, $bien_servicio, $valor_documento, $orden_compra, $observacion, $estado)
     {
         $sql = "UPDATE tb_detalles SET
             bien_servicio = ?,
             valor_documento = ?,
+            no_oc = ?,
             observacion = ?,
             estado = ?
             WHERE id_detalle = ?";
-        $arrData = [$bien_servicio, $valor_documento, $observacion, $estado, $id_factura];
+        $arrData = [$bien_servicio, $valor_documento, $orden_compra, $observacion, $estado, $id_factura];
         $request = $this->update($sql, $arrData);
         return $request;
     }

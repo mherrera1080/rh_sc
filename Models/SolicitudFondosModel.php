@@ -410,6 +410,7 @@ class SolicitudFondosModel extends Mysql
             td.id_detalle,
             td.no_factura,
             td.registro_ax,
+            td.no_oc,
             td.bien_servicio,
             td.valor_documento,
             ROUND(td.valor_documento - (td.valor_documento / 1.12), 2) AS valor_documento_iva,

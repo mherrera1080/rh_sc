@@ -533,6 +533,7 @@ class Contraseñas extends Controllers
             $bien = $_POST['edit_servicio'];
             $valor = $_POST['edit_documento'];
             $estado = $_POST['edit_estado'];
+            $orden_compra = $_POST['orden_compra'];
             $observacion = $_POST['observacion'];
             $errores = [];
 
@@ -541,6 +542,7 @@ class Contraseñas extends Controllers
                 $id_factura,
                 $bien,
                 $valor,
+                $orden_compra,
                 $observacion,
                 $estado
             );
@@ -924,6 +926,13 @@ class Contraseñas extends Controllers
             foreach ($facturas as $factura) {
                 if ($factura['estado'] == 'Pendiente') {
                     echo json_encode(["status" => false, "msg" => "Tienes facturas pendientes, favor de revisarlas."]);
+                    exit;
+                }
+            }
+
+            foreach ($facturas as $factura) {
+                if ($factura['no_oc'] == null || $factura['no_oc'] == "0") {
+                    echo json_encode(["status" => false, "msg" => "Tienes facturas sin orden de compras"]);
                     exit;
                 }
             }

@@ -98,7 +98,8 @@
                             <input type="date" class="form-control" id="fecha_pago" name="fecha_pago" required>
                         </div>
                         <div class="col-md-3">
-                            <label for="role_id" class="form-label"><strong>Area:</strong> <span class="text-danger">*</span></label>
+                            <label for="role_id" class="form-label"><strong>Area:</strong> <span
+                                    class="text-danger">*</span></label>
                             <select class="form-control selectpicker" id="area" name="area" required>
 
                             </select>
@@ -196,7 +197,8 @@
                             <input type="date" class="form-control" id="edit_fecha_pago" name="fecha_pago" required>
                         </div>
                         <div class="col-md-3">
-                            <label for="role_id" class="form-label"><strong>Area: </strong><span class="text-danger">*</span></label>
+                            <label for="role_id" class="form-label"><strong>Area: </strong><span
+                                    class="text-danger">*</span></label>
                             <select class="form-control selectpicker" id="edit_area" name="area" required>
 
                             </select>

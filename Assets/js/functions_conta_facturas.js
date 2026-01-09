@@ -56,11 +56,15 @@ document.addEventListener("DOMContentLoaded", function () {
         data: "estado",
         render: function (data, type, row) {
           html = `
-          <button class="btn btn-danger btn-pdf btn-round ms-auto" 
+          <button type="button" class="btn btn-primary edit-btn" data-bs-toggle="modal" data-bs-target="#editFactura" data-id="${row.id_detalle}">
+            <i class="fa-solid fa-arrows-rotate"></i>
+          </button>
+
+          <button class="btn btn-danger btn-pdf" 
                   onclick="window.open('${base_url}/Contraseñas/generarContraseña/${row.contraseña}', '_blank')">
             <i class="far fa-file-pdf"></i>
-          </button>`;
-
+          </button>
+          `;
           return html;
         },
       },
@@ -72,6 +76,93 @@ document.addEventListener("DOMContentLoaded", function () {
     language: {
       url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json",
     },
+  });
+
+  $(document).on("click", ".edit-btn", function () {
+    const id = $(this).data("id");
+
+    // Limpia el formulario antes de cargar nuevos datos
+    $("#formEditFactura")[0].reset();
+
+    $.ajax({
+      url: `${base_url}/Contabilidad/getDetalle/${id}`,
+      type: "GET",
+      dataType: "json",
+      success: function (response) {
+        if (response.status) {
+          const data = response.data;
+
+          $("#id_detalle").val(data.id_detalle);
+          $("#no_factura").val(data.no_factura);
+          $("#registro_ax").val(data.registro_ax);
+          $("#bien_servicio").val(data.bien_servicio);
+          $("#base").val(data.base);
+          $("#reten_iva").val(data.reten_iva);
+          $("#reten_isr").val(data.reten_isr);
+          $("#valor_documento").val(data.valor_documento);
+          $("#observacion").val(data.observacion);
+          $("#area").val(data.area);
+        } else {
+          Swal.fire({
+            title: "Error",
+            text: response.msg,
+            icon: "error",
+            confirmButtonText: "Aceptar",
+          });
+        }
+      },
+      error: function (error) {
+        console.error("Error:", error);
+        Swal.fire(
+          "Error",
+          "No se pudo obtener la información del detalle.",
+          "error"
+        );
+      },
+    });
+  });
+
+  document.addEventListener("submit", function (event) {
+    if (event.target && event.target.id === "formEditFactura") {
+      event.preventDefault();
+      Swal.fire({
+        title: "¿Está seguro de finalizar la cambiar los datos?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Sí, finalizar",
+        cancelButtonText: "Cancelar",
+        reverseButtons: true,
+      }).then((result) => {
+        if (!result.isConfirmed) {
+          return;
+        }
+        let formData = new FormData(event.target);
+        let ajaxUrl = base_url + "/Contabilidad/setFactura";
+        let request = new XMLHttpRequest();
+        request.open("POST", ajaxUrl, true);
+        request.send(formData);
+
+        request.onreadystatechange = function () {
+          if (request.readyState === 4 && request.status === 200) {
+            let response = JSON.parse(request.responseText);
+
+            if (response.status) {
+              Swal.fire({
+                title: response.message,
+                icon: "success",
+                confirmButtonText: "Aceptar",
+              }).then(() => location.reload());
+            } else {
+              Swal.fire(
+                "Atención",
+                response.message || "Error desconocido",
+                "error"
+              );
+            }
+          }
+        };
+      });
+    }
   });
 
   // no pasarse

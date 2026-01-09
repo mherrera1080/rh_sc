@@ -43,7 +43,7 @@
                         <div class="col-md-3 mb-3">
                             <label for="" class="form-label">Monto Total</label>
                             <input type="text" class="form-control" id="" name=""
-                                value="<?= $data['facturas']['monto_total'] ?? 'N/A'; ?>" disabled>
+                                value="<?= $data['facturas']['monto_formato'] ?? 'N/A'; ?>" disabled>
                         </div>
                         <div class="col-md-3 mb-3">
                             <label for="" class="form-label">Area</label>
@@ -550,18 +550,28 @@
                                 <input type="text" class="form-control" id="edit_servicio" name="edit_servicio"
                                     readonly>
                             </div>
-                            <div class="col-md- mb-3">
-                                <label for="nombres" class="form-label">Estado</label>
-                                <select class="form-control valor-select" id="edit_estado" name="edit_estado" required>
-                                    <option value="Validado">Validado</option>
-                                    <option value="Corregir">Corregir</option>
-                                    <option value="Descartar">Descartar</option>
-                                </select>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6 mb-3">
+                                    <label for="nombres" class="form-label">Orden de Compra</label>
+                                    <input type="text" class="form-control" id="edit_orden_compra"
+                                        name="orden_compra">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="nombres" class="form-label">Estado</label>
+                                    <select class="form-control valor-select" id="edit_estado" name="edit_estado"
+                                        required>
+                                        <option value="Validado">Validado</option>
+                                        <option value="Corregir">Corregir</option>
+                                        <option value="Descartar">Descartar</option>
+                                    </select>
+                                </div>
                             </div>
+
                             <div class="col-md-12 mb-3">
                                 <label for="nombres" class="form-label">Observacion</label>
-                                <textarea class="form-control" id="observacion" name="observacion"
-                                    rows="3" placeholder="Escribe aquí una descripción detallada..."></textarea>
+                                <textarea class="form-control" id="observacion" name="observacion" rows="3"
+                                    placeholder="Escribe aquí una descripción detallada..."></textarea>
                             </div>
                         </div>
                     </div>
@@ -895,3 +905,21 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const chkAnticipo = document.getElementById("chkAnticipo");
+            const selectAnticipo = document.getElementById("anticipo");
+
+            chkAnticipo.addEventListener("change", function () {
+                if (this.checked) {
+                    selectAnticipo.disabled = false;
+                    selectAnticipo.setAttribute("required", "required");
+                } else {
+                    selectAnticipo.disabled = true;
+                    selectAnticipo.removeAttribute("required");
+                    selectAnticipo.value = "";
+                }
+            });
+        });
+    </script>
