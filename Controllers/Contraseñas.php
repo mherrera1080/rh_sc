@@ -391,11 +391,11 @@ class Contraseñas extends Controllers
             $area = intval($_POST['area']);
 
             $factura = $_POST['factura'];
-            $bien = $_POST['bien'];
+            $bien = $_POST['bien'] ?? null;
             $valor = $_POST['valor'];
             $errores = [];
 
-            if (empty($realizador) || empty($factura) || empty($bien) || empty($valor)) {
+            if (empty($realizador) || empty($factura) || empty($valor)) {
                 echo json_encode(["status" => false, "message" => "Datos incompletos."]);
                 exit;
             }
@@ -441,7 +441,7 @@ class Contraseñas extends Controllers
                 $valorValor = isset($valor[$index]) ? floatval($valor[$index]) : null;
                 $estado = 'Pendiente';
 
-                if (!$facturaItem || !$valorBien || !$valorValor) {
+                if (!$facturaItem || !$valorValor) {
                     $errores[] = "Error: Datos incompletos para la factura {$facturaItem}.";
                     continue;
                 }
@@ -795,7 +795,7 @@ class Contraseñas extends Controllers
             $proveedor_recibimiento = intval($_POST['proveedor'] ?? 0);
             $area = $_POST['area'] ?? null;
             $facturas = $_POST['factura'] ?? [];
-            $bienes = $_POST['bien'] ?? [];
+            $bienes = $_POST['bien'] ?? null;
             $valores = $_POST['valor'] ?? [];
 
             $errores = [];
@@ -846,7 +846,7 @@ class Contraseñas extends Controllers
                     $valorItem = $valores[$index] ?? null;
                     $estado = 'Pendiente';
 
-                    if (!$facturaItem || !$bienItem || !$valorItem) {
+                    if (!$facturaItem || !$valorItem) {
                         $errores[] = "Datos incompletos en la factura {$facturaItem}.";
                         continue;
                     }

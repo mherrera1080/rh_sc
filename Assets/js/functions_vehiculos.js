@@ -256,7 +256,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const nuevaFila = document.createElement("tr");
     nuevaFila.innerHTML = `
     <td><input type="text" class="form-control factura" name="factura[]" placeholder="123456789" required></td>
-    <td><input type="text" class="form-control bien" name="bien[]" required></td>
     <td><input type="text" class="form-control valor" name="valor[]" placeholder="1000.00" required></td>
     <td>
         <button type="button" class="btn btn-danger eliminarFila">
@@ -282,9 +281,9 @@ document.addEventListener("DOMContentLoaded", function () {
         document.querySelectorAll("input[name='factura[]']")
       ).map((input) => input.value);
 
-      const bien = Array.from(
-        document.querySelectorAll("input[name='bien[]']")
-      ).map((input) => input.value);
+      // const bien = Array.from(
+      //   document.querySelectorAll("input[name='bien[]']")
+      // ).map((input) => input.value);
 
       const valor = Array.from(
         document.querySelectorAll("input[name='valor[]']")
@@ -300,7 +299,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       factura.forEach((factura, index) => {
         formData.append(`factura[${index}]`, factura);
-        formData.append(`bien[${index}]`, bien[index]);
+        // formData.append(`bien[${index}]`, bien[index]);
         formData.append(`valor[${index}]`, valor[index]);
       });
 
@@ -427,7 +426,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Cargar las fechas, valores y días en la tabla
     data.no_factura.forEach((factura, index) => {
-      const bien = data.bien_servicio[index];
       const valor = data.valor_documento[index];
       const observacion = data.observacion[index];
       const estado = data.estado[index];
@@ -439,9 +437,6 @@ document.addEventListener("DOMContentLoaded", function () {
       <tr>
           <td>
               <input type="text" class="form-control" name="no_factura[]" value="${factura}" required>
-          </td>
-          <td>
-              <input type="text" class="form-control" name="bien[]" value="${bien}" required>
           </td>
           <td>
               <input type="text" class="form-control" name="valor[]" value="${valor}" required>
@@ -486,7 +481,6 @@ document.addEventListener("DOMContentLoaded", function () {
     $("#tablaFacturasCorreccion tbody").append(`
           <tr>
             <td><input type="text" class="form-control factura" name="no_factura[]" placeholder="123456789" required></td>
-            <td><input type="text" class="form-control bien" name="bien[]" required></td>
             <td><input type="text" class="form-control valor" name="valor[]" placeholder="1000.00" required></td>
             <td><input type="text" class="form-control observacion" name="observacion[]" placeholder="N/A" disabled></td>
             <td><input type="text" class="form-control estado" name="estado[]" placeholder="Nuevo" disabled></td>
@@ -575,11 +569,11 @@ document.addEventListener("DOMContentLoaded", function () {
         )
       ).map((input) => input.value);
 
-      const bien = Array.from(
-        document.querySelectorAll(
-          "#tablaFacturasCorreccion input[name='bien[]']"
-        )
-      ).map((select) => select.value);
+      // const bien = Array.from(
+      //   document.querySelectorAll(
+      //     "#tablaFacturasCorreccion input[name='bien[]']"
+      //   )
+      // ).map((select) => select.value);
 
       const valor = Array.from(
         document.querySelectorAll(
@@ -592,7 +586,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       factura.forEach((factura, index) => {
         formData.append(`factura[${index}]`, factura);
-        formData.append(`bien[${index}]`, bien[index]);
+        // formData.append(`bien[${index}]`, bien[index]);
         formData.append(`valor[${index}]`, valor[index]);
       });
 

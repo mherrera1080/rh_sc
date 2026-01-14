@@ -38,11 +38,16 @@ class SolicitudFondosModel extends Mysql
             ta.nombre_area AS area,
             tc.categoria,
             tc.fecha_creacion,
-            ts.fecha_pago as fecha_pago,
-            tc.fecha_pago as fecha_pago_sf,
+            ts.fecha_pago AS fecha_pago,
+            tc.fecha_pago AS fecha_pago_sf,
             tc.no_transferencia,
             tc.fecha_transaccion,
-            tc.estado
+            tc.estado,
+            CASE
+                WHEN COALESCE(ts.fecha_pago, tc.fecha_pago) IS NULL THEN NULL
+                WHEN COALESCE(ts.fecha_pago, tc.fecha_pago) < CURDATE() THEN 0
+                ELSE DATEDIFF(COALESCE(ts.fecha_pago, tc.fecha_pago), CURDATE())
+            END AS dias_restantes
         FROM tb_solicitud_fondos tc
         INNER JOIN tb_areas ta ON tc.area = ta.id_area
         LEFT JOIN tb_contraseña ts ON tc.contraseña = ts.contraseña
@@ -781,24 +786,25 @@ class SolicitudFondosModel extends Mysql
         return $request;
     }
 
-public function getServiciosbyContra(int $contraseña)
-{
-    $sql = "SELECT
+    public function getServiciosbyContra(int $contraseña)
+    {
+        $sql = "SELECT
             td.no_factura AS no_factura,
             ts.repuestos,
             ts.placa,
             ts.estado,
             ts.usuario,
             ts.tipo_persona,
-            REPLACE(ts.ln, 'LINEA DE NEGOCIO', 'LN') AS ln,
+            ts.codigo_ax,
+            REPLACE(ts.ln, 'LINEA DE NEGOCIOS', 'LN') AS ln,
             td.valor_documento
         FROM tb_servicios ts
         INNER JOIN tb_detalles td ON ts.no_factura = td.id_detalle
         WHERE td.contraseña = ?";
 
-    $request = $this->select_multi($sql, array($contraseña));
-    return $request;
-}
+        $request = $this->select_multi($sql, array($contraseña));
+        return $request;
+    }
 
 
     public function getRentasbyContra($contraseña)
@@ -902,14 +908,7 @@ public function getServiciosbyContra(int $contraseña)
         ROUND(SUM(d.valor_documento), 2) AS monto_total,
 
         /* SUBTOTAL */
-        ROUND(SUM(
-            CASE
-                WHEN sf.tipo_regimen = 1
-                THEN d.valor_documento / 1.12
-                ELSE d.valor_documento
-            END
-        ), 2) AS subtotal,
-
+        ROUND(SUM(d.valor_documento), 2) AS subtotal,
         /* IVA */
         ROUND(SUM(
             CASE
@@ -1000,7 +999,10 @@ public function getServiciosbyContra(int $contraseña)
                 END
             )
             - IFNULL(SUM(df.valor_documento), 0)
-        , 2) AS total
+        , 2) AS total,
+        
+        MAX(sf.iva) AS aplica_iva,
+        MAX(sf.isr) AS aplica_isr
 
     FROM tb_contraseña tc
     INNER JOIN tb_detalles d 
@@ -1258,6 +1260,75 @@ public function getServiciosbyContra(int $contraseña)
     WHERE tc.contraseña = ?";
 
         return $this->select($sql, [$contraseña]);
+    }
+
+    public function getServicios($contraseña)
+    {
+        $sql = "SELECT
+                tr.id_regimen,
+                tr.nombre_regimen,
+                td.id_detalle,
+                td.no_factura,
+                td.registro_ax,
+                td.bien_servicio,
+                td.valor_documento,
+                td.iva,
+                td.base,
+                td.reten_iva,
+                td.reten_isr,
+                td.total,
+                td.observacion,
+                ts.id_servicio,
+                ts.placa,
+                ts.kilometraje,
+                ts.estado,
+                ts.tipo_servicio,
+                ts.ln,
+                ts.usuario,
+                ts.codigo_ax,
+                ts.tipo_mantenimiento,
+                (SELECT GROUP_CONCAT(material SEPARATOR ';') 
+                 FROM tb_materiales m 
+                 WHERE m.servicio_id = ts.id_servicio
+                ) AS materiales
+            FROM tb_detalles td
+            LEFT JOIN tb_servicios ts ON td.id_detalle = ts.no_factura
+            INNER JOIN tb_contraseña tc ON td.contraseña = tc.contraseña
+            INNER JOIN tb_proveedor tp ON tc.id_proveedor = tp.id_proveedor
+            INNER JOIN tb_regimen tr ON tp.regimen = tr.id_regimen
+            WHERE td.contraseña = ?";
+        $request = $this->select_multi($sql, array($contraseña));
+        return $request;
+    }
+
+    public function getRentas($contraseña)
+    {
+        $sql = "SELECT
+                tr.id_regimen,
+                tr.nombre_regimen,
+                td.id_detalle,
+                td.no_factura,
+                td.registro_ax,
+                td.bien_servicio,
+                td.valor_documento,
+                td.iva,
+                td.base,
+                td.reten_iva,
+                td.reten_isr,
+                td.total,
+                td.observacion,
+                (SELECT GROUP_CONCAT(placa SEPARATOR ';') 
+                 FROM tb_rentas m 
+                 WHERE m.no_factura = td.id_detalle
+                ) AS arrendamientos
+            FROM tb_detalles td
+            LEFT JOIN tb_servicios ts ON td.id_detalle = ts.no_factura
+            INNER JOIN tb_contraseña tc ON td.contraseña = tc.contraseña
+            INNER JOIN tb_proveedor tp ON tc.id_proveedor = tp.id_proveedor
+            INNER JOIN tb_regimen tr ON tp.regimen = tr.id_regimen
+            WHERE td.contraseña = ?";
+        $request = $this->select_multi($sql, array($contraseña));
+        return $request;
     }
 
 }

@@ -135,7 +135,6 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th>No. Factura</th>
-                                        <th>Bien o Servicio</th>
                                         <th>Valor</th>
                                         <th>Acción</th>
                                     </tr>
@@ -232,7 +231,7 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th>No. Factura</th>
-                                        <th>Bien o Servicio</th>
+                                        <!-- <th>Bien o Servicio</th> -->
                                         <th>Valor</th>
                                         <th>Observ.</th>
                                         <th>Estado</th>

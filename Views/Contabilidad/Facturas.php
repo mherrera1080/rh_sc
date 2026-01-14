@@ -37,19 +37,19 @@
                         <table id="tableFacturas" class="display table table-striped table-hover">
                             <thead class="table-light">
                                 <tr>
-                                    <th>ID</th>
-                                    <th>Factura</th>
+                                    <th>#</th>
+                                    <th>No. Factura</th>
                                     <th>Contraseña</th>
-                                    <th>Area</th>
-                                    <th>Bien/Servicio</th>
+                                    <th>Área</th>
+                                    <th>Proveedor</th>
                                     <th>Valor</th>
                                     <th>Total</th>
-                                    <th></th>
-                                    <th></th>
+                                    <th>Código AX</th> <!-- ❗ -->
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
-
                             </tbody>
                         </table>
                     </div>

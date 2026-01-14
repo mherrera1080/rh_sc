@@ -1,74 +1,29 @@
-let tableFacturas;
 let divLoading = document.querySelector("#divLoading");
 
-document.addEventListener("DOMContentLoaded", function () {
-  let contraseña = document.querySelector("#contraseña").value;
-  let solicitud_estado = document.querySelector("#solicitud_estado").value;
-  let usuario = document.querySelector("#area_usuario").value;
-
-  tableFacturas = $("#tableFacturas").DataTable({
+function baseDataTableConfig(url) {
+  return {
     ajax: {
-      url: base_url + "/SolicitudFondos/getFacturas/" + contraseña,
+      url: url,
       dataSrc: function (json) {
-        // Si no hay datos, muestra swal y evita error
         if (!json.status) {
           Swal.fire({
             icon: "info",
             title: "Sin registros",
             text: json.msg,
           });
-          return []; // Retornar arreglo vacío para que DataTables no falle
+          return [];
         }
         return json.data;
       },
     },
     autoWidth: false,
     colReorder: true,
-    columns: [
-      { data: null, render: (d, t, r, m) => m.row + 1, title: "#" },
-      { data: "no_factura", title: "No. Factura" },
-      { data: "no_comparativa", title: "No. Comparativa", visible: false },
-      { data: "no_oc", title: "No. O.C.", visible: false },
-      { data: "registro_ax", title: "Registro AX", visible: false },
-      { data: "bien_servicio", title: "Bien/Servicio" },
-      { data: "valor_documento", title: "Valor Doc." },
-      { data: "base", title: "Base" },
-      { data: "iva", title: "IVA" },
-      { data: "reten_iva", title: "Ret. IVA" },
-      { data: "reten_isr", title: "Ret. ISR" },
-      { data: "total", title: "Total" },
-      // {
-      //   data: null,
-      //   render: function (data, type, row) {
-      //     if (
-      //       solicitud_estado != "Descartado" &&
-      //       solicitud_estado != "Pagado" &&
-      //       usuario == 4
-      //     ) {
-      //       return `
-      //     <button type="button" class="btn btn-primary m-0 d-flex justify-content-left btnFacturaEditar"
-      //       data-bs-toggle="modal" data-bs-target="#editarModal" data-id="${row.id_detalle}">
-      //       <i class="fas fa-edit"></i>
-      //     </button>`;
-      //     } else {
-      //       return `
-      //     <button type="button" class="btn btn-secondary m-0 d-flex justify-content-left btnFacturaInfo"
-      //       data-bs-toggle="modal"
-      //       data-bs-target="#infoModal">
-      //       <i class="fas fa-edit"></i>
-      //     </button>`;
-      //     }
-      //   },
-      // },
-    ],
     dom: "Bfrtip",
     buttons: [
       {
         extend: "colvis",
         text: '<i class="fas fa-eye me-1"></i> Columnas',
         className: "btn btn-primary btn-sm me-1 rounded fw-bold text-white",
-        collectionLayout: "fixed two-column",
-        postfixButtons: ["colvisRestore"],
       },
       {
         extend: "excel",
@@ -84,9 +39,199 @@ document.addEventListener("DOMContentLoaded", function () {
     language: {
       url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json",
     },
-  });
+  };
+}
 
-  // no borrar
+function initFacturas(contraseña) {
+  $("#tableFacturas").DataTable({
+    ...baseDataTableConfig(
+      base_url + "/SolicitudFondos/getFacturas/" + contraseña
+    ),
+    columns: [
+      { data: null, render: (d, t, r, m) => m.row + 1, title: "#" },
+      { data: "no_factura", title: "No. Factura" },
+      { data: "no_comparativa", title: "No. Comparativa", visible: false },
+      { data: "no_oc", title: "No. O.C.", visible: false },
+      { data: "registro_ax", title: "Registro AX", visible: false },
+      { data: "bien_servicio", title: "Bien/Servicio" },
+      { data: "valor_documento", title: "Valor Doc." },
+      { data: "base", title: "Base" },
+      { data: "iva", title: "IVA" },
+      { data: "reten_iva", title: "Ret. IVA" },
+      { data: "reten_isr", title: "Ret. ISR" },
+      { data: "total", title: "Total" },
+    ],
+  });
+}
+
+function initServicios(contraseña) {
+  fetch(base_url + "/SolicitudFondos/getServicios/" + contraseña)
+    .then((response) => response.json())
+    .then((json) => {
+      if (!json.status || json.data.length === 0) {
+        Swal.fire("Sin registros", json.msg || "No hay datos", "info");
+        return;
+      }
+
+      const data = json.data;
+      let maxMateriales = 0;
+
+      data.forEach((row) => {
+        if (row.materiales) {
+          const total = row.materiales.split(";").length;
+          if (total > maxMateriales) {
+            maxMateriales = total;
+          }
+        }
+      });
+
+      let columns = [
+        { data: null, title: "#", render: (d, t, r, m) => m.row + 1 },
+        { data: "no_factura", title: "No. Factura" },
+        { data: "bien_servicio", title: "Bien / Servicio" },
+        { data: "valor_documento", title: "Valor Doc." },
+        { data: "base", title: "Base" },
+        { data: "iva", title: "IVA" },
+        { data: "reten_iva", title: "Ret. IVA" },
+        { data: "reten_isr", title: "Ret. ISR" },
+        { data: "total", title: "Total" },
+        { data: "placa", title: "Placa" },
+        { data: "usuario", title: "Usuario" },
+        { data: "ln", title: "LN" },
+      ];
+
+      for (let i = 0; i < maxMateriales; i++) {
+        columns.push({
+          data: null,
+          title: `Material ${i + 1}`,
+          render: function (data, type, row) {
+            if (!row.materiales) return "";
+            const materiales = row.materiales.split(";");
+            return materiales[i] ?? "";
+          },
+        });
+      }
+
+      /* ===============================
+         5. INICIALIZAR DATATABLE
+      =============================== */
+      $("#tableServicios").DataTable({
+        data: data,
+        columns: columns,
+        autoWidth: false,
+        colReorder: true,
+        dom: "Bfrtip",
+        buttons: [
+          {
+            extend: "colvis",
+            text: '<i class="fas fa-eye me-1"></i> Columnas',
+            className: "btn btn-primary btn-sm me-1 rounded fw-bold text-white",
+          },
+          {
+            extend: "excel",
+            text: '<i class="fas fa-file-excel me-1"></i> Excel',
+            className: "btn btn-success btn-sm me-1 rounded fw-bold text-white",
+            filename: function () {
+              return `servicios_${document.querySelector("#contraseña").value}`;
+            },
+          },
+          {
+            extend: "print",
+            text: '<i class="fas fa-print me-1"></i> Imprimir',
+            className: "btn btn-secondary btn-sm rounded fw-bold text-white",
+          },
+        ],
+        language: {
+          url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json",
+        },
+      });
+    });
+}
+
+function initRentas(contraseña) {
+  fetch(base_url + "/SolicitudFondos/getRentas/" + contraseña)
+    .then((response) => response.json())
+    .then((json) => {
+      if (!json.status || json.data.length === 0) {
+        Swal.fire("Sin registros", json.msg || "No hay datos", "info");
+        return;
+      }
+
+      const data = json.data;
+      let maxMateriales = 0;
+
+      data.forEach((row) => {
+        if (row.arrendamientos) {
+          const total = row.arrendamientos.split(";").length;
+          if (total > maxMateriales) {
+            maxMateriales = total;
+          }
+        }
+      });
+
+      let columns = [
+        { data: null, title: "#", render: (d, t, r, m) => m.row + 1 },
+        { data: "no_factura", title: "No. Factura" },
+        { data: "bien_servicio", title: "Bien / Servicio" },
+        { data: "valor_documento", title: "Valor Doc." },
+        { data: "base", title: "Base" },
+        { data: "iva", title: "IVA" },
+        { data: "reten_iva", title: "Ret. IVA" },
+        { data: "reten_isr", title: "Ret. ISR" },
+        { data: "total", title: "Total" },
+      ];
+
+      for (let i = 0; i < maxMateriales; i++) {
+        columns.push({
+          data: null,
+          title: `Vehiculo ${i + 1}`,
+          render: function (data, type, row) {
+            if (!row.arrendamientos) return "";
+            const materiales = row.arrendamientos.split(";");
+            return materiales[i] ?? "";
+          },
+        });
+      }
+
+      $("#tableRentas").DataTable({
+        data: data,
+        columns: columns,
+        autoWidth: false,
+        colReorder: true,
+        dom: "Bfrtip",
+        buttons: [
+          {
+            extend: "colvis",
+            text: '<i class="fas fa-eye me-1"></i> Columnas',
+            className: "btn btn-primary btn-sm me-1 rounded fw-bold text-white",
+          },
+          {
+            extend: "excel",
+            text: '<i class="fas fa-file-excel me-1"></i> Excel',
+            className: "btn btn-success btn-sm me-1 rounded fw-bold text-white",
+            filename: function () {
+              return `rentas_${document.querySelector("#contraseña").value}`;
+            },
+          },
+          {
+            extend: "print",
+            text: '<i class="fas fa-print me-1"></i> Imprimir',
+            className: "btn btn-secondary btn-sm rounded fw-bold text-white",
+          },
+        ],
+        language: {
+          url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json",
+        },
+      });
+    });
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  const contraseña = document.querySelector("#contraseña").value;
+
+  if ($("#tableFacturas").length) initFacturas(contraseña);
+  if ($("#tableServicios").length) initServicios(contraseña);
+  if ($("#tableRentas").length) initRentas(contraseña);
 });
 
 $(document).on("click", ".btnFacturaEditar", function () {
@@ -97,167 +242,116 @@ $(document).on("click", ".btnFacturaEditar", function () {
     method: "GET",
     dataType: "json",
     success: function (response) {
-      if (response.status) {
-        // Rellenar campos
-        $("#edit_id").val(response.data.id_detalle);
-        $("#edit_id_regimen").val(response.data.id_regimen);
-        $("#edit_regimen").val(response.data.nombre_regimen);
-
-        $("#edit_factura").val(response.data.no_factura);
-        $("#edit_codax").val(response.data.registro_ax);
-        $("#edit_servicio").val(response.data.bien_servicio);
-        $("#edit_documento").val(response.data.valor_documento);
-
-        // IVA
-        $("#input_iva").val(response.data.iva_valor);
-        if (response.data.iva_valor && response.data.iva_valor > 0) {
-          $("#check_iva").prop("checked", true);
-          $("#input_iva").prop("disabled", false);
-        } else {
-          $("#check_iva").prop("checked", false);
-          $("#input_iva").prop("disabled", true).val("");
-        }
-
-        // ISR
-        $("#input_isr").val(response.data.isr_valor);
-        if (response.data.isr_valor && response.data.isr_valor > 0) {
-          $("#check_isr").prop("checked", true);
-          $("#input_isr").prop("disabled", false);
-        } else {
-          $("#check_isr").prop("checked", false);
-          $("#input_isr").prop("disabled", true).val("");
-        }
-
-        $("#edit_reten_iva").val(response.data.reten_iva);
-        $("#edit_base").val(response.data.base);
-        $("#edit_base_iva").val(response.data.iva);
-        $("#edit_observacion").val(response.data.observacion);
-        $("#edit_fecha_registro").val(response.data.fecha_registro);
-
-        // ⚡ recalcular después de cargar la data
-        calcular();
-      } else {
-        alert(response.msg);
+      if (!response.status) {
+        Swal.fire("Error", response.msg, "error");
+        return;
       }
-    },
-    error: function (error) {
-      console.log("Error:", error);
+
+      $("#edit_id").val(response.data.id_detalle);
+      $("#edit_id_regimen").val(response.data.id_regimen);
+      $("#edit_regimen").val(response.data.nombre_regimen);
+      $("#edit_factura").val(response.data.no_factura);
+      $("#edit_codax").val(response.data.registro_ax);
+      $("#edit_servicio").val(response.data.bien_servicio);
+      $("#edit_documento").val(response.data.valor_documento);
+
+      $("#input_iva").val(response.data.iva_valor);
+      $("#check_iva").prop("checked", response.data.iva_valor > 0);
+      $("#input_iva").prop("disabled", !(response.data.iva_valor > 0));
+
+      $("#input_isr").val(response.data.isr_valor);
+      $("#check_isr").prop("checked", response.data.isr_valor > 0);
+      $("#input_isr").prop("disabled", !(response.data.isr_valor > 0));
+
+      $("#edit_reten_iva").val(response.data.reten_iva);
+      $("#edit_base").val(response.data.base);
+      $("#edit_base_iva").val(response.data.iva);
+      $("#edit_observacion").val(response.data.observacion);
+      $("#edit_fecha_registro").val(response.data.fecha_registro);
+
+      calcular();
     },
   });
 });
 
-// =============================
-// 📌 Guardar cambios en detalle
-// =============================
 document.addEventListener("submit", function (event) {
-  if (event.target && event.target.id === "DetalleEdit") {
-    event.preventDefault();
-    let formData = new FormData(event.target);
-    let ajaxUrl = base_url + "/SolicitudFondos/updateDetalle";
+  if (event.target.id !== "DetalleEdit") return;
 
-    let request = new XMLHttpRequest();
-    request.open("POST", ajaxUrl, true);
-    request.send(formData);
+  event.preventDefault();
+  let formData = new FormData(event.target);
 
-    request.onreadystatechange = function () {
-      if (request.readyState === 4 && request.status === 200) {
-        let response = JSON.parse(request.responseText);
-        if (response.status) {
-          Swal.fire({
-            title: "Datos guardados correctamente",
-            icon: "success",
-            confirmButtonText: "Aceptar",
-          }).then(() => location.reload());
-        } else {
-          Swal.fire("Atención", response.msg || "Error desconocido", "error");
-        }
+  fetch(base_url + "/SolicitudFondos/updateDetalle", {
+    method: "POST",
+    body: formData,
+  })
+    .then((res) => res.json())
+    .then((res) => {
+      if (res.status) {
+        Swal.fire("Guardado", "Datos actualizados", "success").then(() =>
+          location.reload()
+        );
+      } else {
+        Swal.fire("Error", res.msg || "Error desconocido", "error");
       }
-    };
-  }
-});
-
-document.addEventListener("submit", function (event) {
-  if (event.target && event.target.id === "validarSolicitud") {
-    event.preventDefault();
-
-    // Detecta el botón presionado
-    let boton = event.submitter;
-    let valor = boton.dataset.respuesta;
-    let formData = new FormData(event.target);
-    formData.append("respuesta", valor);
-
-    let ajaxUrl = base_url + "/SolicitudFondos/validarSolicitud";
-    let request = new XMLHttpRequest();
-    request.open("POST", ajaxUrl, true);
-    request.send(formData);
-
-    request.onreadystatechange = function () {
-      if (request.readyState === 4 && request.status === 200) {
-        let response = JSON.parse(request.responseText);
-        if (response.status) {
-          Swal.fire({
-            title: "Datos guardados correctamente",
-            icon: "success",
-            confirmButtonText: "Aceptar",
-          }).then(() => location.reload());
-        } else {
-          Swal.fire("Atención", response.msg || "Error desconocido", "error");
-        }
-      }
-    };
-  }
-});
-
-document.addEventListener("submit", function (event) {
-  if (event.target && event.target.id === "finalizarSolicitud") {
-    event.preventDefault();
-
-    let boton = event.submitter;
-    let valor = boton.dataset.respuesta;
-
-    // 🔴 Confirmación previa
-    Swal.fire({
-      title: "¿Está seguro de finalizar la solicitud?",
-      text: "Una vez finalizada, no podrá realizar cambios.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Sí, finalizar",
-      cancelButtonText: "Cancelar",
-      reverseButtons: true,
-    }).then((result) => {
-      // ❌ Si cancela, no se ejecuta nada
-      if (!result.isConfirmed) {
-        return;
-      }
-
-      // ✅ Continúa solo si confirma
-      let formData = new FormData(event.target);
-      formData.append("respuesta", valor);
-
-      let ajaxUrl = base_url + "/SolicitudFondos/finalizarSolicitud";
-      let request = new XMLHttpRequest();
-      request.open("POST", ajaxUrl, true);
-      request.send(formData);
-
-      request.onreadystatechange = function () {
-        if (request.readyState === 4 && request.status === 200) {
-          let response = JSON.parse(request.responseText);
-
-          if (response.status) {
-            Swal.fire({
-              title: response.message,
-              icon: "success",
-              confirmButtonText: "Aceptar",
-            }).then(() => location.reload());
-          } else {
-            Swal.fire(
-              "Atención",
-              response.message || "Error desconocido",
-              "error"
-            );
-          }
-        }
-      };
     });
-  }
+});
+
+document.addEventListener("submit", function (event) {
+  if (event.target.id !== "validarSolicitud") return;
+
+  event.preventDefault();
+  let boton = event.submitter;
+  let formData = new FormData(event.target);
+  formData.append("respuesta", boton.dataset.respuesta);
+
+  fetch(base_url + "/SolicitudFondos/validarSolicitud", {
+    method: "POST",
+    body: formData,
+  })
+    .then((res) => res.json())
+    .then((res) => {
+      if (res.status) {
+        Swal.fire("Correcto", "Solicitud validada", "success").then(() =>
+          location.reload()
+        );
+      } else {
+        Swal.fire("Error", res.msg, "error");
+      }
+    });
+});
+
+document.addEventListener("submit", function (event) {
+  if (event.target.id !== "finalizarSolicitud") return;
+
+  event.preventDefault();
+  let boton = event.submitter;
+
+  Swal.fire({
+    title: "¿Finalizar solicitud?",
+    text: "No podrá realizar cambios después.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Sí, finalizar",
+    cancelButtonText: "Cancelar",
+  }).then((result) => {
+    if (!result.isConfirmed) return;
+
+    let formData = new FormData(event.target);
+    formData.append("respuesta", boton.dataset.respuesta);
+
+    fetch(base_url + "/SolicitudFondos/finalizarSolicitud", {
+      method: "POST",
+      body: formData,
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.status) {
+          Swal.fire("Finalizado", res.message, "success").then(() =>
+            location.reload()
+          );
+        } else {
+          Swal.fire("Error", res.message, "error");
+        }
+      });
+  });
 });

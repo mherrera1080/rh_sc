@@ -39,6 +39,7 @@
                                     <th scope="col">Contraseña</th>
                                     <th scope="col">Tipo</th>
                                     <th scope="col">Fecha Pago Estimado</th>
+                                    <th scope="col">Dias Restantes</th>
                                     <th scope="col">Area</th>
                                     <th scope="col">No. Transaccion</th>
                                     <th scope="col">Fecha Transaccion</th>

@@ -175,6 +175,47 @@ class SolicitudFondos extends Controllers
         die();
     }
 
+    public function getServicios($contraseña)
+    {
+        $arrData = $this->model->getServicios($contraseña);
+
+        if (empty($arrData)) {
+            $arrResponse = [
+                'status' => false,
+                'msg' => 'No se encontraron registros previos.'
+            ];
+        } else {
+            $arrResponse = [
+                'status' => true,
+                'data' => $arrData
+            ];
+        }
+
+        echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+        die();
+    }
+
+        public function getRentas($contraseña)
+    {
+        $arrData = $this->model->getRentas($contraseña);
+
+        if (empty($arrData)) {
+            $arrResponse = [
+                'status' => false,
+                'msg' => 'No se encontraron registros previos.'
+            ];
+        } else {
+            $arrResponse = [
+                'status' => true,
+                'data' => $arrData
+            ];
+        }
+
+        echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+        die();
+    }
+
+
     public function getCombustible($contraseña)
     {
         $arrData = $this->model->getCombustiblebyContra($contraseña);
@@ -830,7 +871,7 @@ class SolicitudFondos extends Controllers
         if ($contraseña) {
             $informe = $this->model->getContraseña($contraseña);
             $usuario = $informe["solicitante"];
-            $retenciones = $this->model->getServiciosbyContra($contraseña);
+            $retenciones = $this->model->getRetenciones($contraseña);
             $servicios = $this->model->getServiciosbyContra($contraseña); // ESTOS SERVICIOS, HOLA CHATGPT
             $solicitante = $this->model->selectUsuario($usuario);
             if (empty($informe)) {

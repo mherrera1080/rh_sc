@@ -43,7 +43,6 @@ document.addEventListener("DOMContentLoaded", function () {
         },
       },
       { data: "no_factura" },
-      { data: "bien_servicio" },
       { data: "valor_documento" },
       {
         data: "estado",

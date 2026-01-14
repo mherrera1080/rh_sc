@@ -27,6 +27,26 @@
                                     <i class="fas fa-check"></i> Pagar
                                 </button>
                             <?php endif; ?>
+                            <?php if ($data['facturas']['solicitud_estado'] === "Pagado" && $_SESSION['PersonalData']['area'] == 4): ?>
+                                <?php if ($data['facturas']['categoria'] === "Servicios" && $_SESSION['PersonalData']['area'] == 4): ?>
+                                    <button class="btn btn-danger btn-sm"
+                                        onclick="window.open('<?= base_url() ?>/SolicitudFondos/generarSolicitudServicios/<?= $data['facturas']['contraseña']; ?>', '_blank')">
+                                        <i class="far fa-file-pdf"></i> PDF
+                                    </button>
+                                <?php endif; ?>
+                                <?php if ($data['facturas']['categoria'] === "Rentas" && $_SESSION['PersonalData']['area'] == 4): ?>
+                                    <button class="btn btn-danger btn-sm"
+                                        onclick="window.open('<?= base_url() ?>/SolicitudFondos/generarSolicitudRentas/<?= $data['facturas']['contraseña']; ?>', '_blank')">
+                                        <i class="far fa-file-pdf"></i> PDF
+                                    </button>
+                                <?php endif; ?>
+                                <?php if ($data['facturas']['categoria'] === "Combustible" && $_SESSION['PersonalData']['area'] == 4): ?>
+                                    <button class="btn btn-danger btn-sm"
+                                        onclick="window.open('<?= base_url() ?>/SolicitudFondos/generarSolicitudCombustible/<?= $data['facturas']['contraseña']; ?>', '_blank')">
+                                        <i class="far fa-file-pdf"></i> PDF
+                                    </button>
+                                <?php endif; ?>
+                            <?php endif; ?>
                         <?php elseif ($data['facturas']['area_id'] != 2): ?>
                             <?php if ($data['facturas']['solicitud_estado'] === "Pendiente" && $_SESSION['PersonalData']['area'] == 4): ?>
                                 <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#finalizarModal">
@@ -106,28 +126,59 @@
                         <input type="hidden" id="solicitud_estado"
                             value="<?= $data['facturas']['solicitud_estado']; ?>">
                         <input type="hidden" id="area_usuario" value="<?= $_SESSION['PersonalData']['area'] ?>">
-                        <table id="tableFacturas" class="table table-hover table-bordered align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>#</th>
-                                    <th>Contraseña</th>
-                                    <th>Área</th>
-                                    <th>Registro</th>
-                                    <th>Proveedor</th>
-                                    <th>Monto</th>
-                                    <th>Estado</th>
-                                    <th>Registro AX</th>
-                                    <th>Observación</th>
-                                    <th>IVA</th>
-                                    <th>Retención IVA</th>
-                                    <th>Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Se llena dinámicamente -->
-                            </tbody>
-                        </table>
 
+                        <?php if ($data['facturas']['area_id'] == 2): ?>
+                            <?php if ($data['facturas']['categoria'] === "Servicios"): ?>
+
+                                <table id="tableServicios" class="table table-hover table-bordered align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Se llena dinámicamente -->
+                                    </tbody>
+                                </table>
+
+                            <?php elseif ($data['facturas']['categoria'] === "Rentas"): ?>
+
+                                <table id="tableRentas" class="table table-hover table-bordered align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Se llena dinámicamente -->
+                                    </tbody>
+                                </table>
+
+                            <?php endif; ?>
+
+                        <?php else: ?>
+                            <table id="tableFacturas" class="table table-hover table-bordered align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Contraseña</th>
+                                        <th>Área</th>
+                                        <th>Registro</th>
+                                        <th>Proveedor</th>
+                                        <th>Monto</th>
+                                        <th>Estado</th>
+                                        <th>Registro AX</th>
+                                        <th>Observación</th>
+                                        <th>IVA</th>
+                                        <th>Retención IVA</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Se llena dinámicamente -->
+                                </tbody>
+                            </table>
+
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>

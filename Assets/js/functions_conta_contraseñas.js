@@ -31,6 +31,7 @@ document.addEventListener("DOMContentLoaded", function () {
       { data: "contraseña", title: "Contraseña" },
       { data: "area", title: "Área" },
       { data: "fecha_registro", title: "Registro" },
+      { data: "dias_restantes", title: "Dias Restantes" },
       { data: "proveedor", title: "Proveedor" },
       { data: "monto_total", title: "Total" },
       { data: "fecha_pago", title: "Fecha Pago" },

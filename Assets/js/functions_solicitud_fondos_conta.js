@@ -41,6 +41,7 @@ document.addEventListener("DOMContentLoaded", function () {
           }
         },
       },
+      { data: "dias_restantes" },
       { data: "area" },
       { data: "no_transferencia" },
       { data: "fecha_transaccion" },
@@ -79,18 +80,18 @@ document.addEventListener("DOMContentLoaded", function () {
                 onclick="window.location.href='${base_url}/SolicitudFondos/Combustible/${row.contraseña}'">
                 <i class="fas fa-archive"></i>
               </button>`;
-                      break;
+              break;
 
-                    case "Anticipo":
-                      html = `
+            case "Anticipo":
+              html = `
               <button class="btn btn-info btn-sm"
                 onclick="window.location.href='${base_url}/Contabilidad/Anticipo/${row.id_solicitud}'">
                 <i class="fas fa-archive"></i>
               </button>`;
-                      break;
+              break;
 
-                    default:
-                      html = `
+            default:
+              html = `
               <button class="btn btn-info btn-sm"
                 onclick="window.location.href='${base_url}/Contabilidad/Revision/${row.contraseña}'">
                 <i class="fas fa-archive"></i>

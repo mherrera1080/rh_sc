@@ -107,14 +107,15 @@ class PDF extends FPDF
         // Encabezados
         $this->SetFont('Arial', 'B', 8);
 
-        $this->Cell(20, 8, "FACT.", "R", 0, 'C');
+        $this->Cell(15, 8, "FACT.", "R", 0, 'C');
         $this->Cell(20, 8, 'REPUESTOS', "R", 0, 'C');
         $this->Cell(18, 8, 'PLACA', "R", 0, 'C');
         $this->Cell(15, 8, 'ESTADO', "R", 0, 'C');
         $this->Cell(61, 8, 'USUARIO', "R", 0, 'C');
-        $this->Cell(18, 8, 'TIPO', "R", 0, 'C');
+        $this->Cell(15, 8, 'TIPO', "R", 0, 'C');
+        $this->Cell(15, 8, 'COD. AX', "R", 0, 'C');
         $this->Cell(20, 8, 'LN / CANT', "R", 0, 'C');
-        $this->Cell(28, 8, 'MONTO', 0, 1, 'C');
+        $this->Cell(21, 8, 'MONTO', 0, 1, 'C');
 
         $this->SetFont('Arial', '', 8);
 
@@ -132,16 +133,17 @@ class PDF extends FPDF
 
                 $this->SetXY(5, $y);
 
-                $this->Cell(20, $this->row_height, $row['no_factura'], 1, 0, 'C');
+                $this->Cell(15, $this->row_height, $row['no_factura'], 1, 0, 'C');
                 $this->Cell(20, $this->row_height, utf8_decode($row['repuestos']), 1, 0, 'C');
                 $this->Cell(18, $this->row_height, utf8_decode($row['placa']), 1, 0, 'C');
                 $this->Cell(15, $this->row_height, utf8_decode($row['estado']), 1, 0, 'C');
                 $this->Cell(61, $this->row_height, utf8_decode($row['usuario']), 1, 0, 'C');
-                $this->Cell(18, $this->row_height, utf8_decode($row['tipo_persona']), 1, 0, 'C');
+                $this->Cell(15, $this->row_height, utf8_decode($row['tipo_persona']), 1, 0, 'C');
+                $this->Cell(15, $this->row_height, utf8_decode($row['codigo_ax']), 1, 0, 'C');
                 $this->Cell(20, $this->row_height, utf8_decode($row['ln']), 1, 0, 'C');
 
                 $this->Cell(
-                    28,
+                    21,
                     $this->row_height,
                     'Q. ' . number_format($row['valor_documento'], 2),
                     1,
@@ -177,69 +179,178 @@ class PDF extends FPDF
     function impuestos($arrData)
     {
         $this->SetTextColor(0, 0, 0);
-        $this->SetFont('Arial', '', 9);
 
         $lineHeight = 5;
-
-        // Posición fija del TOTAL y fecha programada
         $yTotal = 239;
         $yFecha = 243;
 
-        // Si hay anticipo, necesitamos “subir” las líneas anteriores
-        $anticipoExiste = empty($arrData['informe']['anticipo']);
-        $desplazamiento = $anticipoExiste ? $lineHeight : 0;
+        $aplicaIVA = !empty($arrData['inpuestos']['aplica_iva']) &&
+            $arrData['inpuestos']['aplica_iva'] == 1;
 
-        // Posición inicial de SUBTOTAL (ajustada si hay anticipo)
-        $y = 220 - $desplazamiento;
+        $aplicaISR = !empty($arrData['inpuestos']['aplica_isr']) &&
+            $arrData['inpuestos']['aplica_isr'] == 1;
 
-        // SUBTOTAL
+        $hayCredito = !empty($arrData['inpuestos']['monto_credito']) &&
+            $arrData['inpuestos']['monto_credito'] > 0;
+
+        /* -------- CÁLCULO DE FILAS -------- */
+        $totalFilas = 1; // SUBTOTAL
+
+        if ($aplicaIVA) {
+            $totalFilas += count($arrData['retenciones']);
+        }
+
+        if ($aplicaISR) {
+            $totalFilas += count($arrData['retenciones']);
+        }
+
+        if ($hayCredito) {
+            $totalFilas += 1; // línea de crédito
+        }
+
+        $alturaBloque = $totalFilas * $lineHeight;
+        $y = $yTotal - $alturaBloque;
+
+        /* -------- SUBTOTAL -------- */
+        $this->SetFont('Arial', 'B', 9);
         $this->SetY($y);
         $this->SetX(5);
-        $this->Cell(170, 5, "SUBTOTAL", "LTRB", 0, 'L');
-        $this->Text(176, $y + 4, "Q. ");
-        $this->Cell(30, 5, number_format($arrData['inpuestos']['subtotal'], 2), "LTRB", 1, 'R');
-        $y += 5;
 
-        // 12% IVA
-        $this->SetY($y);
-        $this->SetX(5);
-        $this->Cell(170, 5, "12% IVA", "LTRB", 0, 'L');
+        $this->Cell(110, 5, null, 0, 0, 'L');
+        $this->Cell(60, 5, "SUBTOTAL", 0, 0, 'L');
         $this->Text(176, $y + 4, "Q. ");
-        $this->Cell(30, 5, number_format($arrData['inpuestos']['iva'], 2), "LTRB", 1, 'R');
-        $y += 5;
+        $this->Cell(
+            30,
+            5,
+            number_format($arrData['inpuestos']['subtotal'], 2),
+            0,
+            1,
+            'R'
+        );
 
-        // RETENCION IVA
-        $this->SetY($y);
-        $this->SetX(5);
-        $this->Cell(170, 5, "RETENCION IVA", "LTRB", 0, 'L');
-        $this->Text(176, $y + 4, "Q. ");
-        $this->Cell(30, 5, number_format($arrData['inpuestos']['reten_iva'], 2), "LTRB", 1, 'R');
-        $y += 5;
+        $y += $lineHeight;
 
-        // RETENCION ISR
-        $this->SetY($y);
-        $this->SetX(5);
-        $this->Cell(170, 5, "RETENCION ISR", "LTRB", 0, 'L');
-        $this->Text(176, $y + 4, "Q. ");
-        $this->Cell(30, 5, number_format($arrData['inpuestos']['reten_isr'], 2), "LTRB", 1, 'R');
-        $y += 5;
+        $this->SetFont('Arial', '', 9);
 
-        // TOTAL (posición fija)
+        /* -------- RETENCIONES -------- */
+        foreach ($arrData['retenciones'] as $ret) {
+
+            if ($aplicaIVA) {
+                $this->SetY($y);
+                $this->SetX(5);
+
+                $this->Cell(110, 5, null, 0, 0, 'L');
+                $this->Cell(
+                    50,
+                    5,
+                    utf8_decode('(-) RET. IVA FACT. ' . $ret['no_factura']),
+                    0,
+                    0,
+                    'L'
+                );
+
+                $this->Text(176, $y + 4, "Q. ");
+                $this->Cell(
+                    40,
+                    5,
+                    number_format($ret['reten_iva'], 2),
+                    0,
+                    1,
+                    'R'
+                );
+
+                $y += $lineHeight;
+            }
+
+            if ($aplicaISR) {
+                $this->SetY($y);
+                $this->SetX(5);
+
+                $this->Cell(110, 5, null, 0, 0, 'L');
+                $this->Cell(
+                    50,
+                    5,
+                    utf8_decode('(-) RET. ISR FACT. ' . $ret['no_factura']),
+                    0,
+                    0,
+                    'L'
+                );
+
+                $this->Text(176, $y + 4, "Q. ");
+                $this->Cell(
+                    40,
+                    5,
+                    number_format($ret['reten_isr'], 2),
+                    0,
+                    1,
+                    'R'
+                );
+
+                $y += $lineHeight;
+            }
+        }
+
+        /* -------- CRÉDITO -------- */
+        if ($hayCredito) {
+            $this->SetFont('Arial', '', 9);
+            $this->SetY($y);
+            $this->SetX(5);
+
+            $this->Cell(110, 5, null, 0, 0, 'L');
+            $this->Cell(
+                50,
+                5,
+                utf8_decode('(-) NOTA DE CREDITO: ' . $arrData['inpuestos']['factura_credito']),
+                0,
+                0,
+                'L'
+            );
+
+            $this->Text(176, $y + 4, "Q. ");
+            $this->Cell(
+                40,
+                5,
+                number_format($arrData['inpuestos']['monto_credito'], 2),
+                0,
+                1,
+                'R'
+            );
+
+            $y += $lineHeight;
+        }
+
+        /* -------- TOTAL -------- */
+        $this->SetFont('Arial', 'B', 9);
         $this->SetY($yTotal);
         $this->SetX(5);
+
         $this->Cell(170, 5, "TOTAL", "LTRB", 0, 'L');
         $this->Text(176, $yTotal + 4, "Q. ");
-        $this->Cell(30, 5, number_format($arrData['inpuestos']['total'], 2), "LTRB", 1, 'R');
+        $this->Cell(
+            30,
+            5,
+            number_format($arrData['inpuestos']['total'], 2),
+            "LTRB",
+            1,
+            'R'
+        );
 
-        // Fecha programada de pago (posición fija)
+        /* -------- FECHA DE PAGO -------- */
+        $this->SetFont('Arial', 'B', 9);
         $this->SetXY(5, $yFecha + 1);
         $this->Cell(25, 5, "Fecha programada para Pago", 0, 0, 'L');
 
-        $title = utf8_decode('______________');
-        $this->Text(50, $yFecha + 5, $title);
+        $this->Text(50, $yFecha + 5, utf8_decode('______________'));
+
         $this->SetXY(25, $yFecha + 2);
-        $this->SetFont('Arial', 'B', 9);
-        $this->Cell(75, 4, $arrData['inpuestos']['fecha_pago'], 0, 1, 'C');
+        $this->Cell(
+            75,
+            4,
+            $arrData['inpuestos']['fecha_pago'],
+            0,
+            1,
+            'C'
+        );
     }
 
     function firmas($arrData)

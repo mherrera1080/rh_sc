@@ -90,9 +90,9 @@
                                     <tr>
                                         <th>ID</th>
                                         <th>No. Factura</th>
-                                        <th>Bien</th>
                                         <th>Valor</th>
                                         <th>Estado</th>
+                                        <th>Ver</th>
                                     </tr>
                                 </thead>
                                 <tbody>

@@ -48,8 +48,9 @@ class ContabilidadModel extends Mysql
             tp.nombre_proveedor AS proveedor,
             tc.valor_letras,
             tc.monto_total,
-            ta.nombre_area AS area,
             ta.id_area as area_id,
+            ta.nombre_area AS area,
+            tsf.categoria, 
             tp.regimen,
             ROUND(
                 SUM(td.valor_documento) 
@@ -133,7 +134,12 @@ class ContabilidadModel extends Mysql
             tc.valor_letras,
             ROUND(SUM(td.valor_documento), 2) AS monto_total,
             tc.fecha_pago,
-            tc.estado
+            tc.estado,
+            CASE
+                WHEN tc.fecha_pago IS NULL THEN NULL
+                WHEN tc.fecha_pago < CURDATE() THEN 0
+                ELSE DATEDIFF(tc.fecha_pago, CURDATE())
+            END AS dias_restantes
         FROM tb_contraseña tc
         INNER JOIN tb_proveedor tp ON tc.id_proveedor = tp.id_proveedor
         INNER JOIN tb_areas ta ON tc.area = ta.id_area

@@ -32,9 +32,9 @@ document.addEventListener("DOMContentLoaded", function () {
       { data: "bien_servicio" },
       { data: "valor_documento" },
       { data: "total" },
+      { data: "registro_ax" },
       {
         data: "estado",
-        title: "Estado",
         render: function (data, type, row, meta) {
           let html = "";
           data = data.toLowerCase();
