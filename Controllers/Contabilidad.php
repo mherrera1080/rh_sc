@@ -166,11 +166,13 @@ class Contabilidad extends Controllers
 
                 $id_detalle = intval($_POST['id_detalle']);
                 $codigo_ax = trim($_POST['codigo_ax']);
+                $bien_servicio = trim($_POST['bien_servicio']);
 
                 // Actualización
                 $request = $this->model->updateCodigoAX(
                     $id_detalle,
-                    $codigo_ax
+                    $codigo_ax,
+                    $bien_servicio
                 );
 
                 if ($request) {

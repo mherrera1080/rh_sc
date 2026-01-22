@@ -65,10 +65,32 @@ document.addEventListener("DOMContentLoaded", function () {
         },
       },
     ],
-    dom: "lfrtip", // 👈 Esto habilita búsqueda, paginación y selector de registros
+    dom: "Blfrtip",
     bDestroy: true,
     iDisplayLength: 5, // cantidad de registros por página
     order: [[0, "desc"]],
+    buttons: [
+      {
+        extend: "colvis",
+        text: '<i class="fas fa-eye me-1"></i> Columnas',
+        className: "btn btn-primary btn-sm me-1 rounded fw-bold text-white",
+        collectionLayout: "fixed two-column",
+        postfixButtons: ["colvisRestore"],
+      },
+      {
+        extend: "excelHtml5",
+        text: '<i class="fas fa-file-excel me-1"></i> Excel',
+        className: "btn btn-success btn-sm me-1 rounded fw-bold text-white",
+        exportOptions: {
+          columns: ":visible", // solo columnas visibles
+          modifier: {
+            search: "applied", // solo filas filtradas
+            order: "applied", // respeta el orden actual
+            page: "all", // todas las filas filtradas, no solo la página
+          },
+        },
+      },
+    ],
     language: {
       url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json",
     },

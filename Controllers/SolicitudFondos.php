@@ -195,7 +195,7 @@ class SolicitudFondos extends Controllers
         die();
     }
 
-        public function getRentas($contraseña)
+    public function getRentas($contraseña)
     {
         $arrData = $this->model->getRentas($contraseña);
 
@@ -2065,7 +2065,5 @@ class SolicitudFondos extends Controllers
         // Modo no reconocido -> devolver número tal cual
         return ucfirst($sign . $intWords . ' punto ' . $fraction);
     }
-
-
 
 }

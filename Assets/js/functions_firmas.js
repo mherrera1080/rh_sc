@@ -57,25 +57,6 @@ document.addEventListener("DOMContentLoaded", function () {
       },
     ],
     dom: "Bfrtip",
-    buttons: [
-      {
-        extend: "colvis",
-        text: '<i class="fas fa-eye me-1"></i> Columnas',
-        className: "btn btn-primary btn-sm me-1 rounded fw-bold text-white",
-        collectionLayout: "fixed two-column",
-        postfixButtons: ["colvisRestore"],
-      },
-      {
-        extend: "excel",
-        text: '<i class="fas fa-file-excel me-1"></i> Excel',
-        className: "btn btn-success btn-sm me-1 rounded fw-bold text-white",
-      },
-      {
-        extend: "print",
-        text: '<i class="fas fa-print me-1"></i> Imprimir',
-        className: "btn btn-secondary btn-sm rounded fw-bold text-white",
-      },
-    ],
     language: {
       url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json",
     },

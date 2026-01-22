@@ -52,11 +52,11 @@
                                 <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#finalizarModal">
                                     <i class="fas fa-check"></i> Pagar
                                 </button>
-                                <button class="btn btn-danger btn-sm"
-                                    onclick="window.open('<?= base_url() ?>/SolicitudFondos/generarSolicitud/<?= $data['facturas']['contraseña']; ?>', '_blank')">
-                                    <i class="far fa-file-pdf"></i> PDF
-                                </button>
                             <?php endif; ?>
+                            <button class="btn btn-danger btn-sm"
+                                onclick="window.open('<?= base_url() ?>/SolicitudFondos/generarSolicitud/<?= $data['facturas']['contraseña']; ?>', '_blank')">
+                                <i class="far fa-file-pdf"></i> PDF
+                            </button>
                         <?php endif ?>
                     </div>
                 </div>
@@ -133,7 +133,7 @@
                                 <table id="tableServicios" class="table table-hover table-bordered align-middle">
                                     <thead class="table-light">
                                         <tr>
-                                            
+
                                         </tr>
                                     </thead>
                                     <tbody>

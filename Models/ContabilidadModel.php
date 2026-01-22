@@ -329,13 +329,15 @@ class ContabilidadModel extends Mysql
         return $request;
     }
 
-    public function updateCodigoAX(int $id_detalle, string $codigo_ax)
+    public function updateCodigoAX(int $id_detalle, string $codigo_ax, string $bien_servicio)
     {
         $sql = "UPDATE tb_detalles
-            SET registro_ax = ?
+            SET 
+            registro_ax = ?,
+            bien_servicio = ?
             WHERE id_detalle = ?";
 
-        return $this->update($sql, array($codigo_ax, $id_detalle));
+        return $this->update($sql, array($codigo_ax, $bien_servicio, $id_detalle));
     }
 
 

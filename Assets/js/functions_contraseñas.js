@@ -95,14 +95,17 @@ document.addEventListener("DOMContentLoaded", function () {
         postfixButtons: ["colvisRestore"],
       },
       {
-        extend: "excel",
+        extend: "excelHtml5",
         text: '<i class="fas fa-file-excel me-1"></i> Excel',
         className: "btn btn-success btn-sm me-1 rounded fw-bold text-white",
-      },
-      {
-        extend: "print",
-        text: '<i class="fas fa-print me-1"></i> Imprimir',
-        className: "btn btn-secondary btn-sm rounded fw-bold text-white",
+        exportOptions: {
+          columns: ":visible", // solo columnas visibles
+          modifier: {
+            search: "applied", // solo filas filtradas
+            order: "applied", // respeta el orden actual
+            page: "all", // todas las filas filtradas, no solo la página
+          },
+        },
       },
     ],
     language: {
@@ -250,15 +253,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // Recoge los valores de las fechas y los días
       const factura = Array.from(
-        document.querySelectorAll("input[name='factura[]']")
+        document.querySelectorAll("input[name='factura[]']"),
       ).map((input) => input.value);
 
       const bien = Array.from(
-        document.querySelectorAll("input[name='bien[]']")
+        document.querySelectorAll("input[name='bien[]']"),
       ).map((input) => input.value);
 
       const valor = Array.from(
-        document.querySelectorAll("input[name='valor[]']")
+        document.querySelectorAll("input[name='valor[]']"),
       ).map((input) => input.value);
 
       // Envía la solicitud vía AJAX
@@ -582,16 +585,16 @@ document.addEventListener("DOMContentLoaded", function () {
       // Recoge los valores de las fechas, valores y días
       const factura = Array.from(
         document.querySelectorAll(
-          "#tablaFacturasEdit input[name='no_factura[]']"
-        )
+          "#tablaFacturasEdit input[name='no_factura[]']",
+        ),
       ).map((input) => input.value);
 
       const bien = Array.from(
-        document.querySelectorAll("#tablaFacturasEdit input[name='bien[]']")
+        document.querySelectorAll("#tablaFacturasEdit input[name='bien[]']"),
       ).map((select) => select.value);
 
       const valor = Array.from(
-        document.querySelectorAll("#tablaFacturasEdit input[name='valor[]']")
+        document.querySelectorAll("#tablaFacturasEdit input[name='valor[]']"),
       ).map((select) => select.value);
 
       // Envía la solicitud vía AJAX
@@ -653,20 +656,20 @@ document.addEventListener("DOMContentLoaded", function () {
       // Recoge los valores de las fechas, valores y días
       const factura = Array.from(
         document.querySelectorAll(
-          "#tablaFacturasCorreccion input[name='no_factura[]']"
-        )
+          "#tablaFacturasCorreccion input[name='no_factura[]']",
+        ),
       ).map((input) => input.value);
 
       const bien = Array.from(
         document.querySelectorAll(
-          "#tablaFacturasCorreccion input[name='bien[]']"
-        )
+          "#tablaFacturasCorreccion input[name='bien[]']",
+        ),
       ).map((select) => select.value);
 
       const valor = Array.from(
         document.querySelectorAll(
-          "#tablaFacturasCorreccion input[name='valor[]']"
-        )
+          "#tablaFacturasCorreccion input[name='valor[]']",
+        ),
       ).map((select) => select.value);
 
       // Envía la solicitud vía AJAX

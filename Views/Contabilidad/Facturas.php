@@ -44,7 +44,7 @@
                                     <th>Proveedor</th>
                                     <th>Valor</th>
                                     <th>Total</th>
-                                    <th>Código AX</th> <!-- ❗ -->
+                                    <th>Registro AX</th>
                                     <th>Estado</th>
                                     <th>Acciones</th>
                                 </tr>
@@ -91,7 +91,7 @@
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label class="form-label">Bien / Servicio</label>
-                            <input type="text" class="form-control" id="bien_servicio" disabled>
+                            <input type="text" class="form-control" id="bien_servicio" name="bien_servicio">
                         </div>
 
                         <div class="col-md-6">
@@ -121,7 +121,7 @@
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label class="form-label">Código AX</label>
-                            <input type="number" class="form-control" id="codigo_ax" name="codigo_ax"
+                            <input type="text" class="form-control" id="codigo_ax" name="codigo_ax"
                                 placeholder="Ingrese el código AX">
                         </div>
                     </div>
