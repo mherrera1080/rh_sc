@@ -44,44 +44,54 @@ class ContabilidadModel extends Mysql
             tc.contraseña,
             tc.realizador,
             tc.fecha_registro,
-            DATE_FORMAT(tc.fecha_registro, '%d/%m/%Y') AS fecha_registro,
+            DATE_FORMAT(tc.fecha_registro, '%d/%m/%Y') AS fecha_registro_fmt,
             tp.nombre_proveedor AS proveedor,
             tc.valor_letras,
             tc.monto_total,
-            ta.id_area as area_id,
+            ta.id_area AS area_id,
             ta.nombre_area AS area,
-            tsf.categoria, 
+            tsf.categoria,
             tp.regimen,
-            ROUND(
-                SUM(td.valor_documento) 
-                + (SUM(td.valor_documento) * 0.12) 
-                - (SUM(td.reten_isr) + SUM(td.reten_iva)), 
-                2
-            ) AS total,
-            ROUND(
-                SUM(td.valor_documento)
-                - SUM(td.reten_iva), 
-                2
-            ) AS total_pequeño,
-            ROUND(SUM(td.iva), 2) AS iva_calc,
-            ROUND(SUM(td.valor_documento), 2) AS total_calc,
-            ROUND(SUM(td.reten_iva), 2) AS reten_iva,
-            ROUND(SUM(td.reten_isr), 2) AS reten_isr,
+
+            d.total,
+            d.total_pequeño,
+            d.iva_calc,
+            d.total_calc,
+            d.reten_iva,
+            d.reten_isr,
+
             DAY(tc.fecha_registro)   AS dia_registro,
             MONTH(tc.fecha_registro) AS mes_registro,
             YEAR(tc.fecha_registro)  AS año_registro,
             tc.fecha_pago,
             tc.estado,
             tsf.id_solicitud,
-            tsf.estado as solicitud_estado,
-            tsf.usuario as solicitante,
+            tsf.estado AS solicitud_estado,
+            tsf.usuario AS solicitante,
             tc.anticipo
         FROM tb_contraseña tc
         INNER JOIN tb_proveedor tp ON tc.id_proveedor = tp.id_proveedor
         INNER JOIN tb_areas ta ON tc.area = ta.id_area
-        INNER JOIN tb_detalles td ON tc.contraseña = td.contraseña
-        INNER JOIN tb_solicitud_fondos tsf ON tc.contraseña = tsf.contraseña
-        WHERE tc.contraseña = ?";
+        LEFT JOIN tb_solicitud_fondos tsf ON tc.contraseña = tsf.contraseña
+        INNER JOIN (
+            SELECT
+                contraseña,
+                ROUND(
+                    SUM(valor_documento) 
+                    + (SUM(valor_documento) * 0.12) 
+                    - (SUM(reten_isr) + SUM(reten_iva)), 
+                    2
+                ) AS total,
+                ROUND(SUM(valor_documento) - SUM(reten_iva), 2) AS total_pequeño,
+                ROUND(SUM(iva), 2) AS iva_calc,
+                ROUND(SUM(valor_documento), 2) AS total_calc,
+                ROUND(SUM(reten_iva), 2) AS reten_iva,
+                ROUND(SUM(reten_isr), 2) AS reten_isr
+            FROM tb_detalles
+            GROUP BY contraseña
+        ) d ON tc.contraseña = d.contraseña
+        WHERE tc.contraseña = ?;
+        ";
         $request = $this->select($sql, array($contraseña));
         return $request;
     }
@@ -104,8 +114,8 @@ class ContabilidadModel extends Mysql
             ta.id_area,
             tc.id_proveedor,
             ta.nombre_area AS area,
-            FORMAT(SUM(td.valor_documento), 2) AS monto_formato,
-            SUM(td.valor_documento) AS monto_total,
+            d.monto_total,
+            FORMAT(d.monto_total, 2) AS monto_formato,
             tc.fecha_pago,
             tc.estado,
             tc.anticipo,
@@ -113,10 +123,13 @@ class ContabilidadModel extends Mysql
         FROM tb_contraseña tc
         INNER JOIN tb_proveedor tp ON tc.id_proveedor = tp.id_proveedor
         INNER JOIN tb_areas ta ON tc.area = ta.id_area
-        INNER JOIN tb_detalles td ON tc.contraseña = td.contraseña
         LEFT JOIN tb_solicitud_fondos ts ON tc.contraseña = ts.contraseña
-        WHERE tc.contraseña = ? 
-        GROUP BY tc.id_contraseña;";
+        INNER JOIN (
+            SELECT contraseña, SUM(valor_documento) AS monto_total
+            FROM tb_detalles
+            GROUP BY contraseña
+        ) d ON tc.contraseña = d.contraseña
+        WHERE tc.contraseña = ?";
         $request = $this->select($sql, array($contraseña));
         return $request;
     }

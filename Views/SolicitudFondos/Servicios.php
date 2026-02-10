@@ -684,6 +684,7 @@
         });
 
     </script>
+    
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const contenedor = document.getElementById("contenedorMateriales");

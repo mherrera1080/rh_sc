@@ -625,7 +625,7 @@
 
                     <!-- Footer -->
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-success">
+                        <button type="submit" class="btn btn-success" id="btnSolicitarFondos">
                             <i class="fas fa-save"></i> Solicitar Fondos
                         </button>
                     </div>

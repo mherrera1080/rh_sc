@@ -205,7 +205,7 @@ document.addEventListener("DOMContentLoaded", function () {
               Swal.fire(
                 "Atención",
                 response.msg || "Error desconocido",
-                "error"
+                "error",
               );
             }
           }
@@ -402,7 +402,7 @@ document.addEventListener("DOMContentLoaded", function () {
           Swal.fire(
             "Atención",
             "Debe indicar el motivo de la corrección.",
-            "warning"
+            "warning",
           );
           correcciones.focus();
           return;
@@ -448,7 +448,7 @@ document.addEventListener("DOMContentLoaded", function () {
               Swal.fire(
                 "Atención",
                 response.msg || "Error al procesar la solicitud.",
-                "error"
+                "error",
               );
             }
           }
@@ -571,6 +571,14 @@ document.addEventListener("DOMContentLoaded", function () {
     .addEventListener("submit", function (event) {
       event.preventDefault();
 
+      const btn = document.querySelector("#btnSolicitarFondos");
+
+      // 🔒 Evitar doble submit
+      if (btn.disabled) return;
+
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Procesando...`;
+
       let formData = new FormData(this);
       let ajaxUrl = base_url + "/Contraseñas/solicitudFondos";
       let request = window.XMLHttpRequest
@@ -581,22 +589,36 @@ document.addEventListener("DOMContentLoaded", function () {
       request.send(formData);
 
       request.onreadystatechange = function () {
-        if (request.readyState === 4 && request.status === 200) {
-          let response = JSON.parse(request.responseText);
-          if (response.status) {
-            Swal.fire({
-              title: "Datos guardados correctamente",
-              icon: "success",
-              confirmButtonText: "Aceptar",
-            }).then((result) => {
-              if (result.isConfirmed) {
-                // Recargar la página al presionar "Aceptar"
+        if (request.readyState === 4) {
+          if (request.status === 200) {
+            let response = JSON.parse(request.responseText);
+
+            if (response.status) {
+              Swal.fire({
+                title: "Datos guardados correctamente",
+                icon: "success",
+                confirmButtonText: "Aceptar",
+                allowOutsideClick: false,
+              }).then(() => {
                 location.reload();
-              }
-            });
-            $("#solicitarFondos").modal("hide");
+              });
+
+              $("#solicitarFondos").modal("hide");
+            } else {
+              // ❌ Error → reactivar botón
+              btn.disabled = false;
+              btn.innerHTML = `<i class="fas fa-save"></i> Solicitar Fondos`;
+              Swal.fire("Atención", response.msg, "error");
+            }
           } else {
-            Swal.fire("Atención", response.msg, "error"); // Mostrar mensaje de error
+            // ❌ Error HTTP → reactivar botón
+            btn.disabled = false;
+            btn.innerHTML = `<i class="fas fa-save"></i> Solicitar Fondos`;
+            Swal.fire(
+              "Error",
+              "Error de comunicación con el servidor",
+              "error",
+            );
           }
         }
       };
